@@ -1,0 +1,14 @@
+[Unit]
+Description=i3 window manager
+PartOf=graphical-session.target
+After=autorandr.service
+After=picom.service
+After=xsettingsd.service
+After=tmux.service
+After=ssh-agent.service
+Before=wallpaper.service
+
+[Service]
+ExecStart=/usr/bin/i3
+ExecStopPost=/bin/systemctl --user stop graphical-session.target
+Restart=on-failure

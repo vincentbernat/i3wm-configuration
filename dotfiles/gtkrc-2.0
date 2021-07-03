@@ -1,0 +1,27 @@
+gtk-theme-name="Adwaita-dark"
+gtk-icon-theme-name="Adwaita"
+gtk-cursor-theme-name="Adwaita"
+gtk-cursor-theme-size=0
+gtk-font-name="DejaVu Sans 10"
+gtk-button-images=1
+gtk-menu-images=1
+gtk-fallback-icon-theme="gnome"
+gtk-toolbar-style=GTK_TOOLBAR_BOTH
+gtk-toolbar-icon-size=GTK_ICON_SIZE_LARGE_TOOLBAR
+gtk-decoration-layout=":menu"
+gtk-xft-antialias=1
+gtk-xft-hinting=1
+gtk-xft-hintstyle="hintslight"
+gtk-xft-rgba="rgb"
+
+gtk-key-theme-name="Emacs"
+binding "vbe-text-entry-bindings" {
+  unbind "<ctrl>b"
+  unbind "<shift><ctrl>b"
+  unbind "<ctrl>f"
+  unbind "<shift><ctrl>f"
+  unbind "<ctrl>w"
+  bind "<alt>BackSpace" { "delete-from-cursor" (word-ends, -1) }
+}
+class "GtkEntry" binding "vbe-text-entry-bindings"
+class "GtkTextView" binding "vbe-text-entry-bindings"

@@ -33,15 +33,12 @@ xrandr --dpi $dpi
 
 # Build xsettingsd
 {
-    cat  ~/.config/awesome/xsettingsd
+    cat  ~/.config/i3/xsettingsd
     echo Xft/DPI $(( $dpi*1024 ))
     echo Xft/RGBA \"$( [ $dpi -gt 144 ] && echo none || echo rgb )\"
     echo Gdk/WindowScalingFactor $(( $dpi/96 ))
     echo Gdk/UnscaledDPI $(( $dpi*1024/($dpi/96) ))
 } > ~/.xsettingsd
-
-# Signal xsettingsd
-systemctl --user reload xsettingsd@$(systemd-escape -- "$DISPLAY").service
 
 # Also use xrdb for very old stuff (you know, LibreOffice)
 echo Xft.dpi: $dpi | xrdb -merge

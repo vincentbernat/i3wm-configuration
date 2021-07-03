@@ -1,0 +1,7 @@
+[Unit]
+Description=X color management
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/xiccd --edid
+Restart=on-failure

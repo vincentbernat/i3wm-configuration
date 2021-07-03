@@ -1,0 +1,17 @@
+[Unit]
+Description=X session
+BindsTo=graphical-session.target
+Wants=autorandr.service
+Wants=i3.service
+Wants=picom.service
+Wants=inputplug.service
+Wants=misc-x.service
+Wants=policykit-agent.service
+Wants=redshift.service
+Wants=wallpaper.timer
+Wants=xiccd.service
+Wants=xsettingsd.service
+Wants=xss-lock.service
+Wants=tmux.service
+Wants=ssh-agent.service
+Wants=pulseaudio.service

@@ -1,0 +1,11 @@
+[Unit]
+Description=Miscellaneous settings for X11
+PartOf=graphical-session.target
+After=ssh-agent.service
+
+[Service]
+ExecStart=/usr/bin/xset -b
+ExecStart=/usr/bin/xsetroot -cursor_name left_ptr
+ExecStart=%h/.config/i3/bin/ssh-add
+Type=oneshot
+RemainAfterExit=false

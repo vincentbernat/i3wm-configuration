@@ -17,10 +17,12 @@ export NO_AT_BRIDGE=1
 unset LC_ALL
 [ -e ~/.zshenv ] && . ~/.zshenv
 
-# Copy dotfiles
+# Copy some configuration files
 while read source target; do
-    mkdir -p $(dirname $target)
-    ln -sf ~/.config/i3/dotfiles/$source $HOME/$target
+    for t in $target; do
+        mkdir -p $(dirname $HOME/$t)
+        ln -nsf ~/.config/i3/dotfiles/$source $HOME/$t
+    done
 done <<EOF
 Xresources .Xresources
 gtkrc-2.0  .gtkrc-2.0

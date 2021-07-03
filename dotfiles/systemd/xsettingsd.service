@@ -1,0 +1,11 @@
+[Unit]
+Description=XSETTINGS daemon
+PartOf=graphical-session.target
+
+[Service]
+Environment=SKIP_RELOAD=1
+ExecStartPre=%h/.config/i3/bin/xsettingsd-setup
+ExecStart=/usr/bin/xsettingsd -c %h/.xsettingsd
+ExecReload=%h/.config/i3/bin/xsettingsd-setup
+ExecReload=/usr/bin/kill -HUP $MAINPID
+Restart=on-failure

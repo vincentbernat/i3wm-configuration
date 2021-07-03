@@ -1,9 +1,0 @@
-[Unit]
-Description=XInput event monitor for %I
-PartOf=graphical-session@%i.target
-
-[Service]
-Environment=DISPLAY=%I
-ExecStartPre=/usr/bin/setxkbmap us
-ExecStart=%h/.local/bin/inputplug -d -0 -c %h/.config/awesome/bin/input-event
-Restart=on-failure

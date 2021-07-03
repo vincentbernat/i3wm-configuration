@@ -40,7 +40,7 @@ case "$1" in
         # First, pause any music player
         playerctl -a pause
         # Then, lock screen
-        i3lock -n -e -i $HOME/.cache/awesome/current-wallpaper-${display}.png -t -f
+        i3lock -n -e -i $HOME/.cache/i3/current-wallpaper.png -t -f
         echo "lock: unlock screen"
         ;;
 esac

@@ -1,8 +1,0 @@
-[Unit]
-Description=Set color temperature on %I
-PartOf=graphical-session@%i.target
-
-[Service]
-Environment=DISPLAY=%I
-ExecStart=/usr/bin/redshift -l manual:lon=2.35:lat=48.87 -t 6500:3900
-Restart=on-failure

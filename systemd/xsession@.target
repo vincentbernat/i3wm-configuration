@@ -1,3 +1,0 @@
-[Unit]
-Description=X session on %I
-BindsTo=graphical-session@%i.target

@@ -9,8 +9,8 @@ name="$4"
 
 # Load the given keymap
 xkb() {
-    xkbcomp -i ${device} -w 0 -I$HOME/.config/awesome/xkb \
-        $HOME/.config/awesome/xkb/$1.xkb ${DISPLAY}
+    xkbcomp -i ${device} -w 0 -I$HOME/.config/i3/dotfiles/xkb \
+        $HOME/.config/i3/dotfiles/xkb/$1.xkb ${DISPLAY}
 }
 
 case $event in
@@ -30,7 +30,7 @@ case "$event,$use,$(uname -n),$name" in
         done
         ;;
     *,XISlaveKeyboard,zoro,"AT Translated Set 2 keyboard")
-        xkb x1
+        xkb x1gen2
         ;;
     *,XISlaveKeyboard,*,"ThinkPad Extra Buttons")
         xkb thinkpad-extra

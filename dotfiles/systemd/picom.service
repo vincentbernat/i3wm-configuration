@@ -1,0 +1,12 @@
+[Unit]
+Description=Compositor for X11
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/picom --backend glx \
+                         --xrender-sync-fence \
+                         --vsync \
+                         --opacity-rule 100:fullscreen \
+                         --opacity-rule 85:!fullscreen \
+                         --opacity-rule 100:focused
+Restart=on-failure

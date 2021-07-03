@@ -1,0 +1,9 @@
+[Unit]
+Description=Configure monitors
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/autorandr --change --default default
+LimitCORE=infinity
+Type=oneshot
+RemainAfterExit=false

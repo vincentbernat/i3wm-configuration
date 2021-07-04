@@ -8,6 +8,7 @@ After=tmux.service
 After=ssh-agent.service
 Before=wallpaper.service
 Before=polybar.service
+Before=i3-companion.service
 
 [Service]
 ExecStart=/usr/bin/i3

@@ -1,0 +1,116 @@
+#!/usr/bin/python3
+
+"""Personal i3 companion
+
+This script will listen to i3 events and react accordingly. Currently,
+it will rename workspaces using icons according to their content.
+
+"""
+
+import argparse
+import logging
+import logging.handlers
+import os
+import sys
+import i3ipc
+import re
+
+logger = logging.getLogger(os.path.splitext(os.path.basename(sys.argv[0]))[0])
+
+
+class CustomFormatter(argparse.RawDescriptionHelpFormatter,
+                      argparse.ArgumentDefaultsHelpFormatter):
+    pass
+
+
+def parse_args(args=sys.argv[1:]):
+    """Parse arguments."""
+    parser = argparse.ArgumentParser(
+        description=sys.modules[__name__].__doc__,
+        formatter_class=CustomFormatter)
+
+    g = parser.add_mutually_exclusive_group()
+    g.add_argument("--debug", "-d", action="store_true",
+                   default=False,
+                   help="enable debugging")
+    g.add_argument("--silent", "-s", action="store_true",
+                   default=False,
+                   help="don't log")
+
+    return parser.parse_args(args)
+
+
+def setup_logging(options):
+    """Configure logging."""
+    root = logging.getLogger("")
+    root.setLevel(logging.WARNING)
+    logger.setLevel(options.debug and logging.DEBUG or logging.INFO)
+    if not options.silent:
+        ch = logging.StreamHandler()
+        ch.setFormatter(logging.Formatter(
+            "%(levelname)s[%(name)s] %(message)s"))
+        root.addHandler(ch)
+
+
+# See https://fontawesome.com/v5.15/icons
+application_icons = {
+    "chromium": "",
+    "emacs": "",
+    "firefox": "",
+    "gimp": "",
+    "google-chrome": "",
+    "spotify": "",
+    "vbeterm": "",
+    "NOMATCH": ""
+}
+
+
+def application_icon(window):
+    """Get application icon for a window."""
+    for attr in ('name', 'window_title',
+                 'window_instance', 'window_class'):
+        name = getattr(window, attr, None)
+        if name is None:
+            continue
+        for k, v in application_icons.items():
+            if re.match(k, name, re.IGNORECASE):
+                logger.debug(f"in {attr}, found '{name}', matching {k}")
+                return v
+    return application_icons["NOMATCH"]
+
+
+def workspace_rename(i3, event):
+    """Rename workspaces using icons to match what's inside it."""
+    workspaces = i3.get_tree().workspaces()
+    commands = []
+    for workspace in workspaces:
+        icons = set()
+        for window in workspace.leaves():
+            icon = application_icon(window)
+            if icon is not None:
+                icons.add(icon)
+        new_name = f"{workspace.num}:{'|'.join(icons)}"
+        if workspace.name != new_name:
+            logger.debug(f"rename workspace {workspace.num}")
+            command = f'rename workspace "{workspace.name}" to "{new_name}"'
+            commands.append(command)
+    i3.command(';'.join(commands))
+
+
+if __name__ == "__main__":
+    options = parse_args()
+    setup_logging(options)
+
+    try:
+        i3 = i3ipc.Connection()
+
+        # Rename workspace depending on what is inside
+        for event in ('window::move', 'window::new',
+                      'window::title', 'window::close'):
+            i3.on(event, workspace_rename)
+
+        i3.main()
+    except Exception as e:
+        logger.exception("%s", e)
+        sys.exit(1)
+    sys.exit(0)

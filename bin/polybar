@@ -1,0 +1,14 @@
+#!/bin/sh
+
+export LAN=$(nmcli -t device | awk -F: '($2 == "ethernet") {print $1; exit}')
+export WLAN=$(nmcli -t device | awk -F: '($2 == "wifi") {print $1; exit}')
+export DPI=$(xrdb -query | sed -nE 's/^Xft\.dpi:\s*//p')
+export HEIGHT=$((20 * DPI / 96))
+
+MONITOR=$(polybar --list-monitors | awk -F: '($0 ~ /primary/) {print $1; exit}') \
+       polybar --reload primary &
+for MONITOR in $(polybar --list-monitors | awk -F: '($0 !~ /primary/) {print $1}'); do
+    export MONITOR
+    polybar --reload secondary &
+done
+wait

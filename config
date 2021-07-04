@@ -6,6 +6,7 @@ set $left h
 set $right l
 set $mod Mod4
 set $term vbeterm
+set $mediaplayer spotify
 
 font pango:Terminus 9
 
@@ -20,11 +21,28 @@ client.urgent           #2f343a #d00000 #ffffff #d00000   #d00000
 client.placeholder      #000000 #0c0c0c #ffffff #000000   #0c0c0c
 client.background       #ffffff
 
-# Use pactl to adjust volume in PulseAudio.
+# Audio
 bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ +5%
 bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -5%
-bindsym XF86AudioMute exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ toggle
-bindsym XF86AudioMicMute exec --no-startup-id pactl set-source-mute @DEFAULT_SOURCE@ toggle
+bindsym XF86AudioMute        exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ toggle
+bindsym XF86AudioMicMute     exec --no-startup-id pactl set-source-mute @DEFAULT_SOURCE@ toggle
+bindsym XF86AudioPlay        exec --no-startup-id playerctl -p $mediaplayer play-pause
+bindsym XF86AudioPause       exec --no-startup-id playerctl -p $mediaplayer pause
+bindsym XF86AudioStop        exec --no-startup-id playerctl -p $mediaplayer stop
+bindsym XF86AudioNext        exec --no-startup-id playerctl -p $mediaplayer next
+bindsym XF86AudioPrev        exec --no-startup-id playerctl -p $mediaplayer previous
+mode "mediaplayer" {
+  bindsym "z" exec --no-startup-id playerctl -p $mediaplayer previous; mode "default"
+  bindsym "x" exec --no-startup-id playerctl -p $mediaplayer play-pause; mode "default"
+  bindsym "c" exec --no-startup-id playerctl -p $mediaplayer pause; mode "default"
+  bindsym "v" exec --no-startup-id playerctl -p $mediaplayer stop; mode "default"
+  bindsym "b" exec --no-startup-id playerctl -p $mediaplayer next; mode "default"
+  bindsym "m" exec pavucontrol; mode "default"
+  bindsym "s" [class="(?i)$mediaplayer"] focus; mode "default"
+  bindsym Escape mode "default"
+  bindsym Return mode "default"
+}
+bindsym $mod+m mode "mediaplayer"
 
 # use Mouse+$mod to drag floating windows to their wanted position
 floating_modifier $mod
@@ -39,22 +57,22 @@ bindsym $mod+x kill
 bindsym $mod+r exec --no-startup-id dmenu_run
 
 # change focus
-bindsym $mod+$left focus left
-bindsym $mod+$down focus down
-bindsym $mod+$up focus up
+bindsym $mod+$left  focus left
+bindsym $mod+$down  focus down
+bindsym $mod+$up    focus up
 bindsym $mod+$right focus right
 
 # move focused window
-bindsym $mod+Shift+$left move left
-bindsym $mod+Shift+$down move down
-bindsym $mod+Shift+$up move up
+bindsym $mod+Shift+$left  move left
+bindsym $mod+Shift+$down  move down
+bindsym $mod+Shift+$up    move up
 bindsym $mod+Shift+$right move right
 
 # resize focused window
-bindsym $mod+Ctrl+$left       resize shrink width 10 px or 10 ppt
-bindsym $mod+Ctrl+$down       resize grow height 10 px or 10 ppt
-bindsym $mod+Ctrl+$up         resize shrink height 10 px or 10 ppt
-bindsym $mod+Ctrl+$right      resize grow width 10 px or 10 ppt
+bindsym $mod+Ctrl+$left  resize shrink width 10 px or 10 ppt
+bindsym $mod+Ctrl+$down  resize grow height 10 px or 10 ppt
+bindsym $mod+Ctrl+$up    resize shrink height 10 px or 10 ppt
+bindsym $mod+Ctrl+$right resize grow width 10 px or 10 ppt
 
 # change split orientation
 bindsym $mod+v split toggle

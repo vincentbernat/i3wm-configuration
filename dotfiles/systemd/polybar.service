@@ -1,0 +1,8 @@
+[Unit]
+Description=Status bar for i3
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=%h/.config/i3/bin/polybar
+ExecStop=/usr/bin/polybar-msg cmd quit
+Restart=on-failure

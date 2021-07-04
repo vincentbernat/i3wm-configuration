@@ -1,0 +1,89 @@
+[global]
+    # Display on first monitor
+    monitor = 0
+    follow = none
+
+    # Appearance
+    geometry = "400x7-30+30"
+    indicate_hidden = yes
+    shrink = no
+    notification_height = 0
+    separator_height = 0
+    padding = 8
+    horizontal_padding = 8
+    text_icon_padding = 8
+    frame_width = 0
+    transparency = 5
+    font = DejaVu Sans 10
+    line_height = 0
+
+    # Put urgent notifications on top
+    sort = yes
+
+    # Don't remove messages, if the user is idle (no mouse or keyboard input)
+    idle_threshold = 60
+
+    # The format of the message.  Possible variables are:
+    #   %a  appname
+    #   %s  summary
+    #   %b  body
+    #   %i  iconname (including its path)
+    #   %I  iconname (without its path)
+    #   %p  progress value if set ([  0%] to [100%]) or nothing
+    #   %n  progress value if set without any extra characters
+    #   %%  Literal %
+    # Markup is allowed
+    format = "<b>%s</b>\n%b"
+    markup = full
+    alignment = left
+    vertical_alignment = center
+    word_wrap = no
+    ellipsize = end
+    ignore_newline = no
+    stack_duplicates = true
+    hide_duplicate_count = true
+    show_indicators = no
+
+    # Progress bar
+    progress_bar = false
+
+    # Icons
+    icon_position = left
+    min_icon_size = 32
+    max_icon_size = 32
+    icon_path = /usr/share/icons/gnome/256x256/status/:/usr/share/icons/gnome/256x256/devices/
+
+    # History
+    sticky_history = yes
+    history_length = 20
+
+    # Misc
+    dmenu = /usr/bin/dmenu -p dunst:
+    browser = /usr/bin/xdg-open
+    always_run_script = true
+    title = Dunst
+    class = Dunst
+    startup_notification = false
+    verbosity = mesg
+    corner_radius = 0
+    ignore_dbusclose = false
+
+    # Mouse
+    mouse_left_click = close_current
+    mouse_middle_click = none
+    mouse_right_click = none
+
+[urgency_low]
+    background = "#222222"
+    foreground = "#888888"
+    timeout = 10
+
+[urgency_normal]
+    background = "#222222"
+    foreground = "#ffffff"
+    timeout = 10
+
+[urgency_critical]
+    background = "#900000"
+    foreground = "#ffffff"
+    timeout = 0

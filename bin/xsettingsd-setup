@@ -29,6 +29,7 @@ dpi=${dpis%% *}
 dpi=${dpi:-96}
 
 echo "using ${dpi}dpi" >&2
+echo Xft.dpi: $dpi | xrdb -merge
 xrandr --dpi $dpi
 
 # Build xsettingsd
@@ -39,6 +40,3 @@ xrandr --dpi $dpi
     echo Gdk/WindowScalingFactor $(( $dpi/96 ))
     echo Gdk/UnscaledDPI $(( $dpi*1024/($dpi/96) ))
 } > ~/.xsettingsd
-
-# Also use xrdb for very old stuff (you know, LibreOffice)
-echo Xft.dpi: $dpi | xrdb -merge

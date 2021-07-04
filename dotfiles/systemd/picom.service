@@ -6,7 +6,6 @@ PartOf=graphical-session.target
 ExecStart=/usr/bin/picom --backend glx \
                          --xrender-sync-fence \
                          --vsync \
-                         --opacity-rule 100:fullscreen \
-                         --opacity-rule 85:!fullscreen \
-                         --opacity-rule 100:focused
+                         --inactive-opacity 0.85 \
+                         --opacity-rule 100:fullscreen
 Restart=on-failure

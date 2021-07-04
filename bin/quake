@@ -1,0 +1,104 @@
+#!/usr/bin/python3
+#!/usr/bin/python3
+
+"""Personal i3 companion
+
+This script will listen to i3 events and react accordingly.
+
+"""
+
+import argparse
+import logging
+import logging.handlers
+import os
+import sys
+import time
+
+from i3ipc import Connection
+
+logger = logging.getLogger(os.path.splitext(os.path.basename(sys.argv[0]))[0])
+
+
+class CustomFormatter(argparse.RawDescriptionHelpFormatter,
+                      argparse.ArgumentDefaultsHelpFormatter):
+    pass
+
+
+def parse_args(args=sys.argv[1:]):
+    """Parse arguments."""
+    parser = argparse.ArgumentParser(
+        description=sys.modules[__name__].__doc__,
+        formatter_class=CustomFormatter)
+
+    g = parser.add_mutually_exclusive_group()
+    g.add_argument("--debug", "-d", action="store_true",
+                   default=False,
+                   help="enable debugging")
+    g.add_argument("--silent", "-s", action="store_true",
+                   default=False,
+                   help="don't log")
+
+    parser.add_argument("--height",
+                        default=0.3,
+                        help="height of terminal")
+    parser.add_argument("--name",
+                        default="UniqueNameForConsole",
+                        help="Unique name to identify terminal")
+    parser.add_argument("--term",
+                        default="x-terminal-emulator",
+                        help="Terminal emulator to run")
+
+    return parser.parse_args(args)
+
+
+def setup_logging(options):
+    """Configure logging."""
+    root = logging.getLogger("")
+    root.setLevel(logging.WARNING)
+    logger.setLevel(options.debug and logging.DEBUG or logging.INFO)
+    if not options.silent:
+        ch = logging.StreamHandler()
+        ch.setFormatter(logging.Formatter(
+            "%(levelname)s[%(name)s] %(message)s"))
+        root.addHandler(ch)
+
+
+
+if __name__ == "__main__":
+    options = parse_args()
+    setup_logging(options)
+
+    try:
+        i3 = Connection()
+        term = i3.get_tree().find_instanced(options.name)
+        if not term:
+            i3.command(f'exec {options.term} --name {options.name}')
+            tries = 5
+            while not term and tries:
+                term = i3.get_tree().find_instanced(options.name)
+                time.sleep(0.2)
+                tries -= 1
+        if not term:
+            raise RuntimeError("unable to spawn terminal")
+        term = term[0]
+        workspace = [ws for ws in i3.get_workspaces() if ws.focused][0]
+        ws_x = workspace.rect.x
+        ws_y = workspace.rect.y
+        ws_width = workspace.rect.width
+        ws_height = workspace.rect.height
+        width = ws_width
+        height = int(ws_height * options.height)
+        posx = ws_x
+        posy = ws_y
+        command = (f'[instance={options.name}] '
+                   'border none,'
+                   f'resize set {width} px {height} px,'
+                   'scratchpad show,'
+                   f'move absolute position {posx}px {posy}px')
+        logger.debug(f"QuakeConsole: {command}")
+        i3.command(command)
+
+    except Exception as e:
+        logger.exception("%s", e)
+        sys.exit(1)
+    sys.exit(0)

@@ -2,8 +2,7 @@
 
 """Personal i3 companion
 
-This script will listen to i3 events and react accordingly. Currently,
-it will rename workspaces using icons according to their content.
+This script will listen to i3 events and react accordingly.
 
 """
 
@@ -12,8 +11,9 @@ import logging
 import logging.handlers
 import os
 import sys
-import i3ipc
 import re
+
+from i3ipc import Connection, Event
 
 logger = logging.getLogger(os.path.splitext(os.path.basename(sys.argv[0]))[0])
 
@@ -55,20 +55,28 @@ def setup_logging(options):
 # See https://fontawesome.com/v5.15/icons
 application_icons = {
     "chromium": "",
-    "emacs": "",
+    "emacs": "",
     "firefox": "",
     "gimp": "",
     "google-chrome": "",
+    "snes9x-gtk": "",
     "spotify": "",
+    "steam": "",
     "vbeterm": "",
     "NOMATCH": ""
+}
+application_icons_alone = {
+    application_icons[k] for k in {
+        "vbeterm"
+    }
 }
 
 
 def application_icon(window):
     """Get application icon for a window."""
-    for attr in ('name', 'window_title',
-                 'window_instance', 'window_class'):
+    for attr in ('name',
+                 'window_instance',
+                 'window_class'):
         name = getattr(window, attr, None)
         if name is None:
             continue
@@ -89,6 +97,8 @@ def workspace_rename(i3, event):
             icon = application_icon(window)
             if icon is not None:
                 icons.add(icon)
+        if any([i not in application_icons_alone for i in icons]):
+            icons -= application_icons_alone
         new_name = f"{workspace.num}:{'|'.join(icons)}"
         if workspace.name != new_name:
             logger.debug(f"rename workspace {workspace.num}")
@@ -97,17 +107,37 @@ def workspace_rename(i3, event):
     i3.command(';'.join(commands))
 
 
+def autosplit(i3, event):
+    """Split on shortest side."""
+    window = event.container
+    if not window.rect:
+        return
+    if window.layout in {'stacked', 'tabbed'}:
+        return
+    height = window.rect.height
+    width = window.rect.width
+    if height > width:
+        layout = 'vertical'
+    else:
+        layout = 'horizontal'
+    window.command(f"split {layout}")
+
+
 if __name__ == "__main__":
     options = parse_args()
     setup_logging(options)
 
     try:
-        i3 = i3ipc.Connection()
+        i3 = Connection()
 
         # Rename workspace depending on what is inside
-        for event in ('window::move', 'window::new',
-                      'window::title', 'window::close'):
+        for event in {Event.WINDOW_MOVE,
+                      Event.WINDOW_NEW,
+                      Event.WINDOW_CLOSE}:
             i3.on(event, workspace_rename)
+
+        # Autosplit
+        i3.on(Event.WINDOW_FOCUS, autosplit)
 
         i3.main()
     except Exception as e:

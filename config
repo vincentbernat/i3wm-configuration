@@ -121,7 +121,7 @@ bindsym $mod+8 workspace number $ws8
 bindsym $mod+9 workspace number $ws9
 bindsym $mod+0 workspace number $ws10
 bindsym $mod+Tab workspace back_and_forth
-bindsym $mod+n exec i3-msg -t send_tick new-workspace
+bindsym $mod+n exec --no-startup-id i3-msg -t send_tick new-workspace
 
 # move focused container to workspace
 bindsym $mod+Shift+1 move container to workspace number $ws1
@@ -135,7 +135,7 @@ bindsym $mod+Shift+8 move container to workspace number $ws8
 bindsym $mod+Shift+9 move container to workspace number $ws9
 bindsym $mod+Shift+0 move container to workspace number $ws10
 bindsym $mod+Shift+o move workspace to output right
-bindsym $mod+Shift+n exec i3-msg -t send_tick move-to-new-workspace
+bindsym $mod+Shift+n exec --no-startup-id i3-msg -t send_tick move-to-new-workspace
 
 # reload/restart
 bindsym $mod+Shift+c reload
@@ -156,5 +156,10 @@ no_focus [class="zoom" window_type="dialog"]
 for_window [class="Shadow"] fullscreen enable
 for_window [window_role="PictureInPicture"] floating enable
 
-# start stuff
+# Start stuff
 exec_always --no-startup-id systemctl --user start --no-block i3-session.target
+exec --no-startup-id i3-msg "\
+  workspace number 1; exec emacs; exec $term; exec $term; \
+  workspace number 2; layout tabbed; exec firefox; \
+  workspace number 3; exec spotify; \
+  workspace number 1"

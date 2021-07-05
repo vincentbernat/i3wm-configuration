@@ -8,7 +8,7 @@ set $mod Mod4
 set $term vbeterm
 set $mediaplayer spotify
 
-font pango:Terminus 9
+font pango:Iosevka 9
 
 # Style and colors
 default_border pixel 3

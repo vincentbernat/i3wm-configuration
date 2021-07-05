@@ -1,6 +1,7 @@
 [Unit]
 Description=i3 companion
 PartOf=graphical-session.target
+Requires=i3.socket
 
 [Service]
 ExecStart=%h/.config/i3/bin/i3-companion

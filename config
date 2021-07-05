@@ -83,10 +83,9 @@ bindsym $mod+Ctrl+$right resize grow width 10 px or 2 ppt
 bindsym $mod+f fullscreen toggle
 bindsym $mod+Shift+f fullscreen toggle global
 
-# change container layout (stacked, tabbed, toggle split)
-bindsym $mod+s layout stacking
-bindsym $mod+w layout tabbed
-bindsym $mod+e layout toggle split
+# change container layout (stacked, toggle split)
+bindsym $mod+e layout stacking
+bindsym $mod+w layout toggle split
 
 # toggle tiling / floating
 bindsym $mod+Shift+space floating toggle

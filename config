@@ -14,7 +14,7 @@ font pango:Terminus 9
 default_border pixel 3
 default_floating_border pixel 3
 # class                 border  backgr. text    indicator child_border
-client.focused          #ffaf00 #cc5c00 #ffffff #ffcf00   #cc5c00
+client.focused          #ffaf00 #cc5c00 #ffffff #ffdf11   #cc5c00
 client.focused_inactive #333333 #5f676a #ffffff #484e50   #5f676a
 client.unfocused        #333333 #222222 #888888 #292d2e   #222222
 client.urgent           #2f343a #d00000 #ffffff #d00000   #d00000

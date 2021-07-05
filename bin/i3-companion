@@ -110,6 +110,43 @@ def workspace_rename(i3, event):
     i3.command(';'.join(commands))
 
 
+workspace_layouts = {
+    "splith": "",
+    "splitv": "",
+    "stacked": "",
+    "tabbed": "",
+}
+
+
+def workspace_layout(i3, event):
+    uid = os.getuid()
+    if hasattr(event, 'payload') and event.payload != 'ws-layout-change':
+        return
+    workspaces = i3.get_tree().workspaces()
+    for w in i3.get_workspaces():
+        if not w.visible:
+            continue
+        layout = None
+        for ow in workspaces:
+            if w.num == ow.num:
+                layout = workspace_layouts.get(ow.layout, "?").encode('utf-8')
+                break
+        if layout is None:
+            continue
+        logger.debug(f"workspace {w.num} layout {ow.layout}")
+        fifo = f"/run/user/{uid}/i3/ws-{w.output}"
+        try:
+            fd = os.open(fifo, os.O_WRONLY | os.O_NONBLOCK)
+            try:
+                os.write(fd, layout + b"\n")
+            finally:
+                os.close(fd)
+        except (FileNotFoundError, BrokenPipeError, OSError):
+            logger.warning(f"workspace {w.num} layout {ow.layout} "
+                           f"but not able to send to {fifo}")
+            continue
+
+
 if __name__ == "__main__":
     options = parse_args()
     setup_logging(options)
@@ -122,6 +159,12 @@ if __name__ == "__main__":
                       Event.WINDOW_NEW,
                       Event.WINDOW_CLOSE}:
             i3.on(event, workspace_rename)
+
+        # Update current workspace layout
+        for event in {Event.WORKSPACE_INIT,
+                      Event.WORKSPACE_FOCUS,
+                      Event.TICK}:
+            i3.on(event, workspace_layout)
 
         i3.main()
     except Exception as e:

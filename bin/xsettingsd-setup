@@ -42,4 +42,4 @@ xrandr --dpi $dpi
 } > ~/.xsettingsd
 
 # Restart polybar to take changes
-systemctl --user restart --no-block polybar.service
+systemctl --user try-restart --no-block polybar.service

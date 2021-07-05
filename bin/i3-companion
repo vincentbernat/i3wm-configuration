@@ -113,19 +113,24 @@ def workspace_rename(i3, event):
 
 
 def new_workspace(i3, event):
-    """Create a new workspace."""
+    """Create a new workspace and optionally move a window to it."""
     if event.payload not in {"new-workspace", "move-to-new-workspace"}:
         return
 
+    # Get the currently focused window
     if event.payload == "move-to-new-workspace":
         current = i3.get_tree().find_focused()
+        if not current:
+            return
 
+    # Create a new workspace
     workspace_nums = {w.num for w in i3.get_workspaces()}
     max_num = max(workspace_nums)
     available = (set(range(1, max_num + 2)) - workspace_nums).pop()
     logger.info(f'create new workspace number {available}')
     i3.command(f'workspace number "{available}"')
 
+    # Move the window to this workspace
     if event.payload == "move-to-new-workspace":
         current.command(f'move container to workspace number "{available}"')
 

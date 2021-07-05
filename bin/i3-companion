@@ -55,10 +55,12 @@ def setup_logging(options):
 # See https://fontawesome.com/v5.15/icons
 application_icons = {
     "chromium": "",
+    "discord": "",
     "emacs": "",
     "firefox": "",
     "gimp": "",
     "google-chrome": "",
+    "signal": "",
     "snes9x-gtk": "",
     "spotify": "",
     "steam": "",

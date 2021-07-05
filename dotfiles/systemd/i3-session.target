@@ -1,0 +1,7 @@
+[Unit]
+Description=i3 session
+BindsTo=graphical-session.target
+Wants=wallpaper.service
+Wants=wallpaper.timer
+Wants=polybar.service
+Wants=i3-companion.service

@@ -1,7 +1,0 @@
-[Unit]
-Description=i3 window manager
-PartOf=graphical-session.target
-
-[Socket]
-ListenStream=%t/i3.sock
-ExecStartPost=/bin/systemctl --user set-environment I3SOCK=%t/i3.sock

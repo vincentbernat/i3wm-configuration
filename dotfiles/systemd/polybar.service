@@ -1,7 +1,6 @@
 [Unit]
 Description=Status bar for i3
 PartOf=graphical-session.target
-Requires=i3.socket
 
 [Service]
 ExecStart=%h/.config/i3/bin/polybar

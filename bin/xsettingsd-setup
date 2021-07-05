@@ -34,7 +34,7 @@ xrandr --dpi $dpi
 
 # Build xsettingsd
 {
-    cat  ~/.config/i3/xsettingsd
+    cat  ~/.config/i3/dotfiles/xsettingsd
     echo Xft/DPI $(( $dpi*1024 ))
     echo Xft/RGBA \"$( [ $dpi -gt 144 ] && echo none || echo rgb )\"
     echo Gdk/WindowScalingFactor $(( $dpi/96 ))

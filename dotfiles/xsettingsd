@@ -1,4 +1,4 @@
-# Before modifying, also check rc/appearance.lua
+# Used by xsettingsd-setup
 Xft/Antialias 1
 Xft/Hinting 1
 Xft/HintStyle "hintslight"

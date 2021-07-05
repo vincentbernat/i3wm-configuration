@@ -58,13 +58,15 @@ application_icons = {
     "discord": "",
     "emacs": "",
     "firefox": "",
-    "gimp": "",
+    "gimp": "",
     "google-chrome": "",
+    "inkscape": "",
     "signal": "",
     "snes9x-gtk": "",
     "spotify": "",
     "steam": "",
     "vbeterm": "",
+    "zathura": "",
     "zoom": "",
     "NOMATCH": ""
 }

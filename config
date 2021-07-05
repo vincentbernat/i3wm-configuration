@@ -42,7 +42,7 @@ mode "mediaplayer" {
   bindsym Escape mode "default"
   bindsym Return mode "default"
 }
-bindsym $mod+m mode "mediaplayer"
+bindsym $mod+s mode "mediaplayer"
 
 # Brightness
 bindsym XF86MonBrightnessUp exec --no-startup-id brightnessctl set +5%

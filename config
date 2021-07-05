@@ -74,10 +74,10 @@ bindsym $mod+Shift+$right move right
 bindsym $mod+o            move container to output right
 
 # resize focused window
-bindsym $mod+Ctrl+$left  resize shrink width 10 px or 2 ppt
-bindsym $mod+Ctrl+$down  resize grow height 10 px or 2 ppt
-bindsym $mod+Ctrl+$up    resize shrink height 10 px or 2 ppt
-bindsym $mod+Ctrl+$right resize grow width 10 px or 2 ppt
+bindsym $mod+Ctrl+$left  resize shrink width 10 px or 4 ppt
+bindsym $mod+Ctrl+$down  resize grow height 10 px or 4 ppt
+bindsym $mod+Ctrl+$up    resize shrink height 10 px or 4 ppt
+bindsym $mod+Ctrl+$right resize grow width 10 px or 4 ppt
 
 # enter fullscreen mode for the focused container
 bindsym $mod+f fullscreen toggle

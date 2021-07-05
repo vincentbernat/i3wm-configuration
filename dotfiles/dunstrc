@@ -4,7 +4,7 @@
     follow = none
 
     # Appearance
-    geometry = "400x7-30+30"
+    geometry = "400x7-15+15"
     indicate_hidden = yes
     shrink = no
     notification_height = 0

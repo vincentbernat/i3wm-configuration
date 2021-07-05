@@ -63,6 +63,7 @@ application_icons = {
     "spotify": "",
     "steam": "",
     "vbeterm": "",
+    "zoom": "",
     "NOMATCH": ""
 }
 application_icons_alone = {

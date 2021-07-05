@@ -112,6 +112,18 @@ def workspace_rename(i3, event):
     i3.command(';'.join(commands))
 
 
+def new_workspace(i3, event):
+    """Create a new workspace."""
+    if event.payload != "new-workspace":
+        return
+
+    workspace_nums = {w.num for w in i3.get_workspaces()}
+    max_num = max(workspace_nums)
+    available = (set(range(1, max_num + 2)) - workspace_nums).pop()
+    logger.info(f'create new workspace number {available}')
+    i3.command(f'workspace number "{available}"')
+
+
 if __name__ == "__main__":
     options = parse_args()
     setup_logging(options)
@@ -124,6 +136,9 @@ if __name__ == "__main__":
                       Event.WINDOW_NEW,
                       Event.WINDOW_CLOSE}:
             i3.on(event, workspace_rename)
+
+        # Create a new workspace
+        i3.on(Event.TICK, new_workspace)
 
         i3.main()
     except Exception as e:

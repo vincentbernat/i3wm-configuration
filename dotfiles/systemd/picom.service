@@ -7,5 +7,6 @@ ExecStart=/usr/bin/picom --backend glx \
                          --xrender-sync-fence \
                          --vsync \
                          --inactive-opacity 0.85 \
-                         --opacity-rule 100:fullscreen
+                         --opacity-rule 100:fullscreen \
+                         --opacity-rule 100:override_redirect
 Restart=on-failure

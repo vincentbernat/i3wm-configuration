@@ -153,4 +153,4 @@ for_window [instance=$quake] move window to scratchpad
 bindsym $mod+grave exec ~/.config/i3/bin/quake --name $quake --term $term
 
 # start stuff
-exec_always --no-startup-id systemctl --user start --no-block i3-session.target
+exec_always --no-startup-id systemctl --user start --no-block wallpaper.service

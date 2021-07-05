@@ -158,6 +158,7 @@ bindsym $mod+grave exec ~/.config/i3/bin/quake --name $quake --term $term
 no_focus [class="zoom" window_type="dialog"]
 for_window [class="Shadow"] fullscreen enable
 for_window [window_role="PictureInPicture"] floating enable
+for_window [class="Spotify"] move to workspace number 3
 
 # Start stuff
 exec_always --no-startup-id systemctl --user start --no-block i3-session.target

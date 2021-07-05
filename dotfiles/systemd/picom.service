@@ -3,10 +3,5 @@ Description=Compositor for X11
 PartOf=graphical-session.target
 
 [Service]
-ExecStart=/usr/bin/picom --backend glx \
-                         --xrender-sync-fence \
-                         --vsync \
-                         --inactive-opacity 0.85 \
-                         --opacity-rule 100:fullscreen \
-                         --opacity-rule 100:override_redirect
+ExecStart=/usr/bin/picom
 Restart=on-failure

@@ -107,22 +107,6 @@ def workspace_rename(i3, event):
     i3.command(';'.join(commands))
 
 
-def autosplit(i3, event):
-    """Split on shortest side."""
-    window = event.container
-    if not window.rect:
-        return
-    if window.layout in {'stacked', 'tabbed'}:
-        return
-    height = window.rect.height
-    width = window.rect.width
-    if height > width:
-        layout = 'vertical'
-    else:
-        layout = 'horizontal'
-    window.command(f"split {layout}")
-
-
 if __name__ == "__main__":
     options = parse_args()
     setup_logging(options)
@@ -135,9 +119,6 @@ if __name__ == "__main__":
                       Event.WINDOW_NEW,
                       Event.WINDOW_CLOSE}:
             i3.on(event, workspace_rename)
-
-        # Autosplit
-        i3.on(Event.WINDOW_FOCUS, autosplit)
 
         i3.main()
     except Exception as e:

@@ -144,9 +144,15 @@ bindsym XF86ScreenSaver exec --no-startup-id xset s activate
 bindsym $mod+Delete exec --no-startup-id xset s activate
 bindsym Print exec --no-startup-id "flameshot gui -r | xclip -selection clipboard -t image/png"
 
+# Quake window
 set $quake "QuakeConsoleNeedsUniqueName"
 for_window [instance=$quake] move window to scratchpad
 bindsym $mod+grave exec ~/.config/i3/bin/quake --name $quake --term $term
+
+# Random rules
+no_focus [class="zoom" window_type="dialog"]
+for_window [class="Shadow"] fullscreen enable
+for_window [window_role="PictureInPicture"] floating enable
 
 # start stuff
 exec_always --no-startup-id systemctl --user start --no-block i3-session.target

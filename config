@@ -44,6 +44,10 @@ mode "mediaplayer" {
 }
 bindsym $mod+m mode "mediaplayer"
 
+# Brightness
+bindsym XF86MonBrightnessUp exec --no-startup-id brightnessctl set +5%
+bindsym XF86MonBrightnessDown exec --no-startup-id brightnessctl set 5%-
+
 # use Mouse+$mod to drag floating windows to their wanted position
 floating_modifier $mod
 

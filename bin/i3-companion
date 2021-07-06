@@ -12,9 +12,10 @@ import logging.handlers
 import os
 import sys
 import re
-import time
+import asyncio
 
-from i3ipc import Connection, Event
+from i3ipc.aio import Connection
+from i3ipc import Event
 
 logger = logging.getLogger(os.path.splitext(os.path.basename(sys.argv[0]))[0])
 
@@ -93,9 +94,10 @@ def application_icon(window):
     return application_icons["NOMATCH"]
 
 
-def workspace_rename(i3, event):
+async def workspace_rename(i3, event):
     """Rename workspaces using icons to match what's inside it."""
-    workspaces = i3.get_tree().workspaces()
+    tree = await i3.get_tree()
+    workspaces = tree.workspaces()
     commands = []
     for workspace in workspaces:
         icons = set()
@@ -110,33 +112,35 @@ def workspace_rename(i3, event):
             logger.debug(f"rename workspace {workspace.num}")
             command = f'rename workspace "{workspace.name}" to "{new_name}"'
             commands.append(command)
-    i3.command(';'.join(commands))
+    await i3.command(';'.join(commands))
 
 
-def new_workspace(i3, event):
+async def new_workspace(i3, event):
     """Create a new workspace and optionally move a window to it."""
     if event.payload not in {"new-workspace", "move-to-new-workspace"}:
         return
 
     # Get the currently focused window
     if event.payload == "move-to-new-workspace":
-        current = i3.get_tree().find_focused()
+        tree = await i3.get_tree()
+        current = tree.find_focused()
         if not current:
             return
 
     # Create a new workspace
-    workspace_nums = {w.num for w in i3.get_workspaces()}
+    workspaces = await i3.get_workspaces()
+    workspace_nums = {w.num for w in workspaces}
     max_num = max(workspace_nums)
     available = (set(range(1, max_num + 2)) - workspace_nums).pop()
     logger.info(f'create new workspace number {available}')
-    i3.command(f'workspace number "{available}"')
+    await i3.command(f'workspace number "{available}"')
 
     # Move the window to this workspace
     if event.payload == "move-to-new-workspace":
-        current.command(f'move container to workspace number "{available}"')
+        await current.command(f'move container to workspace number "{available}"')
 
 
-def quake_console(i3, event):
+async def quake_console(i3, event):
     """Spawn a quake console or toggle an existing one."""
     if type(event.payload) is not str or \
        not event.payload.startswith("quake-console:"):
@@ -148,18 +152,21 @@ def quake_console(i3, event):
         logger.warn(f"unable to parse payload {event.payload}: {exc}")
         return
 
-    term = i3.get_tree().find_instanced(term_name)
+    tree = await i3.get_tree()
+    term = tree.find_instanced(term_name)
     if not term:
-        i3.command(f'exec {term_exec} --name {term_name}')
+        await i3.command(f'exec {term_exec} --name {term_name}')
         tries = 5
         while not term and tries:
-            term = i3.get_tree().find_instanced(term_name)
-            time.sleep(0.2)
+            tree = await i3.get_tree()
+            term = tree.find_instanced(term_name)
+            await asyncio.sleep(0.2)
             tries -= 1
     if not term:
         raise RuntimeError("unable to spawn terminal")
     term = term[0]
-    workspace = [ws for ws in i3.get_workspaces() if ws.focused][0]
+    workspaces = await i3.get_workspaces()
+    workspace = [ws for ws in workspaces if ws.focused][0]
     ws_x = workspace.rect.x
     ws_y = workspace.rect.y
     ws_width = workspace.rect.width
@@ -174,7 +181,29 @@ def quake_console(i3, event):
                'scratchpad show,'
                f'move absolute position {posx}px {posy}px')
     logger.debug(f"QuakeConsole: {command}")
-    i3.command(command)
+    await i3.command(command)
+
+
+async def main(options):
+    i3 = await Connection().connect()
+
+    # Rename workspace depending on what is inside
+    for event in {Event.WINDOW_MOVE,
+                  Event.WINDOW_NEW,
+                  Event.WINDOW_CLOSE}:
+        i3.on(event, workspace_rename)
+
+    # Create a new workspace or move to a new workspace
+    i3.on(Event.TICK, new_workspace)
+
+    # Create/display a quake console
+    i3.on(Event.TICK, quake_console)
+
+    # Log output event
+    i3.on(Event.OUTPUT,
+          lambda _, event: logger.info(f"Output event: {event.ipc_data}"))
+
+    await i3.main()
 
 
 if __name__ == "__main__":
@@ -182,25 +211,7 @@ if __name__ == "__main__":
     setup_logging(options)
 
     try:
-        i3 = Connection()
-
-        # Rename workspace depending on what is inside
-        for event in {Event.WINDOW_MOVE,
-                      Event.WINDOW_NEW,
-                      Event.WINDOW_CLOSE}:
-            i3.on(event, workspace_rename)
-
-        # Create a new workspace or move to a new workspace
-        i3.on(Event.TICK, new_workspace)
-
-        # Create/display a quake console
-        i3.on(Event.TICK, quake_console)
-
-        # Log output event
-        i3.on(Event.OUTPUT,
-              lambda _, event: logger.info(f"Output event: {event.ipc_data}"))
-
-        i3.main()
+        asyncio.get_event_loop().run_until_complete(main(options))
     except Exception as e:
         logger.exception("%s", e)
         sys.exit(1)

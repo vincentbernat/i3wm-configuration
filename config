@@ -164,6 +164,6 @@ for_window [class="Spotify"] move to workspace number 3
 exec_always --no-startup-id systemctl --user start --no-block i3-session.target
 exec --no-startup-id i3-msg "\
   workspace number 1; append_layout ~/.config/i3/ws-emacs.json; exec emacs; exec $term; exec $term; \
-  workspace number 2; layout tabbed; exec firefox; \
+  workspace number 2; append_layout ~/.config/i3/ws-firefox.json; exec firefox; \
   workspace number 3; exec spotify; \
   workspace number 1"

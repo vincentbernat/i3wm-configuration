@@ -196,6 +196,10 @@ if __name__ == "__main__":
         # Create/display a quake console
         i3.on(Event.TICK, quake_console)
 
+        # Log output event
+        i3.on(Event.OUTPUT,
+              lambda _, event: logger.info(f"Output event: {event.ipc_data}"))
+
         i3.main()
     except Exception as e:
         logger.exception("%s", e)

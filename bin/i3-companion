@@ -12,6 +12,7 @@ import logging.handlers
 import os
 import sys
 import re
+import time
 
 from i3ipc import Connection, Event
 
@@ -135,6 +136,47 @@ def new_workspace(i3, event):
         current.command(f'move container to workspace number "{available}"')
 
 
+def quake_console(i3, event):
+    """Spawn a quake console or toggle an existing one."""
+    if type(event.payload) is not str or \
+       not event.payload.startswith("quake-console:"):
+        return
+    try:
+        _, term_exec, term_name, height = event.payload.split(":")
+        height = float(height)
+    except Exception as exc:
+        logger.warn(f"unable to parse payload {event.payload}: {exc}")
+        return
+
+    term = i3.get_tree().find_instanced(term_name)
+    if not term:
+        i3.command(f'exec {term_exec} --name {term_name}')
+        tries = 5
+        while not term and tries:
+            term = i3.get_tree().find_instanced(term_name)
+            time.sleep(0.2)
+            tries -= 1
+    if not term:
+        raise RuntimeError("unable to spawn terminal")
+    term = term[0]
+    workspace = [ws for ws in i3.get_workspaces() if ws.focused][0]
+    ws_x = workspace.rect.x
+    ws_y = workspace.rect.y
+    ws_width = workspace.rect.width
+    ws_height = workspace.rect.height
+    width = ws_width
+    height = int(ws_height * height)
+    posx = ws_x
+    posy = ws_y
+    command = (f'[instance={term_name}] '
+               'border none,'
+               f'resize set {width} px {height} px,'
+               'scratchpad show,'
+               f'move absolute position {posx}px {posy}px')
+    logger.debug(f"QuakeConsole: {command}")
+    i3.command(command)
+
+
 if __name__ == "__main__":
     options = parse_args()
     setup_logging(options)
@@ -150,6 +192,9 @@ if __name__ == "__main__":
 
         # Create a new workspace or move to a new workspace
         i3.on(Event.TICK, new_workspace)
+
+        # Create/display a quake console
+        i3.on(Event.TICK, quake_console)
 
         i3.main()
     except Exception as e:

@@ -152,7 +152,7 @@ bindsym Print exec --no-startup-id "flameshot gui -r | xclip -selection clipboar
 # Quake window
 set $quake "QuakeConsoleNeedsUniqueName"
 for_window [instance=$quake title=$term] move window to scratchpad
-bindsym $mod+grave exec ~/.config/i3/bin/quake --name $quake --term $term
+bindsym $mod+grave exec --no-startup-id i3-msg -t send_tick "quake-console:$term:$quake:0.3"
 
 # Random rules
 no_focus [class="zoom" window_type="dialog"]

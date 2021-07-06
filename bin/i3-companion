@@ -104,7 +104,7 @@ def workspace_rename(i3, event):
                 icons.add(icon)
         if any([i not in application_icons_alone for i in icons]):
             icons -= application_icons_alone
-        new_name = f"{workspace.num}:{'|'.join(icons)}"
+        new_name = f"{workspace.num}:{'|'.join(icons)}".rstrip(":")
         if workspace.name != new_name:
             logger.debug(f"rename workspace {workspace.num}")
             command = f'rename workspace "{workspace.name}" to "{new_name}"'

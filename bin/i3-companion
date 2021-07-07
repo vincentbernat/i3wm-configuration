@@ -15,6 +15,7 @@ import re
 import asyncio
 import shlex
 import subprocess
+import html
 
 from i3ipc.aio import Connection
 from i3ipc import Event
@@ -186,6 +187,41 @@ async def quake_console(i3, event):
     await i3.command(command)
 
 
+async def window_info(i3, event):
+    """Show information about the focused window."""
+    if event.payload != "info":
+        return
+    tree = await i3.get_tree()
+    window = tree.find_focused()
+    if not window:
+        return
+    logger.info(f"window raw information: {window.ipc_data}")
+    summary = f"Information about window {window.window}"
+    r = window.rect
+    w = window
+    info = {
+        "name": w.name,
+        "title": w.window_title,
+        "class": w.window_class,
+        "instance": w.window_instance,
+        "role": w.window_role,
+        "sticky": w.sticky,
+        "floating": w.floating,
+        "geometry": f"{r.width}×{r.height}+{r.x}+{r.y}",
+        "layout": w.layout,
+        "marks": ", ".join(w.marks) or "(none)"
+    }
+    body = "\n".join((f"<tt>{k:10}</tt> {html.escape(str(v))}"
+                      for k, v in info.items()
+                      if v is not None))
+    proc = await asyncio.create_subprocess_exec(
+        "notify-send",
+        "-i", "system-search",
+        summary,
+        body)
+    await proc.communicate()
+
+
 output_update_running = None
 async def output_update(i3, event):
     """React to a XRandR change."""
@@ -228,6 +264,9 @@ async def main(options):
 
     # Create/display a quake console
     i3.on(Event.TICK, quake_console)
+
+    # Get information about focused window
+    i3.on(Event.TICK, window_info)
 
     # React to XRandR changes
     i3.on(Event.OUTPUT, output_update)

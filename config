@@ -154,6 +154,9 @@ set $quake "QuakeConsoleNeedsUniqueName"
 for_window [instance=$quake title=$term] move window to scratchpad
 bindsym $mod+grave exec --no-startup-id i3-msg -t send_tick "quake-console:$term:$quake:0.3"
 
+# Get info about an app (like xprop)
+bindsym $mod+i exec --no-startup-id i3-msg -t send_tick "info"
+
 # Random rules
 no_focus [class="zoom" window_type="dialog"]
 for_window [class="Shadow"] fullscreen enable

@@ -16,6 +16,7 @@ import asyncio
 import shlex
 import subprocess
 import html
+import functools
 
 from i3ipc.aio import Connection
 from i3ipc import Event
@@ -26,6 +27,18 @@ logger = logging.getLogger(os.path.splitext(os.path.basename(sys.argv[0]))[0])
 class CustomFormatter(argparse.RawDescriptionHelpFormatter,
                       argparse.ArgumentDefaultsHelpFormatter):
     pass
+
+
+def on(*events):
+    """Tag events that should be provided to the function."""
+    def decorator(fn):
+        @functools.wraps(fn)
+        def wrapper(*args, **kwargs):
+            return fn(*args, **kwargs)
+        on.functions = getattr(on, "functions", {})
+        on.functions[fn] = events
+        return wrapper
+    return decorator
 
 
 def parse_args(args=sys.argv[1:]):
@@ -97,6 +110,7 @@ def application_icon(window):
     return application_icons["NOMATCH"]
 
 
+@on(Event.WINDOW_MOVE, Event.WINDOW_NEW, Event.WINDOW_CLOSE)
 async def workspace_rename(i3, event):
     """Rename workspaces using icons to match what's inside it."""
     tree = await i3.get_tree()
@@ -118,11 +132,9 @@ async def workspace_rename(i3, event):
     await i3.command(';'.join(commands))
 
 
+@on("new-workspace", "move-to-new-workspace")
 async def new_workspace(i3, event):
     """Create a new workspace and optionally move a window to it."""
-    if event.payload not in {"new-workspace", "move-to-new-workspace"}:
-        return
-
     # Get the currently focused window
     if event.payload == "move-to-new-workspace":
         tree = await i3.get_tree()
@@ -140,14 +152,13 @@ async def new_workspace(i3, event):
 
     # Move the window to this workspace
     if event.payload == "move-to-new-workspace":
-        await current.command(f'move container to workspace number "{available}"')
+        await current.command(f'move container to workspace '
+                              f'number "{available}"')
 
 
+@on("quake-console")
 async def quake_console(i3, event):
     """Spawn a quake console or toggle an existing one."""
-    if type(event.payload) is not str or \
-       not event.payload.startswith("quake-console:"):
-        return
     try:
         _, term_exec, term_name, height = event.payload.split(":")
         height = float(height)
@@ -187,10 +198,9 @@ async def quake_console(i3, event):
     await i3.command(command)
 
 
+@on("info")
 async def window_info(i3, event):
     """Show information about the focused window."""
-    if event.payload != "info":
-        return
     tree = await i3.get_tree()
     window = tree.find_focused()
     if not window:
@@ -250,28 +260,28 @@ def output_update_now():
             logger.warning(f"{cmd} exited with {proc.returncode}")
 
 
+async def tick_event(i3, event):
+    """Process a TICK event."""
+    if type(event.payload) is not str:
+        return
+    kind = event.payload.split(":")[0]
+    for fn, events in on.functions.items():
+        for e in events:
+            if e == kind:
+                await fn(i3, event)
+
+
 async def main(options):
     i3 = await Connection().connect()
 
-    # Rename workspace depending on what is inside
-    for event in {Event.WINDOW_MOVE,
-                  Event.WINDOW_NEW,
-                  Event.WINDOW_CLOSE}:
-        i3.on(event, workspace_rename)
-
-    # Create a new workspace or move to a new workspace
-    i3.on(Event.TICK, new_workspace)
-
-    # Create/display a quake console
-    i3.on(Event.TICK, quake_console)
-
-    # Get information about focused window
-    i3.on(Event.TICK, window_info)
-
-    # React to XRandR changes
-    i3.on(Event.OUTPUT, output_update)
+    for fn, events in on.functions.items():
+        for event in events:
+            if isinstance(event, Event):
+                i3.on(event, fn)
+    i3.on(Event.TICK, tick_event)
 
     await i3.main()
+
 
 if __name__ == "__main__":
     options = parse_args()

@@ -237,6 +237,7 @@ async def window_info(i3, event):
         "class": w.window_class,
         "instance": w.window_instance,
         "role": w.window_role,
+        "type": w.ipc_data['window_type'],
         "sticky": w.sticky,
         "floating": w.floating,
         "geometry": f"{r.width}×{r.height}+{r.x}+{r.y}",

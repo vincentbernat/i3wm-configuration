@@ -96,6 +96,16 @@ async def workspace_rename(i3, event):
     await i3.command(';'.join(commands))
 
 
+async def _new_workspace(i3):
+    workspaces = await i3.get_workspaces()
+    workspace_nums = {w.num for w in workspaces}
+    max_num = max(workspace_nums)
+    available = (set(range(1, max_num + 2)) - workspace_nums).pop()
+    logger.info(f'create new workspace number {available}')
+    await i3.command(f'workspace number "{available}"')
+    return available
+
+
 @on("new-workspace", "move-to-new-workspace")
 async def new_workspace(i3, event):
     """Create a new workspace and optionally move a window to it."""
@@ -106,18 +116,63 @@ async def new_workspace(i3, event):
         if not current:
             return
 
-    # Create a new workspace
-    workspaces = await i3.get_workspaces()
-    workspace_nums = {w.num for w in workspaces}
-    max_num = max(workspace_nums)
-    available = (set(range(1, max_num + 2)) - workspace_nums).pop()
-    logger.info(f'create new workspace number {available}')
-    await i3.command(f'workspace number "{available}"')
+    num = await _new_workspace(i3)
 
     # Move the window to this workspace
     if event.payload == "move-to-new-workspace":
         await current.command(f'move container to workspace '
-                              f'number "{available}"')
+                              f'number "{num}"')
+
+
+exclusive_apps = {
+    "emacs",
+    "firefox"
+}
+intrusive_apps = {
+    "vbeterm"
+}
+
+@on(Event.WINDOW_NEW)
+async def worksplace_exclusive(i3, event):
+    """Move new windows on a new workspace instead of sharing a workspace
+    with an exclusive app."""
+    w = event.container
+
+    def can_intrude(w):
+        """Can this new window intrude any workspace?"""
+        if w.floating in {"auto_on", "user_on"}:
+            return True
+        if w.ipc_data['window_type'] not in {"normal", "splash"}:
+            return True
+        if w.sticky:
+            return True
+        ids = {s.lower()
+               for s in {w.name, w.window_class, w.window_instance}}
+        if ids.intersection(intrusive_apps):
+            return True
+
+    # Can the new window just intrude?
+    if can_intrude(w):
+        logger.debug("window {w.name} can intrude")
+        return
+
+    # Does the current workspace contains an exclusive app?
+    tree = await i3.get_tree()
+    workspace = tree.find_focused().workspace()
+    if not workspace:
+        return
+    ids = {s.lower()
+           for w in workspace.leaves()
+           for s in {w.name, w.window_class, w.window_instance}}
+    exclusives = ids.intersection(exclusive_apps)
+    if not exclusives:
+        logger.debug("no exclusive app, {w.name} can go there")
+        return
+
+    # Create a new workspace and move the window here
+    num = await _new_workspace(i3)
+    logger.info(f'move window {w.name} to workspace {num}')
+    await w.command(f'move container to workspace number "{num}"')
 
 
 @on("quake-console")

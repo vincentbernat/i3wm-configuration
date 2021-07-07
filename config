@@ -158,7 +158,7 @@ bindsym $mod+grave exec --no-startup-id i3-msg -t send_tick "quake-console:$term
 bindsym $mod+i exec --no-startup-id i3-msg -t send_tick "info"
 
 # Random rules
-no_focus [class="zoom" window_type="dialog"]
+no_focus [window_type="splash"]
 for_window [class="Shadow"] fullscreen enable
 for_window [window_role="PictureInPicture"] floating enable
 for_window [class="Spotify"] move to workspace number 3

@@ -197,6 +197,9 @@ async def window_info(i3, event):
 
 
 output_update_running = None
+
+
+@on(Event.OUTPUT)
 async def output_update(i3, event):
     """React to a XRandR change."""
     global output_update_running

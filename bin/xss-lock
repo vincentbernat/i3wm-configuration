@@ -40,7 +40,9 @@ case "$1" in
         # First, pause any music player
         playerctl -a pause
         # Then, lock screen
+        dunstctl set-paused true
         i3lock -n -e -i $HOME/.cache/i3/current-wallpaper.png -t -f
+        dunstctl set-paused false
         echo "lock: unlock screen"
         ;;
 esac

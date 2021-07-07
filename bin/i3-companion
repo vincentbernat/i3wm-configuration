@@ -41,35 +41,6 @@ def on(*events):
     return decorator
 
 
-def parse_args(args=sys.argv[1:]):
-    """Parse arguments."""
-    parser = argparse.ArgumentParser(
-        description=sys.modules[__name__].__doc__,
-        formatter_class=CustomFormatter)
-
-    g = parser.add_mutually_exclusive_group()
-    g.add_argument("--debug", "-d", action="store_true",
-                   default=False,
-                   help="enable debugging")
-    g.add_argument("--silent", "-s", action="store_true",
-                   default=False,
-                   help="don't log")
-
-    return parser.parse_args(args)
-
-
-def setup_logging(options):
-    """Configure logging."""
-    root = logging.getLogger("")
-    root.setLevel(logging.WARNING)
-    logger.setLevel(options.debug and logging.DEBUG or logging.INFO)
-    if not options.silent:
-        ch = logging.StreamHandler()
-        ch.setFormatter(logging.Formatter(
-            "%(levelname)s[%(name)s] %(message)s"))
-        root.addHandler(ch)
-
-
 # See https://fontawesome.com/v5.15/icons
 application_icons = {
     "chromium": "",
@@ -95,27 +66,27 @@ application_icons_alone = {
 }
 
 
-def application_icon(window):
-    """Get application icon for a window."""
-    for attr in ('name',
-                 'window_instance',
-                 'window_class'):
-        name = getattr(window, attr, None)
-        if name is None:
-            continue
-        for k, v in application_icons.items():
-            if re.match(k, name, re.IGNORECASE):
-                logger.debug(f"in {attr}, found '{name}', matching {k}")
-                return v
-    return application_icons["NOMATCH"]
-
-
 @on(Event.WINDOW_MOVE, Event.WINDOW_NEW, Event.WINDOW_CLOSE)
 async def workspace_rename(i3, event):
     """Rename workspaces using icons to match what's inside it."""
     tree = await i3.get_tree()
     workspaces = tree.workspaces()
     commands = []
+
+    def application_icon(window):
+        """Get application icon for a window."""
+        for attr in ('name',
+                     'window_instance',
+                     'window_class'):
+            name = getattr(window, attr, None)
+            if name is None:
+                continue
+            for k, v in application_icons.items():
+                if re.match(k, name, re.IGNORECASE):
+                    logger.debug(f"in {attr}, found '{name}', matching {k}")
+                    return v
+        return application_icons["NOMATCH"]
+
     for workspace in workspaces:
         icons = set()
         for window in workspace.leaves():
@@ -239,53 +210,67 @@ async def output_update(i3, event):
     if output_update_running is not None:
         output_update_running.cancel()
 
+    def output_update_now():
+        """Execute actions to react to XRandR change."""
+        global output_update_running
+        output_update_running = None
+
+        logger.info("XRandR change detected")
+        cmds = (
+            "systemctl --user reload --no-block xsettingsd.service",
+            "systemctl --user start --no-block wallpaper.service",
+        )
+        for cmd in cmds:
+            proc = subprocess.run(shlex.split(cmd))
+            if proc.returncode != 0:
+                logger.warning(f"{cmd} exited with {proc.returncode}")
+
     logger.debug("schedule XRandR change")
     output_update_running = asyncio.get_event_loop().call_later(
         1, output_update_now)
 
 
-def output_update_now():
-    """Execute actions to react to XRandR change."""
-    global output_update_running
-    output_update_running = None
-
-    logger.info("XRandR change detected")
-    cmds = (
-        "systemctl --user reload --no-block xsettingsd.service",
-        "systemctl --user start --no-block wallpaper.service",
-    )
-    for cmd in cmds:
-        proc = subprocess.run(shlex.split(cmd))
-        if proc.returncode != 0:
-            logger.warning(f"{cmd} exited with {proc.returncode}")
-
-
-async def tick_event(i3, event):
-    """Process a TICK event."""
-    if type(event.payload) is not str:
-        return
-    kind = event.payload.split(":")[0]
-    for fn, events in on.functions.items():
-        for e in events:
-            if e == kind:
-                await fn(i3, event)
-
-
 async def main(options):
     i3 = await Connection().connect()
 
+    # Regular events
     for fn, events in on.functions.items():
         for event in events:
             if isinstance(event, Event):
                 i3.on(event, fn)
+
+    # Ticks
+    async def tick_event(i3, event):
+        """Process a TICK event."""
+        if type(event.payload) is not str:
+            return
+        kind = event.payload.split(":")[0]
+        for fn, events in on.functions.items():
+            for e in events:
+                if e == kind:
+                    await fn(i3, event)
     i3.on(Event.TICK, tick_event)
 
     await i3.main()
 
 
 if __name__ == "__main__":
-    options = parse_args()
-    setup_logging(options)
+    # Parse
+    parser = argparse.ArgumentParser(
+        description=sys.modules[__name__].__doc__)
+    parser.add_argument("--debug", "-d", action="store_true",
+                        default=False,
+                        help="enable debugging")
+    options = parser.parse_args()
+
+    # Logging
+    root = logging.getLogger("")
+    root.setLevel(logging.WARNING)
+    logger.setLevel(options.debug and logging.DEBUG or logging.INFO)
+    ch = logging.StreamHandler()
+    ch.setFormatter(logging.Formatter(
+        "%(levelname)s[%(name)s] %(message)s"))
+    root.addHandler(ch)
 
     try:
         asyncio.get_event_loop().run_until_complete(main(options))

@@ -9,5 +9,7 @@ After=ssh-agent.service
 
 [Service]
 ExecStart=/usr/bin/i3
+ExecReload=/usr/bin/i3-msg reload
+ExecReload=/bin/systemctl --user try-restart i3-companion.service
 ExecStopPost=/bin/systemctl --user stop graphical-session.target
 Restart=on-failure

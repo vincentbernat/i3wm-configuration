@@ -1,10 +1,10 @@
 # i3 config file (v4)
 
-set $up k
-set $down j
-set $left h
-set $right l
 set $mod Mod4
+set $up l
+set $down k
+set $left j
+set $right semicolon
 set $term vbeterm
 set $mediaplayer spotify
 

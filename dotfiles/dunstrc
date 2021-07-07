@@ -51,7 +51,7 @@
     icon_position = left
     min_icon_size = 32
     max_icon_size = 32
-    icon_path = /usr/share/icons/hicolor/128x128/status/:/usr/share/icons/hicolor/128x128/devices/:/usr/share/icons/hicolor/128x128/apps/
+    icon_path = /usr/share/icons/Adwaita/64x64/status/:/usr/share/icons/Adwaita/64x64/devices/:/usr/share/icons/Adwaita/64x64/apps/:/usr/share/icons/Adwaita/256x256/legacy/:/usr/share/icons/hicolor/64x64/apps/
 
     # History
     sticky_history = yes

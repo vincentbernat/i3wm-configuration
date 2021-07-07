@@ -13,6 +13,8 @@ import os
 import sys
 import re
 import asyncio
+import shlex
+import subprocess
 
 from i3ipc.aio import Connection
 from i3ipc import Event
@@ -184,6 +186,34 @@ async def quake_console(i3, event):
     await i3.command(command)
 
 
+output_update_running = None
+async def output_update(i3, event):
+    """React to a XRandR change."""
+    global output_update_running
+    if output_update_running is not None:
+        output_update_running.cancel()
+
+    logger.debug("schedule XRandR change")
+    output_update_running = asyncio.get_event_loop().call_later(
+        1, output_update_now)
+
+
+def output_update_now():
+    """Execute actions to react to XRandR change."""
+    global output_update_running
+    output_update_running = None
+
+    logger.info("XRandR change detected")
+    cmds = (
+        "systemctl --user reload --no-block xsettingsd.service",
+        "systemctl --user start --no-block wallpaper.service",
+    )
+    for cmd in cmds:
+        proc = subprocess.run(shlex.split(cmd))
+        if proc.returncode != 0:
+            logger.warning(f"{cmd} exited with {proc.returncode}")
+
+
 async def main(options):
     i3 = await Connection().connect()
 
@@ -199,12 +229,10 @@ async def main(options):
     # Create/display a quake console
     i3.on(Event.TICK, quake_console)
 
-    # Log output event
-    i3.on(Event.OUTPUT,
-          lambda _, event: logger.info(f"Output event: {event.ipc_data}"))
+    # React to XRandR changes
+    i3.on(Event.OUTPUT, output_update)
 
     await i3.main()
-
 
 if __name__ == "__main__":
     options = parse_args()

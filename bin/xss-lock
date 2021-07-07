@@ -37,12 +37,13 @@ case "$1" in
         echo "lock: lock screen (idle: $(xprintidle))"
         # Something may have mendled with screensaver settings
         configure
-        # First, pause any music player
+        # Pause music player and notifications
         playerctl -a pause
-        # Then, lock screen
         dunstctl set-paused true
+        # Then, lock screen
         i3lock -n -e -i $HOME/.cache/i3/current-wallpaper.png -t -f
-        dunstctl set-paused false
         echo "lock: unlock screen"
+        # Resume notifications
+        dunstctl set-paused false
         ;;
 esac

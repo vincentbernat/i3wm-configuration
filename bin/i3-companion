@@ -227,7 +227,7 @@ async def window_info(i3, event):
     if not window:
         return
     logger.info(f"window raw information: {window.ipc_data}")
-    summary = f"Information about window {window.window}"
+    summary = "About focused container"
     r = window.rect
     w = window
     info = {

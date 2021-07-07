@@ -42,6 +42,7 @@ application_icons = {
     "google-chrome": "",
     "inkscape": "",
     "libreoffice": "",
+    "mpv": "",
     "pavucontrol": "",
     "signal": "",
     "snes9x-gtk": "",
@@ -132,6 +133,7 @@ intrusive_apps = {
     "vbeterm"
 }
 
+
 @on(Event.WINDOW_NEW)
 async def worksplace_exclusive(i3, event):
     """Move new windows on a new workspace instead of sharing a workspace
@@ -142,11 +144,11 @@ async def worksplace_exclusive(i3, event):
         """Can this new window intrude any workspace?"""
         if w.floating in {"auto_on", "user_on"}:
             return True
-        if w.ipc_data['window_type'] not in {"normal", "splash"}:
+        if w.ipc_data['window_type'] not in {"normal", "splash", "unknown"}:
             return True
         if w.sticky:
             return True
-        ids = {s.lower()
+        ids = {s is not None and s.lower() or None
                for s in {w.name, w.window_class, w.window_instance}}
         if ids.intersection(intrusive_apps):
             return True
@@ -161,7 +163,7 @@ async def worksplace_exclusive(i3, event):
     workspace = tree.find_focused().workspace()
     if not workspace:
         return
-    ids = {s.lower()
+    ids = {s is not None and s.lower() or None
            for w in workspace.leaves()
            for s in {w.name, w.window_class, w.window_instance}}
     exclusives = ids.intersection(exclusive_apps)

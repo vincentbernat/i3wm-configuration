@@ -164,8 +164,9 @@ async def worksplace_exclusive(i3, event):
     if not workspace:
         return
     ids = {s is not None and s.lower() or None
-           for w in workspace.leaves()
-           for s in {w.name, w.window_class, w.window_instance}}
+           for ow in workspace.leaves()
+           for s in {ow.name, ow.window_class, ow.window_instance}
+           if w.id != ow.id}
     exclusives = ids.intersection(exclusive_apps)
     if not exclusives:
         logger.debug("no exclusive app, {w.name} can go there")

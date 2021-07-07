@@ -87,3 +87,6 @@
     background = "#900000"
     foreground = "#ffffff"
     timeout = 0
+
+[pushback_all]
+fullscreen = pushback

@@ -1,10 +1,6 @@
 #!/usr/bin/python3
 
-"""Personal i3 companion
-
-This script will listen to i3 events and react accordingly.
-
-"""
+"""Personal i3 companion."""
 
 import argparse
 import logging
@@ -22,11 +18,6 @@ from i3ipc.aio import Connection
 from i3ipc import Event
 
 logger = logging.getLogger(os.path.splitext(os.path.basename(sys.argv[0]))[0])
-
-
-class CustomFormatter(argparse.RawDescriptionHelpFormatter,
-                      argparse.ArgumentDefaultsHelpFormatter):
-    pass
 
 
 def on(*events):
@@ -256,8 +247,10 @@ async def main(options):
 
 if __name__ == "__main__":
     # Parse
-    parser = argparse.ArgumentParser(
-        description=sys.modules[__name__].__doc__)
+    description = sys.modules[__name__].__doc__
+    for fn, events in on.functions.items():
+        description += f" {fn.__doc__}"
+    parser = argparse.ArgumentParser(description=description)
     parser.add_argument("--debug", "-d", action="store_true",
                         default=False,
                         help="enable debugging")

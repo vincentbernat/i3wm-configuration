@@ -9,6 +9,6 @@ ExecStart=/usr/bin/mkdir -p %h/.cache/i3
 ExecStart=%h/.config/i3/bin/build-wallpaper --crop \
                                             --directory $WALLPAPER_DIRECTORY \
                                             --target $WALLPAPER_OUTPUT
-ExecStart=/usr/bin/fvwm-root -r $WALLPAPER_OUTPUT
+ExecStart=/usr/bin/hsetroot -center $WALLPAPER_OUTPUT
 Type=oneshot
 RemainAfterExit=false

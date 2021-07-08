@@ -40,6 +40,3 @@ xrandr --dpi $dpi
     echo Gdk/WindowScalingFactor $(( $dpi/96 ))
     echo Gdk/UnscaledDPI $(( $dpi*1024/($dpi/96) ))
 } > ~/.xsettingsd
-
-# Restart polybar to take changes
-systemctl --user try-restart --no-block polybar.service

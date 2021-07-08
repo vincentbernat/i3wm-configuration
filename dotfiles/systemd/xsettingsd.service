@@ -8,4 +8,6 @@ ExecStartPre=%h/.config/i3/bin/xsettingsd-setup
 ExecStart=/usr/bin/xsettingsd -c %h/.xsettingsd
 ExecReload=%h/.config/i3/bin/xsettingsd-setup
 ExecReload=/usr/bin/kill -HUP $MAINPID
+ExecReload=-/usr/bin/i3-cmd restart # restart i3 (it uses Xft.dpi)
+ExecReload=/bin/systemctl --user try-restart polybar.service
 Restart=on-failure

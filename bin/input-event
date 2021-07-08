@@ -22,14 +22,14 @@ printf "input-event: $use: [%3d] $event $name\n" $device
 
 set +x
 case "$event,$use,$(uname -n),$name" in
-    *,XISlaveKeyboard,*,"Topre Corporation Realforce 87")
+    *,XISlaveKeyboard,guybrush,"Topre Corporation Realforce 87")
         xkb default
         for i in $(seq 1 3); do
             sleep 1
             autorandr --load blade && break
         done
         ;;
-    *,XISlaveKeyboard,zoro,"AT Translated Set 2 keyboard")
+    *,XISlaveKeyboard,chocobo,"AT Translated Set 2 keyboard")
         xkb x1gen2
         ;;
     *,XISlaveKeyboard,*,"ThinkPad Extra Buttons")

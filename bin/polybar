@@ -5,10 +5,18 @@ export WLAN=$(nmcli -t device | awk -F: '($2 == "wifi") {print $1; exit}')
 export DPI=$(xrdb -query | sed -nE 's/^Xft\.dpi:\s*//p')
 export HEIGHT=$((20 * DPI / 96))
 
-MONITOR=$(polybar --list-monitors | awk -F: '($0 ~ /primary/) {print $1; exit}') \
-       polybar --reload primary &
-for MONITOR in $(polybar --list-monitors | awk -F: '($0 !~ /primary/) {print $1}'); do
-    export MONITOR
-    polybar --reload secondary &
-done
+NUMS=$(polybar --list-monitors | wc -l)
+PRIMARY=$(polybar --list-monitors | awk -F: '($0 ~ /primary/) {print $1; exit}')
+case $NUMS in
+    1)
+        MONITOR=$PRIMARY polybar --reload alone &
+        ;;
+    *)
+        MONITOR=$PRIMARY polybar --reload primary &
+        for MONITOR in $(polybar --list-monitors | awk -F: '($0 !~ /primary/) {print $1}'); do
+            export MONITOR
+            polybar --reload secondary &
+        done
+        ;;
+esac
 wait

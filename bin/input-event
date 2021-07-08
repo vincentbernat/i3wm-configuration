@@ -42,7 +42,7 @@ case "$event,$use,$(uname -n),$name" in
         xinput set-ptr-feedback $device 30 5 2
         ;;
     *,XISlavePointer,chocobo,"SynPS/2 Synaptics TouchPad")
-        xinput set-props $device "libinput Natural Scrolling Enabled" 1
+        xinput set-prop $device "libinput Natural Scrolling Enabled" 1
         ;;
     *,XISlavePointer,*,"ELAN Touchscreen")
         xinput disable $device

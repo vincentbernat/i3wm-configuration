@@ -4,7 +4,6 @@ PartOf=graphical-session.target
 After=autorandr.service
 After=picom.service
 After=xsettingsd.service
-After=tmux.service
 After=ssh-agent.service
 
 [Service]

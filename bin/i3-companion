@@ -111,7 +111,7 @@ async def _new_workspace(i3):
 async def new_workspace(i3, event):
     """Create a new workspace and optionally move a window to it."""
     # Get the currently focused window
-    if event.payload == "move-to-new-workspace":
+    if event == "move-to-new-workspace":
         tree = await i3.get_tree()
         current = tree.find_focused()
         if not current:
@@ -120,7 +120,7 @@ async def new_workspace(i3, event):
     num = await _new_workspace(i3)
 
     # Move the window to this workspace
-    if event.payload == "move-to-new-workspace":
+    if event == "move-to-new-workspace":
         await current.command(f'move container to workspace '
                               f'number "{num}"')
 
@@ -182,10 +182,10 @@ async def worksplace_exclusive(i3, event):
 async def quake_console(i3, event):
     """Spawn a quake console or toggle an existing one."""
     try:
-        _, term_exec, term_name, height = event.payload.split(":")
+        _, term_exec, term_name, height = event.split(":")
         height = float(height)
     except Exception as exc:
-        logger.warn(f"unable to parse payload {event.payload}: {exc}")
+        logger.warn(f"unable to parse payload {event}: {exc}")
         return
 
     tree = await i3.get_tree()
@@ -295,17 +295,25 @@ async def main(options):
             if isinstance(event, Event):
                 i3.on(event, fn)
 
-    # Ticks
-    async def tick_event(i3, event):
-        """Process a TICK event."""
-        if type(event.payload) is not str:
+    # React to some bindings
+    async def binding_event(i3, event):
+        """Process a binding event."""
+        # We only processes it when it is a nop command and we use
+        # this mechanism as an IPC mechanism. The alternative would be
+        # to use ticks but we would need to spawn an i3-msg process
+        # for that.
+        cmd = event.binding.command
+        if not cmd.startswith("nop "):
             return
-        kind = event.payload.split(":")[0]
+        cmd = cmd[4:].strip('"\'')
+        if not cmd:
+            return
+        kind = cmd.split(":")[0]
         for fn, events in on.functions.items():
             for e in events:
                 if e == kind:
-                    await fn(i3, event)
-    i3.on(Event.TICK, tick_event)
+                    await fn(i3, cmd)
+    i3.on(Event.BINDING, binding_event)
 
     await i3.main()
 

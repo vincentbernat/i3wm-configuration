@@ -123,7 +123,7 @@ bindsym $mod+9 workspace number $ws9
 bindsym $mod+0 workspace number $ws10
 bindsym $mod+Tab workspace back_and_forth
 bindsym $mod+Ctrl+o focus output right
-bindsym $mod+n exec --no-startup-id i3-msg -t send_tick "new-workspace"
+bindsym $mod+n nop "new-workspace"
 focus_wrapping workspace
 
 # move focused container to workspace
@@ -138,7 +138,7 @@ bindsym $mod+Shift+8 move container to workspace number $ws8
 bindsym $mod+Shift+9 move container to workspace number $ws9
 bindsym $mod+Shift+0 move container to workspace number $ws10
 bindsym $mod+Shift+o move workspace to output right
-bindsym $mod+Shift+n exec --no-startup-id i3-msg -t send_tick "move-to-new-workspace"
+bindsym $mod+Shift+n nop "move-to-new-workspace"
 
 # reload/restart
 bindsym $mod+Shift+c reload
@@ -150,12 +150,12 @@ bindsym $mod+Delete exec --no-startup-id xset s activate
 bindsym Print exec --no-startup-id "flameshot gui -r | xclip -selection clipboard -t image/png"
 
 # Quake window
-set $quake "QuakeConsoleNeedsUniqueName"
-for_window [instance=$quake title=$term] move window to scratchpad
-bindsym $mod+grave exec --no-startup-id i3-msg -t send_tick "quake-console:$term:$quake:0.3"
+set $quake QuakeConsoleNeedsUniqueName
+for_window [instance="$quake" title=$term] move window to scratchpad
+bindsym $mod+grave nop "quake-console:$term:$quake:0.3"
 
 # Get info about an app (like xprop)
-bindsym $mod+i exec --no-startup-id i3-msg -t send_tick "info"
+bindsym $mod+i nop "info"
 
 # Random rules
 no_focus [window_type="splash"]

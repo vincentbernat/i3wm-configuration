@@ -22,22 +22,22 @@ client.placeholder      #000000 #0c0c0c #ffffff #000000   #0c0c0c
 client.background       #ffffff
 
 # Audio
-bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ +5%
-bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -5%
-bindsym XF86AudioMute        exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ toggle
-bindsym XF86AudioMicMute     exec --no-startup-id pactl set-source-mute @DEFAULT_SOURCE@ toggle
-bindsym XF86AudioPlay        exec --no-startup-id playerctl -p $mediaplayer play-pause
-bindsym XF86AudioPause       exec --no-startup-id playerctl -p $mediaplayer pause
-bindsym XF86AudioStop        exec --no-startup-id playerctl -p $mediaplayer stop
-bindsym XF86AudioNext        exec --no-startup-id playerctl -p $mediaplayer next
-bindsym XF86AudioPrev        exec --no-startup-id playerctl -p $mediaplayer previous
+bindsym XF86AudioRaiseVolume exec --no-startup-id exec pactl set-sink-volume @DEFAULT_SINK@ +5%
+bindsym XF86AudioLowerVolume exec --no-startup-id exec pactl set-sink-volume @DEFAULT_SINK@ -5%
+bindsym XF86AudioMute        exec --no-startup-id exec pactl set-sink-mute @DEFAULT_SINK@ toggle
+bindsym XF86AudioMicMute     exec --no-startup-id exec pactl set-source-mute @DEFAULT_SOURCE@ toggle
+bindsym XF86AudioPlay        exec --no-startup-id exec playerctl -p $mediaplayer play-pause
+bindsym XF86AudioPause       exec --no-startup-id exec playerctl -p $mediaplayer pause
+bindsym XF86AudioStop        exec --no-startup-id exec playerctl -p $mediaplayer stop
+bindsym XF86AudioNext        exec --no-startup-id exec playerctl -p $mediaplayer next
+bindsym XF86AudioPrev        exec --no-startup-id exec playerctl -p $mediaplayer previous
 mode "mediaplayer" {
-  bindsym "z" exec --no-startup-id playerctl -p $mediaplayer previous; mode "default"
-  bindsym "x" exec --no-startup-id playerctl -p $mediaplayer play-pause; mode "default"
-  bindsym "c" exec --no-startup-id playerctl -p $mediaplayer pause; mode "default"
-  bindsym "v" exec --no-startup-id playerctl -p $mediaplayer stop; mode "default"
-  bindsym "b" exec --no-startup-id playerctl -p $mediaplayer next; mode "default"
-  bindsym "m" exec pavucontrol; mode "default"
+  bindsym "z" exec --no-startup-id exec playerctl -p $mediaplayer previous; mode "default"
+  bindsym "x" exec --no-startup-id exec playerctl -p $mediaplayer play-pause; mode "default"
+  bindsym "c" exec --no-startup-id exec playerctl -p $mediaplayer pause; mode "default"
+  bindsym "v" exec --no-startup-id exec playerctl -p $mediaplayer stop; mode "default"
+  bindsym "b" exec --no-startup-id exec playerctl -p $mediaplayer next; mode "default"
+  bindsym "m" exec exec pavucontrol; mode "default"
   bindsym "s" [class="(?i)$mediaplayer"] focus; mode "default"
   bindsym Escape mode "default"
   bindsym Return mode "default"
@@ -45,20 +45,20 @@ mode "mediaplayer" {
 bindsym $mod+s mode "mediaplayer"
 
 # Brightness
-bindsym XF86MonBrightnessUp exec --no-startup-id brightnessctl set +5%
-bindsym XF86MonBrightnessDown exec --no-startup-id brightnessctl set 5%-
+bindsym XF86MonBrightnessUp exec --no-startup-id exec brightnessctl set +5%
+bindsym XF86MonBrightnessDown exec --no-startup-id exec brightnessctl set 5%-
 
 # use Mouse+$mod to drag floating windows to their wanted position
 floating_modifier $mod
 
 # start a terminal
-bindsym $mod+Return exec $term
+bindsym $mod+Return exec exec $term
 
 # kill focused window
 bindsym $mod+x kill
 
 # execute command
-bindsym $mod+r exec --no-startup-id dmenu_run
+bindsym $mod+r exec --no-startup-id exec dmenu_run
 
 # change focus
 bindsym $mod+$left  focus left
@@ -145,8 +145,8 @@ bindsym $mod+Shift+c reload
 bindsym $mod+Shift+r restart
 
 # Lock screen and print screen
-bindsym XF86ScreenSaver exec --no-startup-id xset s activate
-bindsym $mod+Delete exec --no-startup-id xset s activate
+bindsym XF86ScreenSaver exec --no-startup-id exec xset s activate
+bindsym $mod+Delete exec --no-startup-id exec xset s activate
 bindsym Print exec --no-startup-id "flameshot gui -r | xclip -selection clipboard -t image/png"
 
 # Quake window
@@ -164,9 +164,9 @@ for_window [window_role="PictureInPicture"] floating enable
 for_window [class="Spotify"] move to workspace number 3
 
 # Start stuff
-exec_always --no-startup-id systemctl --user start --no-block i3-session.target
-exec --no-startup-id i3-msg "\
-  workspace number 1; append_layout ~/.config/i3/ws-emacs.json; exec emacs; exec $term; exec $term; \
-  workspace number 2; append_layout ~/.config/i3/ws-firefox.json; exec firefox; \
-  workspace number 3; exec $mediaplayer; \
+exec_always --no-startup-id exec systemctl --user start --no-block i3-session.target
+exec --no-startup-id exec i3-msg "\
+  workspace number 1; append_layout ~/.config/i3/ws-emacs.json; exec exec emacs; exec exec $term; exec exec $term; \
+  workspace number 2; append_layout ~/.config/i3/ws-firefox.json; exec exec firefox; \
+  workspace number 3; exec exec $mediaplayer; \
   workspace number 1"

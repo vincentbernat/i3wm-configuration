@@ -1,7 +1,0 @@
-{
-    "layout": "tabbed",
-    "percent": 1,
-    "nodes": [
-        {"swallows": [{"class": "^Firefox$"}]}
-    ]
-}

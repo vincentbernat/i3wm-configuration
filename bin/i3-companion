@@ -269,22 +269,32 @@ async def workspace_info(i3, event):
     if not focused:
         return
     workspace = focused[0]
-    summary = f"About workspace {workspace.num} on {workspace.output}"
+    summary = f"Workspace {workspace.num} on {workspace.output}"
     tree = await i3.get_tree()
     workspace = [w for w in tree.workspaces()
                  if w.num == workspace.num]
 
     def format(container):
-        if container.focused:
-            style = 'foreground="#ffaf00"'
+        if container.type == "workspace":
+            if container.nodes:
+                root = ""
+            else:
+                if container.ipc_data['workspace_layout'] != "default":
+                    layout = container.ipc_data['workspace_layout']
+                else:
+                    layout = container.layout
+                root = f"Empty workspace, with {layout} layout"
         else:
-            style = 'foreground="#6c98ee"'
-        root = (f"<span {style}>"
-                f"({container.layout})"
-                "</span>")
-        if container.window_title:
-            root += (f" {html.escape(container.window_class.lower())}:"
-                     f" {html.escape(container.window_title)}")
+            if container.focused:
+                style = 'foreground="#ffaf00"'
+            else:
+                style = 'foreground="#6c98ee"'
+            root = (f"<span {style}>"
+                    f"({container.layout})"
+                    "</span>")
+            if container.window_title:
+                root += (f" {html.escape(container.window_class.lower())}:"
+                         f" {html.escape(container.window_title)}")
         children = []
         for child in container.nodes:
             if child == container.nodes[-1]:
@@ -303,7 +313,7 @@ async def workspace_info(i3, event):
         "-i", "system-search",
         "-t", "15000",
         summary,
-        body)
+        body.lstrip("\n"))
 
 
 output_update_running = None

@@ -126,7 +126,7 @@ bindsym $mod+0 workspace number $ws10
 bindsym $mod+Tab workspace back_and_forth
 bindsym $mod+Ctrl+o focus output right
 bindsym $mod+n nop "new-workspace"
-focus_wrapping workspace
+focus_wrapping no
 
 # move focused container to workspace
 bindsym $mod+Shift+1 move container to workspace number $ws1

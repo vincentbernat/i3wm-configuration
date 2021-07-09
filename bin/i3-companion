@@ -287,14 +287,18 @@ async def workspace_info(i3, event):
         else:
             if container.focused:
                 style = 'foreground="#ffaf00"'
-            else:
+            elif not container.window:
                 style = 'foreground="#6c98ee"'
+            else:
+                style = ''
+            if container.window:
+                content = (f"{(container.window_class or '???').lower()}: "
+                           f"{(container.window_title or '???')}")
+            else:
+                content = f"({container.layout})"
             root = (f"<span {style}>"
-                    f"({container.layout})"
+                    f"{content.lower()}"
                     "</span>")
-            if container.window_title:
-                root += (f" {html.escape(container.window_class.lower())}:"
-                         f" {html.escape(container.window_title)}")
         children = []
         for child in container.nodes:
             if child == container.nodes[-1]:

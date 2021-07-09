@@ -69,9 +69,9 @@
     ignore_dbusclose = false
 
     # Mouse
-    mouse_left_click = close_current
-    mouse_middle_click = none
-    mouse_right_click = none
+    mouse_left_click = do_action
+    mouse_middle_click = close_current
+    mouse_right_click = close_current
 
 [urgency_low]
     background = "#222222"
@@ -89,4 +89,4 @@
     timeout = 0
 
 [pushback_all]
-fullscreen = pushback
+    fullscreen = pushback

@@ -109,6 +109,9 @@ set $ws8 "8"
 set $ws9 "9"
 set $ws10 "10"
 
+# default workspace layout: tabbed
+workspace_layout tabbed
+
 # switch to workspace
 bindsym $mod+1 workspace number $ws1
 bindsym $mod+2 workspace number $ws2
@@ -167,6 +170,6 @@ for_window [class="Spotify"] move to workspace number 3
 exec_always --no-startup-id exec systemctl --user start --no-block i3-session.target
 exec --no-startup-id exec i3-msg "\
   workspace number 1; append_layout ~/.config/i3/ws-emacs.json; exec exec emacs; exec exec $term; exec exec $term; \
-  workspace number 2; workspace_layout tabbed; exec exec firefox; \
+  workspace number 2; exec exec firefox; \
   workspace number 3; exec exec $mediaplayer; \
   workspace number 1"

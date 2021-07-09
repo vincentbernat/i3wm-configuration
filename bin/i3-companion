@@ -275,30 +275,27 @@ async def workspace_info(i3, event):
                  if w.num == workspace.num]
 
     def format(container):
-        if container.type == "workspace":
-            if container.nodes:
-                root = ""
-            else:
-                if container.ipc_data['workspace_layout'] != "default":
-                    layout = container.ipc_data['workspace_layout']
-                else:
-                    layout = container.layout
-                root = f"Empty workspace, with {layout} layout"
+        if container.focused:
+            style = 'foreground="#ffaf00"'
+        elif not container.window:
+            style = 'foreground="#6c98ee"'
         else:
-            if container.focused:
-                style = 'foreground="#ffaf00"'
-            elif not container.window:
-                style = 'foreground="#6c98ee"'
-            else:
-                style = ''
-            if container.window:
-                content = (f"{(container.window_class or '???').lower()}: "
-                           f"{(container.window_title or '???')}")
-            else:
-                content = f"({container.layout})"
-            root = (f"<span {style}>"
-                    f"{content.lower()}"
-                    "</span>")
+            style = ''
+        if container.window:
+            content = (f"{(container.window_class or '???').lower()}: "
+                       f"{(container.window_title or '???')}")
+        elif container.type == 'workspace' and not container.nodes:
+            # Empty workspaces use workspace_layout, but when default,
+            # this is layout...
+            layout = container.ipc_data['workspace_layout']
+            if layout == "default":
+                layout = container.layout
+            content = f"({layout})"
+        else:
+            content = f"({container.layout})"
+        root = (f"<span {style}>"
+                f"{content.lower()}"
+                "</span>")
         children = []
         for child in container.nodes:
             if child == container.nodes[-1]:

@@ -153,8 +153,9 @@ set $quake QuakeConsoleNeedsUniqueName
 for_window [instance="$quake" title=$term] move window to scratchpad
 bindsym $mod+grave nop "quake-console:$term:$quake:0.3"
 
-# Get info about an app (like xprop)
-bindsym $mod+i nop "info"
+# Get info about container/workspace
+bindsym $mod+i nop "container-info"
+bindsym $mod+Shift+i nop "workspace-info"
 
 # Random rules
 no_focus [window_type="splash"]

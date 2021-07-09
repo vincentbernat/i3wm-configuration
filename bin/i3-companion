@@ -219,9 +219,16 @@ async def quake_console(i3, event):
     await i3.command(command)
 
 
-@on("info")
-async def window_info(i3, event):
-    """Show information about the focused window."""
+async def notify(*args):
+    """Send a notification with notify-send."""
+    proc = await asyncio.create_subprocess_exec(
+        "notify-send", *args)
+    await proc.communicate()
+
+
+@on("container-info")
+async def container_info(i3, event):
+    """Show information about the focused container."""
     tree = await i3.get_tree()
     window = tree.find_focused()
     if not window:
@@ -247,12 +254,56 @@ async def window_info(i3, event):
     body = "\n".join((f"<tt>{k:10}</tt> {html.escape(str(v))}"
                       for k, v in info.items()
                       if v is not None))
-    proc = await asyncio.create_subprocess_exec(
-        "notify-send",
+    await notify(
         "-i", "system-search",
+        "-t", "10000",
         summary,
         body)
-    await proc.communicate()
+
+
+@on("workspace-info")
+async def workspace_info(i3, event):
+    """Show information about the focused workspace."""
+    workspaces = await i3.get_workspaces()
+    focused = [w for w in workspaces if w.focused]
+    if not focused:
+        return
+    workspace = focused[0]
+    summary = f"About workspace {workspace.num} on {workspace.output}"
+    tree = await i3.get_tree()
+    workspace = [w for w in tree.workspaces()
+                 if w.num == workspace.num]
+
+    def format(container):
+        if container.focused:
+            style = 'foreground="#ffaf00"'
+        else:
+            style = 'foreground="#6c98ee"'
+        root = (f"<span {style}>"
+                f"({container.layout})"
+                "</span>")
+        if container.window_title:
+            root += (f" {html.escape(container.window_class.lower())}:"
+                     f" {html.escape(container.window_title)}")
+        children = []
+        for child in container.nodes:
+            if child == container.nodes[-1]:
+                first =  "└─"
+                others = "  "
+            else:
+                first =  "├─"
+                others = "│ "
+            content = format(child).replace("\n", f"\n{others}")
+            children.append(f"<tt>{first}</tt>{content}")
+        children.insert(0, root)
+        return "\n".join(children)
+
+    body = format(workspace[0])
+    await notify(
+        "-i", "system-search",
+        "-t", "15000",
+        summary,
+        body)
 
 
 output_update_running = None

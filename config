@@ -143,7 +143,7 @@ bindsym $mod+Shift+o move workspace to output right
 bindsym $mod+Shift+n nop "move-to-new-workspace"
 
 # reload/restart
-bindsym $mod+Shift+c reload
+bindsym $mod+Shift+c exec --no-startup-id exec systemctl --user reload --no-block i3.service
 bindsym $mod+Shift+r restart
 
 # Lock screen and print screen

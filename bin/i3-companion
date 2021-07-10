@@ -345,7 +345,7 @@ async def output_update(i3, event):
 
     logger.debug("schedule XRandR change")
     output_update_running = asyncio.get_event_loop().call_later(
-        1, output_update_now)
+        2, output_update_now)
 
 
 async def main(options):

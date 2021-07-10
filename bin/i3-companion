@@ -191,7 +191,7 @@ async def quake_console(i3, event):
     tree = await i3.get_tree()
     term = tree.find_instanced(term_name)
     if not term:
-        await i3.command(f'exec {term_exec} --name {term_name}')
+        await i3.command(f'exec exec {term_exec} --name {term_name}')
         tries = 5
         while not term and tries:
             tree = await i3.get_tree()

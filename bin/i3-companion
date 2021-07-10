@@ -5,7 +5,6 @@
 import argparse
 import logging
 import logging.handlers
-import os
 import sys
 import re
 import asyncio
@@ -16,8 +15,9 @@ import functools
 
 from i3ipc.aio import Connection
 from i3ipc import Event
+from systemd import journal
 
-logger = logging.getLogger(os.path.splitext(os.path.basename(sys.argv[0]))[0])
+logger = logging.getLogger("i3-companion")
 
 
 def on(*events):
@@ -395,10 +395,11 @@ if __name__ == "__main__":
     root = logging.getLogger("")
     root.setLevel(logging.WARNING)
     logger.setLevel(options.debug and logging.DEBUG or logging.INFO)
-    ch = logging.StreamHandler()
-    ch.setFormatter(logging.Formatter(
-        "%(levelname)s[%(name)s] %(message)s"))
-    root.addHandler(ch)
+    if sys.stdin.isatty():
+        ch = logging.StreamHandler()
+        ch.setFormatter(logging.Formatter("%(levelname)s: %(message)s"))
+    else:
+        root.addHandler(journal.JournalHandler(SYSLOG_IDENTIFIER=logger.name))
 
     try:
         asyncio.get_event_loop().run_until_complete(main(options))

@@ -16,6 +16,8 @@ import functools
 from i3ipc.aio import Connection
 from i3ipc import Event
 from systemd import journal
+import ravel
+
 
 logger = logging.getLogger("i3-companion")
 
@@ -220,11 +222,20 @@ async def quake_console(i3, event):
     await i3.command(command)
 
 
-async def notify(*args):
+async def notify(bus, **kwargs):
     """Send a notification with notify-send."""
-    proc = await asyncio.create_subprocess_exec(
-        "notify-send", *args)
-    await proc.communicate()
+    peer = bus["org.freedesktop.Notifications"]["/org/freedesktop/Notifications"]
+    interface = await peer.get_async_interface("org.freedesktop.Notifications")
+    parameters = dict(
+        app_name=logger.name,
+        replaces_id=0,
+        app_icon="dialog-information",
+        summary="",
+        actions=[],
+        hints={},
+        expire_timeout=5000)
+    parameters.update(kwargs)
+    return await interface.Notify(**parameters)
 
 
 @on("container-info")
@@ -255,11 +266,13 @@ async def container_info(i3, event):
     body = "\n".join((f"<tt>{k:10}</tt> {html.escape(str(v))}"
                       for k, v in info.items()
                       if v is not None))
-    await notify(
-        "-i", "system-search",
-        "-t", "10000",
-        summary,
-        body)
+    result = await notify(i3.session_bus,
+                          app_icon="system-search",
+                          expire_timeout=10000,
+                          summary=summary,
+                          body=body,
+                          replaces_id=getattr(container_info, "last_id", 0))
+    container_info.last_id = result[0]
 
 
 @on("workspace-info")
@@ -310,12 +323,14 @@ async def workspace_info(i3, event):
         children.insert(0, root)
         return "\n".join(children)
 
-    body = format(workspace[0])
-    await notify(
-        "-i", "system-search",
-        "-t", "15000",
-        summary,
-        body.lstrip("\n"))
+    body = format(workspace[0]).lstrip("\n")
+    result = await notify(i3.session_bus,
+                          app_icon="system-search",
+                          expire_timeout=20000,
+                          summary=summary,
+                          body=body,
+                          replaces_id=getattr(workspace_info, "last_id", 0))
+    workspace_info.last_id = result[0]
 
 
 @on(Event.OUTPUT)
@@ -347,6 +362,7 @@ async def output_update(i3, event):
 
 async def main(options):
     i3 = await Connection().connect()
+    i3.session_bus = await ravel.session_bus_async()
 
     # Regular events
     for fn, events in on.functions.items():

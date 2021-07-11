@@ -34,6 +34,23 @@ def on(*events):
     return decorator
 
 
+async def notify(i3, **kwargs):
+    """Send a notification with notify-send."""
+    peer = i3.session_bus["org.freedesktop.Notifications"]
+    peer = peer["/org/freedesktop/Notifications"]
+    interface = await peer.get_async_interface("org.freedesktop.Notifications")
+    parameters = dict(
+        app_name=logger.name,
+        replaces_id=0,
+        app_icon="dialog-information",
+        summary="",
+        actions=[],
+        hints={},
+        expire_timeout=5000)
+    parameters.update(kwargs)
+    return await interface.Notify(**parameters)
+
+
 # See https://fontawesome.com/v5.15/icons
 application_icons = {
     "chromium": "",
@@ -222,22 +239,6 @@ async def quake_console(i3, event):
     await i3.command(command)
 
 
-async def notify(bus, **kwargs):
-    """Send a notification with notify-send."""
-    peer = bus["org.freedesktop.Notifications"]["/org/freedesktop/Notifications"]
-    interface = await peer.get_async_interface("org.freedesktop.Notifications")
-    parameters = dict(
-        app_name=logger.name,
-        replaces_id=0,
-        app_icon="dialog-information",
-        summary="",
-        actions=[],
-        hints={},
-        expire_timeout=5000)
-    parameters.update(kwargs)
-    return await interface.Notify(**parameters)
-
-
 @on("container-info")
 async def container_info(i3, event):
     """Show information about the focused container."""
@@ -266,7 +267,7 @@ async def container_info(i3, event):
     body = "\n".join((f"<tt>{k:10}</tt> {html.escape(str(v))}"
                       for k, v in info.items()
                       if v is not None))
-    result = await notify(i3.session_bus,
+    result = await notify(i3,
                           app_icon="system-search",
                           expire_timeout=10000,
                           summary=summary,
@@ -313,10 +314,10 @@ async def workspace_info(i3, event):
         children = []
         for child in container.nodes:
             if child == container.nodes[-1]:
-                first =  "└─"
+                first = "└─"
                 others = "  "
             else:
-                first =  "├─"
+                first = "├─"
                 others = "│ "
             content = format(child).replace("\n", f"\n{others}")
             children.append(f"<tt>{first}</tt>{content}")
@@ -324,7 +325,7 @@ async def workspace_info(i3, event):
         return "\n".join(children)
 
     body = format(workspace[0]).lstrip("\n")
-    result = await notify(i3.session_bus,
+    result = await notify(i3,
                           app_icon="system-search",
                           expire_timeout=20000,
                           summary=summary,

@@ -24,13 +24,16 @@ logger = logging.getLogger("i3-companion")
 
 def on(*events):
     """Tag events that should be provided to the function."""
+
     def decorator(fn):
         @functools.wraps(fn)
         def wrapper(*args, **kwargs):
             return fn(*args, **kwargs)
+
         on.functions = getattr(on, "functions", {})
         on.functions[fn] = events
         return wrapper
+
     return decorator
 
 
@@ -46,7 +49,8 @@ async def notify(i3, **kwargs):
         summary="",
         actions=[],
         hints={},
-        expire_timeout=5000)
+        expire_timeout=5000,
+    )
     parameters.update(kwargs)
     return await interface.Notify(**parameters)
 
@@ -70,14 +74,10 @@ application_icons = {
     "steam": "",
     "vbeterm": "",
     "zathura": "",
-    "zoom": ""
+    "zoom": "",
 }
 application_icons_nomatch = ""
-application_icons_alone = {
-    application_icons[k] for k in {
-        "vbeterm"
-    }
-}
+application_icons_alone = {application_icons[k] for k in {"vbeterm"}}
 
 
 @on(Event.WINDOW_MOVE, Event.WINDOW_NEW, Event.WINDOW_CLOSE)
@@ -89,8 +89,7 @@ async def workspace_rename(i3, event):
 
     def application_icon(window):
         """Get application icon for a window."""
-        for attr in ('window_instance',
-                     'window_class'):
+        for attr in ("window_instance", "window_class"):
             name = getattr(window, attr, None)
             if name is None:
                 continue
@@ -113,7 +112,7 @@ async def workspace_rename(i3, event):
             logger.debug(f"rename workspace {workspace.num}")
             command = f'rename workspace "{workspace.name}" to "{new_name}"'
             commands.append(command)
-    await i3.command(';'.join(commands))
+    await i3.command(";".join(commands))
 
 
 async def _new_workspace(i3):
@@ -121,7 +120,7 @@ async def _new_workspace(i3):
     workspace_nums = {w.num for w in workspaces}
     max_num = max(workspace_nums)
     available = (set(range(1, max_num + 2)) - workspace_nums).pop()
-    logger.info(f'create new workspace number {available}')
+    logger.info(f"create new workspace number {available}")
     await i3.command(f'workspace number "{available}"')
     return available
 
@@ -140,17 +139,11 @@ async def new_workspace(i3, event):
 
     # Move the window to this workspace
     if event == "move-to-new-workspace":
-        await current.command(f'move container to workspace '
-                              f'number "{num}"')
+        await current.command(f"move container to workspace " f'number "{num}"')
 
 
-exclusive_apps = {
-    "emacs",
-    "firefox"
-}
-intrusive_apps = {
-    "vbeterm"
-}
+exclusive_apps = {"emacs", "firefox"}
+intrusive_apps = {"vbeterm"}
 
 
 @on(Event.WINDOW_NEW)
@@ -163,12 +156,14 @@ async def worksplace_exclusive(i3, event):
         """Can this new window intrude any workspace?"""
         if w.floating in {"auto_on", "user_on"}:
             return True
-        if w.ipc_data['window_type'] not in {"normal", "splash", "unknown"}:
+        if w.ipc_data["window_type"] not in {"normal", "splash", "unknown"}:
             return True
         if w.sticky:
             return True
-        ids = {s is not None and s.lower() or None
-               for s in {w.name, w.window_class, w.window_instance}}
+        ids = {
+            s is not None and s.lower() or None
+            for s in {w.name, w.window_class, w.window_instance}
+        }
         if ids.intersection(intrusive_apps):
             return True
 
@@ -182,10 +177,12 @@ async def worksplace_exclusive(i3, event):
     workspace = tree.find_focused().workspace()
     if not workspace:
         return
-    ids = {s is not None and s.lower() or None
-           for ow in workspace.leaves()
-           for s in {ow.name, ow.window_class, ow.window_instance}
-           if w.id != ow.id}
+    ids = {
+        s is not None and s.lower() or None
+        for ow in workspace.leaves()
+        for s in {ow.name, ow.window_class, ow.window_instance}
+        if w.id != ow.id
+    }
     exclusives = ids.intersection(exclusive_apps)
     if not exclusives:
         logger.debug("no exclusive app, {w.name} can go there")
@@ -193,7 +190,7 @@ async def worksplace_exclusive(i3, event):
 
     # Create a new workspace and move the window here
     num = await _new_workspace(i3)
-    logger.info(f'move window {w.name} to workspace {num}')
+    logger.info(f"move window {w.name} to workspace {num}")
     await w.command(f'move container to workspace number "{num}"')
 
 
@@ -210,7 +207,7 @@ async def quake_console(i3, event):
     tree = await i3.get_tree()
     term = tree.find_instanced(term_name)
     if not term:
-        await i3.command(f'exec exec {term_exec} --name {term_name}')
+        await i3.command(f"exec exec {term_exec} --name {term_name}")
         tries = 5
         while not term and tries:
             tree = await i3.get_tree()
@@ -230,11 +227,13 @@ async def quake_console(i3, event):
     height = int(ws_height * height)
     posx = ws_x
     posy = ws_y
-    command = (f'[instance={term_name}] '
-               'border none,'
-               f'resize set {width} px {height} px,'
-               'scratchpad show,'
-               f'move absolute position {posx}px {posy}px')
+    command = (
+        f"[instance={term_name}] "
+        "border none,"
+        f"resize set {width} px {height} px,"
+        "scratchpad show,"
+        f"move absolute position {posx}px {posy}px"
+    )
     logger.debug(f"QuakeConsole: {command}")
     await i3.command(command)
 
@@ -256,23 +255,29 @@ async def container_info(i3, event):
         "class": w.window_class,
         "instance": w.window_instance,
         "role": w.window_role,
-        "type": w.ipc_data['window_type'],
+        "type": w.ipc_data["window_type"],
         "sticky": w.sticky,
         "floating": w.floating,
         "geometry": f"{r.width}×{r.height}+{r.x}+{r.y}",
         "layout": w.layout,
         "parcent": w.percent,
-        "marks": ", ".join(w.marks) or "(none)"
+        "marks": ", ".join(w.marks) or "(none)",
     }
-    body = "\n".join((f"<tt>{k:10}</tt> {html.escape(str(v))}"
-                      for k, v in info.items()
-                      if v is not None))
-    result = await notify(i3,
-                          app_icon="system-search",
-                          expire_timeout=10000,
-                          summary=summary,
-                          body=body,
-                          replaces_id=getattr(container_info, "last_id", 0))
+    body = "\n".join(
+        (
+            f"<tt>{k:10}</tt> {html.escape(str(v))}"
+            for k, v in info.items()
+            if v is not None
+        )
+    )
+    result = await notify(
+        i3,
+        app_icon="system-search",
+        expire_timeout=10000,
+        summary=summary,
+        body=body,
+        replaces_id=getattr(container_info, "last_id", 0),
+    )
     container_info.last_id = result[0]
 
 
@@ -286,8 +291,7 @@ async def workspace_info(i3, event):
     workspace = focused[0]
     summary = f"Workspace {workspace.num} on {workspace.output}"
     tree = await i3.get_tree()
-    workspace = [w for w in tree.workspaces()
-                 if w.num == workspace.num]
+    workspace = [w for w in tree.workspaces() if w.num == workspace.num]
 
     def format(container):
         if container.focused:
@@ -295,22 +299,22 @@ async def workspace_info(i3, event):
         elif not container.window:
             style = 'foreground="#6c98ee"'
         else:
-            style = ''
+            style = ""
         if container.window:
-            content = (f"{(container.window_class or '???').lower()}: "
-                       f"{(container.window_title or '???')}")
-        elif container.type == 'workspace' and not container.nodes:
+            content = (
+                f"{(container.window_class or '???').lower()}: "
+                f"{(container.window_title or '???')}"
+            )
+        elif container.type == "workspace" and not container.nodes:
             # Empty workspaces use workspace_layout, but when default,
             # this is layout...
-            layout = container.ipc_data['workspace_layout']
+            layout = container.ipc_data["workspace_layout"]
             if layout == "default":
                 layout = container.layout
             content = f"({layout})"
         else:
             content = f"({container.layout})"
-        root = (f"<span {style}>"
-                f"{content.lower()}"
-                "</span>")
+        root = f"<span {style}>{content.lower()}</span>"
         children = []
         for child in container.nodes:
             if child == container.nodes[-1]:
@@ -325,12 +329,14 @@ async def workspace_info(i3, event):
         return "\n".join(children)
 
     body = format(workspace[0]).lstrip("\n")
-    result = await notify(i3,
-                          app_icon="system-search",
-                          expire_timeout=20000,
-                          summary=summary,
-                          body=body,
-                          replaces_id=getattr(workspace_info, "last_id", 0))
+    result = await notify(
+        i3,
+        app_icon="system-search",
+        expire_timeout=20000,
+        summary=summary,
+        body=body,
+        replaces_id=getattr(workspace_info, "last_id", 0),
+    )
     workspace_info.last_id = result[0]
 
 
@@ -357,8 +363,7 @@ async def output_update(i3, event):
                 logger.warning(f"{cmd} exited with {proc.returncode}")
 
     logger.debug("schedule XRandR change")
-    output_update.running = asyncio.get_event_loop().call_later(
-        2, output_update_now)
+    output_update.running = asyncio.get_event_loop().call_later(2, output_update_now)
 
 
 async def main(options):
@@ -381,7 +386,7 @@ async def main(options):
         cmd = event.binding.command
         if not cmd.startswith("nop "):
             return
-        cmd = cmd[4:].strip('"\'')
+        cmd = cmd[4:].strip("\"'")
         if not cmd:
             return
         kind = cmd.split(":")[0]
@@ -389,6 +394,7 @@ async def main(options):
             for e in events:
                 if e == kind:
                     await fn(i3, cmd)
+
     i3.on(Event.BINDING, binding_event)
 
     await i3.main()
@@ -400,9 +406,9 @@ if __name__ == "__main__":
     for fn, events in on.functions.items():
         description += f" {fn.__doc__}"
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument("--debug", "-d", action="store_true",
-                        default=False,
-                        help="enable debugging")
+    parser.add_argument(
+        "--debug", "-d", action="store_true", default=False, help="enable debugging"
+    )
     options = parser.parse_args()
 
     # Logging

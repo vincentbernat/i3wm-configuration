@@ -456,21 +456,23 @@ async def main(options):
             if isinstance(event, DBusSignal):
                 for bus in {i3.session_bus, i3.system_bus}:
 
-                    @ravel.signal(
-                        name=event.member,
-                        in_signature=event.signature,
-                        path_keyword="path",
-                        args_keyword="args",
-                    )
-                    async def wrapped(path, args):
-                        return await fn(i3, event, path, *args)
+                    def wrapping(fn, event):
+                        @ravel.signal(
+                            name=event.member,
+                            in_signature=event.signature,
+                            path_keyword="path",
+                            args_keyword="args",
+                        )
+                        async def wrapped(path, args):
+                            return await fn(i3, event, path, *args)
+                        return wrapped
 
                     bus.listen_signal(
                         path=event.path,
                         fallback=True,
                         interface=event.interface,
                         name=event.member,
-                        func=wrapped,
+                        func=wrapping(fn, event),
                     )
 
     await i3.main()

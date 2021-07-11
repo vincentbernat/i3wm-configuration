@@ -52,7 +52,7 @@
     icon_position = left
     min_icon_size = 32
     max_icon_size = 32
-    icon_path = /usr/share/icons/Adwaita/64x64/status/:/usr/share/icons/Adwaita/64x64/devices/:/usr/share/icons/Adwaita/64x64/apps/:/usr/share/icons/Adwaita/256x256/legacy/:/usr/share/icons/hicolor/scalable/apps/:/usr/share/icons/hicolor/64x64/apps/:/usr/share/icons/gnome/256x256/actions/
+    icon_path = /usr/share/icons/Adwaita/64x64/status/:/usr/share/icons/Adwaita/64x64/devices/:/usr/share/icons/Adwaita/64x64/apps/:/usr/share/icons/Adwaita/256x256/legacy/:/usr/share/icons/hicolor/scalable/apps/:/usr/share/icons/hicolor/64x64/apps/:/usr/share/icons/gnome/256x256/actions/:/usr/share/icons/Adwaita/48x48/legacy/
 
     # History
     sticky_history = yes

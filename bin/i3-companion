@@ -318,20 +318,17 @@ async def workspace_info(i3, event):
         body.lstrip("\n"))
 
 
-output_update_running = None
-
-
 @on(Event.OUTPUT)
 async def output_update(i3, event):
     """React to a XRandR change."""
-    global output_update_running
-    if output_update_running is not None:
-        output_update_running.cancel()
+    running = getattr(output_update, "running", None)
+    if running is not None:
+        running.cancel()
+        output_update.running = None
 
     def output_update_now():
         """Execute actions to react to XRandR change."""
-        global output_update_running
-        output_update_running = None
+        output_update.running = None
 
         logger.info("XRandR change detected")
         cmds = (
@@ -344,7 +341,7 @@ async def output_update(i3, event):
                 logger.warning(f"{cmd} exited with {proc.returncode}")
 
     logger.debug("schedule XRandR change")
-    output_update_running = asyncio.get_event_loop().call_later(
+    output_update.running = asyncio.get_event_loop().call_later(
         2, output_update_now)
 
 

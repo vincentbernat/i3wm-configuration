@@ -139,7 +139,9 @@ async def new_workspace(i3, event):
 
     # Move the window to this workspace
     if event == "move-to-new-workspace":
-        await current.command(f"move container to workspace " f'number "{num}"')
+        await current.command(
+            f"move container to workspace " f'number "{num}"'
+        )
 
 
 exclusive_apps = {"emacs", "firefox"}
@@ -363,7 +365,9 @@ async def output_update(i3, event):
                 logger.warning(f"{cmd} exited with {proc.returncode}")
 
     logger.debug("schedule XRandR change")
-    output_update.running = asyncio.get_event_loop().call_later(2, output_update_now)
+    output_update.running = asyncio.get_event_loop().call_later(
+        2, output_update_now
+    )
 
 
 async def main(options):
@@ -407,7 +411,11 @@ if __name__ == "__main__":
         description += f" {fn.__doc__}"
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument(
-        "--debug", "-d", action="store_true", default=False, help="enable debugging"
+        "--debug",
+        "-d",
+        action="store_true",
+        default=False,
+        help="enable debugging",
     )
     options = parser.parse_args()
 

@@ -383,10 +383,12 @@ async def output_update(i3, event):
         signature="uu",
     )
 )
-async def network_manager_update(i3, event, path, state, reason):
+async def network_manager_notifications(i3, event, path, state, reason):
     logger.debug("from %s state: %d, reason: %d", path, state, reason)
     NM_ACTIVE_CONNECTION_STATE_ACTIVATED = 2
     if state not in {NM_ACTIVE_CONNECTION_STATE_ACTIVATED}:
+        # We cannot get proper state unless the connection is
+        # activated, unless we maintain state.
         return
     peer = i3.system_bus["org.freedesktop.NetworkManager"][path]
     try:
@@ -465,6 +467,7 @@ async def main(options):
                         )
                         async def wrapped(path, args):
                             return await fn(i3, event, path, *args)
+
                         return wrapped
 
                     bus.listen_signal(

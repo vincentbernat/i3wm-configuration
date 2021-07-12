@@ -99,18 +99,23 @@ def on(*events):
 
 
 def dampen(sleep, *, unless=None, retry=0):
-    """Dampen a function call. Optional retry on failure. Ensure only one
-    instance is executed. It is assumed the arguments provided to the
-    dampened function have no effect on its execution.
+    """Dampen a function call. Optional immediate execution. Optional
+    retry on failure. Ensure only one instance is executed. It is
+    assumed the arguments provided to the dampened function have no
+    effect on its execution.
     """
 
     def decorator(fn):
-        async def worker():
+        async def worker(urgent):
             while True:
-                await asyncio.sleep(sleep)
-
+                try:
+                    # Wait for an urgent work or until sleep is elapsed
+                    await asyncio.wait_for(urgent.wait(), timeout=sleep)
+                except asyncio.TimeoutError:
+                    pass
                 retry, args, kwargs = fn.queue
                 fn.queue = None
+                urgent.clear()
 
                 # Execute the work
                 logger.debug(f"execute work for {fn}")
@@ -129,8 +134,14 @@ def dampen(sleep, *, unless=None, retry=0):
 
                     # Retry, unless we have something already scheduled
                     if fn.queue is not None:
-                        return
+                        logger.debug(f"retry now with queued event for {fn}")
+                        urgent.set()
+                        continue
+                    logger.debug(f"reschedule retry for {fn}")
                     fn.queue = (retry, args, kwargs)
+                    if unless is not None and unless(*args, **kwargs):
+                        logger.debug(f"wake up now for retry of {fn}")
+                        urgent.set()
                 # Do we still have something to do?
                 if fn.queue is None:
                     break
@@ -144,9 +155,14 @@ def dampen(sleep, *, unless=None, retry=0):
             fn.queue = (retry, args, kwargs)
             if fn.worker is None:
                 logger.debug(f"create new worker for {fn}")
-                fn.worker = asyncio.create_task(worker())
+                urgent = asyncio.Event()
+                fn.worker = asyncio.create_task(worker(urgent))
+                fn.worker.urgent = urgent
             else:
                 logger.debug(f"enqueue new work for {fn}")
+            if unless is not None and unless(*args, **kwargs):
+                logger.debug(f"wake up now for {fn}")
+                fn.worker.urgent.set()
 
         fn.worker = None
         return wrapper

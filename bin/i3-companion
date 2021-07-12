@@ -17,18 +17,21 @@ import shlex
 import subprocess
 import sys
 
+import i3ipc
 from i3ipc.aio import Connection
-from i3ipc import Event
 from systemd import journal
 import ravel
 import dbussy
 
 
 logger = logging.getLogger("i3-companion")
+
+# Events for @on decorator
 DBusSignal = collections.namedtuple(
     "DBusSignal", ["path", "interface", "member", "signature"]
 )
 StartEvent = object()
+I3Event = i3ipc.Event
 
 
 NM_ACTIVE_CONNECTION_STATE_ACTIVATED = 2
@@ -99,7 +102,7 @@ application_icons_nomatch = ""
 application_icons_alone = {application_icons[k] for k in {"vbeterm"}}
 
 
-@on(Event.WINDOW_MOVE, Event.WINDOW_NEW, Event.WINDOW_CLOSE)
+@on(I3Event.WINDOW_MOVE, I3Event.WINDOW_NEW, I3Event.WINDOW_CLOSE)
 async def workspace_rename(i3, event):
     """Rename workspaces using icons to match what's inside it."""
     tree = await i3.get_tree()
@@ -167,7 +170,7 @@ exclusive_apps = {"emacs", "firefox"}
 intrusive_apps = {"vbeterm"}
 
 
-@on(Event.WINDOW_NEW)
+@on(I3Event.WINDOW_NEW)
 async def worksplace_exclusive(i3, event):
     """Move new windows on a new workspace instead of sharing a workspace
     with an exclusive app."""
@@ -361,7 +364,7 @@ async def workspace_info(i3, event):
     workspace_info.last_id = result[0]
 
 
-@on(Event.OUTPUT)
+@on(I3Event.OUTPUT)
 async def output_update(i3, event):
     """React to a XRandR change."""
     running = getattr(output_update, "running", None)
@@ -505,7 +508,7 @@ async def network_manager_status(i3, event, *args):
                 name = await nmap.Ssid
                 strength = int(await nmap.Strength)
                 status.append(""[strength // 34])
-                status.append(bytes(name).decode("utf-8", errors='replace'))
+                status.append(bytes(name).decode("utf-8", errors="replace"))
             elif (
                 kind == NM_DEVICE_TYPE_ETHERNET
                 and state == NM_DEVICE_STATE_ACTIVATED
@@ -541,7 +544,9 @@ async def network_manager_status(i3, event, *args):
             # Send it to polybar's module/network
             for name in glob.glob("/tmp/polybar_mqueue.*"):
                 try:
-                    with open(os.open(name, os.O_WRONLY | os.O_NONBLOCK), "w") as out:
+                    with open(
+                        os.open(name, os.O_WRONLY | os.O_NONBLOCK), "w"
+                    ) as out:
                         cmd = f"action:#network.send.{status}"
                         out.write(cmd)
                 except OSError as e:
@@ -569,7 +574,7 @@ async def main(options):
     # Regular events
     for fn, events in on.functions.items():
         for event in events:
-            if isinstance(event, Event):
+            if isinstance(event, I3Event):
                 i3.on(event, fn)
 
     # React to some bindings
@@ -591,7 +596,7 @@ async def main(options):
                 if e == kind:
                     await fn(i3, cmd)
 
-    i3.on(Event.BINDING, binding_event)
+    i3.on(I3Event.BINDING, binding_event)
 
     # Listen to DBus events
     for fn, events in on.functions.items():

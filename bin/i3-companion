@@ -105,16 +105,17 @@ def dampen(sleep, *, unless=None, retry=0):
     """
 
     def decorator(fn):
-        async def fn_now(me, retry, *args, **kwargs):
-            if unless is None or not unless(*args, **kwargs):
+        async def worker():
+            while True:
                 await asyncio.sleep(sleep)
-            me["sleeping"] = False
 
-            # From here, we do not expect to be cancelled. Ensure only
-            # one of us is running.
-            async with fn.lock:
+                retry, args, kwargs = fn.queue
+                fn.queue = None
+
+                # Execute the work
+                logger.debug(f"execute work for {fn}")
                 try:
-                    return await fn(*args, **kwargs)
+                    await fn(*args, **kwargs)
                 except Exception as e:
                     if not retry:
                         logger.exception(f"while executing {fn}: %s", e)
@@ -125,32 +126,29 @@ def dampen(sleep, *, unless=None, retry=0):
                         retry,
                         str(e),
                     )
-                    # Run again, unless we have something already scheduled
-                    if fn.last_task["sleeping"]:
+
+                    # Retry, unless we have something already scheduled
+                    if fn.queue is not None:
                         return
-                    fn.last_task = dict(sleeping=True)
-                    fn.last_task["task"] = asyncio.create_task(
-                        fn_now(fn.last_task, retry, *args, **kwargs)
-                    )
+                    fn.queue = (retry, args, kwargs)
+                # Do we still have something to do?
+                if fn.queue is None:
+                    break
+
+            # No more work
+            logger.debug(f"no more work for {fn}")
+            fn.worker = None
 
         @functools.wraps(fn)
         async def wrapper(*args, **kwargs):
-            # Initialize a lock (we need an active loop for that)
-            if fn.lock is None:
-                fn.lock = asyncio.Lock()
+            fn.queue = (retry, args, kwargs)
+            if fn.worker is None:
+                logger.debug(f"create new worker for {fn}")
+                fn.worker = asyncio.create_task(worker())
+            else:
+                logger.debug(f"enqueue new work for {fn}")
 
-            # If possible, cancel last task if it's sleeping
-            if fn.last_task is not None and fn.last_task["sleeping"]:
-                logger.debug(f"cancel call to {fn}")
-                fn.last_task["task"].cancel()
-            logger.debug(f"dampening call to {fn}")
-            fn.last_task = dict(sleeping=True)
-            fn.last_task["task"] = asyncio.create_task(
-                fn_now(fn.last_task, retry, *args, **kwargs)
-            )
-
-        fn.last_task = None
-        fn.lock = None
+        fn.worker = None
         return wrapper
 
     return decorator

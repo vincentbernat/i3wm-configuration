@@ -586,7 +586,7 @@ async def network_manager_status(i3, event, *args):
         last = getattr(network_manager_status, "last", None)
 
         if status != last:
-            logger.info(f"network status: {status}")
+            logger.info("updated network status")
 
             # Update cache file (for when polybar restarts)
             with open(

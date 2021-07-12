@@ -195,6 +195,7 @@ async def notify(i3, **kwargs):
 
 
 @on(StartEvent, I3Event.WINDOW_MOVE, I3Event.WINDOW_NEW, I3Event.WINDOW_CLOSE)
+@dampen(0.2)
 async def workspace_rename(i3, event):
     """Rename workspaces using icons to match what's inside it."""
     tree = await i3.get_tree()

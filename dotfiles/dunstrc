@@ -8,7 +8,8 @@
     indicate_hidden = yes
     shrink = no
     notification_height = 0
-    separator_height = 0
+    separator_height = 2
+    separator_color = frame
     padding = 8
     horizontal_padding = 8
     text_icon_padding = 8

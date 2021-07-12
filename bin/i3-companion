@@ -32,6 +32,7 @@ DBusSignal = collections.namedtuple(
 )
 StartEvent = object()
 I3Event = i3ipc.Event
+CommandEvent = collections.namedtuple("CommandEvent", ["name"])
 
 
 NM_ACTIVE_CONNECTION_STATE_ACTIVATED = 2
@@ -147,7 +148,7 @@ async def _new_workspace(i3):
     return available
 
 
-@on("new-workspace", "move-to-new-workspace")
+@on(CommandEvent("new-workspace"), CommandEvent("move-to-new-workspace"))
 async def new_workspace(i3, event):
     """Create a new workspace and optionally move a window to it."""
     # Get the currently focused window
@@ -218,7 +219,7 @@ async def worksplace_exclusive(i3, event):
     await w.command(f'move container to workspace number "{num}"')
 
 
-@on("quake-console")
+@on(CommandEvent("quake-console"))
 async def quake_console(i3, event):
     """Spawn a quake console or toggle an existing one."""
     try:
@@ -262,7 +263,7 @@ async def quake_console(i3, event):
     await i3.command(command)
 
 
-@on("container-info")
+@on(CommandEvent("container-info"))
 async def container_info(i3, event):
     """Show information about the focused container."""
     tree = await i3.get_tree()
@@ -305,7 +306,7 @@ async def container_info(i3, event):
     container_info.last_id = result[0]
 
 
-@on("workspace-info")
+@on(CommandEvent("workspace-info"))
 async def workspace_info(i3, event):
     """Show information about the focused workspace."""
     workspaces = await i3.get_workspaces()
@@ -593,7 +594,7 @@ async def main(options):
         kind = cmd.split(":")[0]
         for fn, events in on.functions.items():
             for e in events:
-                if e == kind:
+                if isinstance(e, CommandEvent) and e.name == kind:
                     await fn(i3, cmd)
 
     i3.on(I3Event.BINDING, binding_event)

@@ -16,6 +16,7 @@ import re
 import shlex
 import subprocess
 import sys
+import types
 
 import i3ipc
 from i3ipc.aio import Connection
@@ -106,16 +107,19 @@ def dampen(sleep, *, unless=None, retry=0):
     """
 
     def decorator(fn):
-        async def worker(urgent):
+        async def worker():
             while True:
                 try:
                     # Wait for an urgent work or until sleep is elapsed
-                    await asyncio.wait_for(urgent.wait(), timeout=sleep)
+                    await asyncio.wait_for(
+                        fn.worker.urgent.wait(), timeout=sleep
+                    )
+                    logger.debug(f"urgent work received for {fn}")
                 except asyncio.TimeoutError:
                     pass
-                retry, args, kwargs = fn.queue
-                fn.queue = None
-                urgent.clear()
+                retry, args, kwargs = fn.worker.queue
+                fn.worker.queue = None
+                fn.worker.urgent.clear()
 
                 # Execute the work
                 logger.debug(f"execute work for {fn}")
@@ -133,17 +137,17 @@ def dampen(sleep, *, unless=None, retry=0):
                     )
 
                     # Retry, unless we have something already scheduled
-                    if fn.queue is not None:
+                    if fn.worker.queue is not None:
                         logger.debug(f"retry now with queued event for {fn}")
-                        urgent.set()
+                        fn.worker.urgent.set()
                         continue
                     logger.debug(f"reschedule retry for {fn}")
-                    fn.queue = (retry, args, kwargs)
+                    fn.worker.queue = (retry, args, kwargs)
                     if unless is not None and unless(*args, **kwargs):
                         logger.debug(f"wake up now for retry of {fn}")
-                        urgent.set()
+                        fn.worker.urgent.set()
                 # Do we still have something to do?
-                if fn.queue is None:
+                if fn.worker.queue is None:
                     break
 
             # No more work
@@ -152,12 +156,12 @@ def dampen(sleep, *, unless=None, retry=0):
 
         @functools.wraps(fn)
         async def wrapper(*args, **kwargs):
-            fn.queue = (retry, args, kwargs)
             if fn.worker is None:
                 logger.debug(f"create new worker for {fn}")
-                urgent = asyncio.Event()
-                fn.worker = asyncio.create_task(worker(urgent))
-                fn.worker.urgent = urgent
+                fn.worker = types.SimpleNamespace()
+                fn.worker.task = asyncio.create_task(worker())
+                fn.worker.urgent = asyncio.Event()
+                fn.worker.queue = (retry, args, kwargs)
             else:
                 logger.debug(f"enqueue new work for {fn}")
             if unless is not None and unless(*args, **kwargs):

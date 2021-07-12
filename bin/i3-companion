@@ -453,17 +453,6 @@ async def network_manager_notifications(i3, event, path, state, reason):
 async def network_manager_status(i3, event, *args):
     """Compute network manager status."""
     ofnm = "org.freedesktop.NetworkManager"
-    # Skip AP updates when they are not about the current AccessPoint
-    # or not about Strength. Most of the time, updates are about that.
-    if (
-        isinstance(event, DBusSignal)
-        and event.interface == f"{ofnm}.AccessPoint"
-    ):
-        path, props = args
-        if getattr(network_manager_status, "active_ap", None) != path:
-            return
-        if not "Strength" in props:
-            return
 
     # Dampen updates
     running = getattr(network_manager_status, "running", None)

@@ -99,11 +99,13 @@ def on(*events):
     return decorator
 
 
-def dampen(sleep, *, unless=None, retry=0):
-    """Dampen a function call. Optional immediate execution. Optional
-    retry on failure. Ensure only one instance is executed. It is
-    assumed the arguments provided to the dampened function have no
-    effect on its execution.
+def debounce(sleep, *, unless=None, retry=0):
+    """Debounce a function call (batch successive calls into only one).
+    Optional immediate execution. Optional retry on failure. Ensure
+    only one instance is executed. It is assumed the arguments
+    provided to the debounced function have no effect on its
+    execution.
+
     """
 
     def decorator(fn):
@@ -195,7 +197,7 @@ async def notify(i3, **kwargs):
 
 
 @on(StartEvent, I3Event.WINDOW_MOVE, I3Event.WINDOW_NEW, I3Event.WINDOW_CLOSE)
-@dampen(0.2)
+@debounce(0.2)
 async def workspace_rename(i3, event):
     """Rename workspaces using icons to match what's inside it."""
     tree = await i3.get_tree()
@@ -456,7 +458,7 @@ async def workspace_info(i3, event):
 
 
 @on(I3Event.OUTPUT)
-@dampen(2)
+@debounce(2)
 async def output_update(i3, event):
     """React to a XRandR change."""
     logger.info("XRandR change detected")
@@ -560,7 +562,7 @@ async def network_manager_notifications(i3, event, path, state, reason):
         signature="a{sv}",
     ),
 )
-@dampen(
+@debounce(
     1,
     unless=lambda i3, event, *args: (
         isinstance(event, DBusSignal) and event.interface.endswith(".Active")

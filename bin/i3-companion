@@ -24,42 +24,43 @@ import ravel
 import dbussy
 
 
-class Icon(str):
-    def __new__(cls, font, char):
-        return str.__new__(cls, "%%{T%s}%s%%{T-}" % (font, char))
+def icon(font_number, char):
+    """Turn an icon into a string for Polybar."""
+    # Font number is from Polybar configuration.
+    # 1: https://fontawesome.com/v6.0/icons?s=solid
+    # 2: https://fontawesome.com/v6.0/icons?s=brands
+    return "%%{T%d}%s%%{T-}" % (font_number, char)
 
 
-# See https://fontawesome.com/v6.0/icons, number is the font number in
-# polybar configuration.
 application_icons = {
-    "chromium": Icon(2, ""),
-    "discord": Icon(2, ""),
-    "emacs": Icon(1, ""),
-    "firefox": Icon(2, ""),
-    "gimp": Icon(1, ""),
-    "gitg": Icon(1, ""),
-    "google-chrome": Icon(2, ""),
-    "inkscape": Icon(1, ""),
-    "libreoffice": Icon(1, ""),
-    "mpv": Icon(1, ""),
-    "pavucontrol": Icon(1, ""),
-    "signal": Icon(1, ""),
-    "snes9x-gtk": Icon(1, ""),
-    "spotify": Icon(2, ""),
-    "steam": Icon(2, ""),
-    "vbeterm": Icon(1, ""),
-    "zathura": Icon(1, ""),
-    "zoom": Icon(1, ""),
+    "chromium": icon(2, ""),
+    "discord": icon(2, ""),
+    "emacs": icon(1, ""),
+    "firefox": icon(2, ""),
+    "gimp": icon(1, ""),
+    "gitg": icon(1, ""),
+    "google-chrome": icon(2, ""),
+    "inkscape": icon(1, ""),
+    "libreoffice": icon(1, ""),
+    "mpv": icon(1, ""),
+    "pavucontrol": icon(1, ""),
+    "signal": icon(1, ""),
+    "snes9x-gtk": icon(1, ""),
+    "spotify": icon(2, ""),
+    "steam": icon(2, ""),
+    "vbeterm": icon(1, ""),
+    "zathura": icon(1, ""),
+    "zoom": icon(1, ""),
 }
 icons = {
-    "nowifi": Icon(1, ""),
-    "vpn": Icon(1, ""),
-    "wifi-low": Icon(1, ""),
-    "wifi-medium": Icon(1, ""),
-    "wifi-high": Icon(1, ""),
-    "wired": Icon(1, ""),
+    "nowifi": icon(1, ""),
+    "vpn": icon(1, ""),
+    "wifi-low": icon(1, ""),
+    "wifi-medium": icon(1, ""),
+    "wifi-high": icon(1, ""),
+    "wired": icon(1, ""),
 }
-application_icons_nomatch = Icon(1, "")
+application_icons_nomatch = icon(1, "")
 application_icons_alone = {application_icons[k] for k in {"vbeterm"}}
 exclusive_apps = {"emacs", "firefox"}
 intrusive_apps = {"vbeterm"}

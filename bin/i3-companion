@@ -99,47 +99,58 @@ def on(*events):
 
 
 def dampen(sleep, *, unless=None, retry=0):
-    """Dampen a function call."""
+    """Dampen a function call. Optional retry on failure. Ensure only one
+    instance is executed. It is assumed the arguments provided to the
+    dampened function have no effect on its execution.
+    """
 
     def decorator(fn):
-        async def fn_now(retry, *args, **kwargs):
-            try:
-                if unless is not None and unless(*args, **kwargs):
-                    # see https://github.com/ldo/dbussy/issues/15
-                    await asyncio.sleep(0.1)
-                else:
-                    await asyncio.sleep(sleep)
-            except asyncio.CancelledError:
-                return
-            fn.running = None
-            try:
-                return await fn(*args, **kwargs)
-            except Exception as e:
-                if not retry:
-                    logger.exception(f"while executing {fn}: %s", e)
-                    return
-                retry -= 1
-                logger.warning(
-                    f"while executing {fn} (remaining tries: %d): %s",
-                    retry,
-                    str(e),
-                )
-                if fn.running is not None:
-                    return
-                fn.running = asyncio.create_task(
-                    fn_now(retry, *args, **kwargs)
-                )
+        async def fn_now(me, retry, *args, **kwargs):
+            if unless is None or not unless(*args, **kwargs):
+                await asyncio.sleep(sleep)
+            me["sleeping"] = False
+
+            # From here, we do not expect to be cancelled. Ensure only
+            # one of us is running.
+            async with fn.lock:
+                try:
+                    return await fn(*args, **kwargs)
+                except Exception as e:
+                    if not retry:
+                        logger.exception(f"while executing {fn}: %s", e)
+                        return
+                    retry -= 1
+                    logger.warning(
+                        f"while executing {fn} (remaining tries: %d): %s",
+                        retry,
+                        str(e),
+                    )
+                    # Run again, unless we have something already scheduled
+                    if fn.last_task["sleeping"]:
+                        return
+                    fn.last_task = dict(sleeping=True)
+                    fn.last_task["task"] = asyncio.create_task(
+                        fn_now(fn.last_task, retry, *args, **kwargs)
+                    )
 
         @functools.wraps(fn)
         async def wrapper(*args, **kwargs):
-            if fn.running is not None:
-                logger.debug(f"cancel call to previous {fn}")
-                fn.running.cancel()
-                fn.running = None
-            logger.debug(f"dampening call to {fn}")
-            fn.running = asyncio.create_task(fn_now(retry, *args, **kwargs))
+            # Initialize a lock (we need an active loop for that)
+            if fn.lock is None:
+                fn.lock = asyncio.Lock()
 
-        fn.running = None
+            # If possible, cancel last task if it's sleeping
+            if fn.last_task is not None and fn.last_task["sleeping"]:
+                logger.debug(f"cancel call to {fn}")
+                fn.last_task["task"].cancel()
+            logger.debug(f"dampening call to {fn}")
+            fn.last_task = dict(sleeping=True)
+            fn.last_task["task"] = asyncio.create_task(
+                fn_now(fn.last_task, retry, *args, **kwargs)
+            )
+
+        fn.last_task = None
+        fn.lock = None
         return wrapper
 
     return decorator
@@ -254,7 +265,7 @@ async def worksplace_exclusive(i3, event):
 
     # Can the new window just intrude?
     if can_intrude(w):
-        logger.debug("window {w.name} can intrude")
+        logger.debug(f"window {w.name} can intrude")
         return
 
     # Does the current workspace contains an exclusive app?

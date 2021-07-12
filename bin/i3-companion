@@ -6,7 +6,6 @@ import argparse
 import asyncio
 import collections
 import errno
-import fcntl
 import functools
 import glob
 import html
@@ -467,7 +466,7 @@ async def network_manager_status(i3, event, *args):
             return
         network_manager_status.running = None
         try:
-            await network_manager_status__now()
+            await _network_manager_status_now()
         except Exception as e:
             logger.warning("while updating network status: %s", str(e))
             if network_manager_status.running is None:
@@ -475,7 +474,7 @@ async def network_manager_status(i3, event, *args):
                     network_manager_status_now(5)
                 )
 
-    async def network_manager_status__now():
+    async def _network_manager_status_now():
         status = []
 
         # Build status from devices
@@ -532,7 +531,6 @@ async def network_manager_status(i3, event, *args):
 
         if status != last:
             logger.info(f"network status: {status}")
-            network_manager_status.last = status
 
             # Update cache file (for when polybar restarts)
             with open(
@@ -543,22 +541,14 @@ async def network_manager_status(i3, event, *args):
             # Send it to polybar's module/network
             for name in glob.glob("/tmp/polybar_mqueue.*"):
                 try:
-                    with open(name, "w") as out:
-                        # Switch to non-blocking mode. If process on
-                        # the other side is dead, we get an ENXIO.
-                        # Buffer should ensure we don't block
-                        # otherwise.
-                        fd = out.fileno()
-                        old_flags = fcntl.fcntl(fd, fcntl.F_GETFL)
-                        fcntl.fcntl(
-                            fd, fcntl.F_SETFL, old_flags | os.O_NONBLOCK
-                        )
-
+                    with open(os.open(name, os.O_WRONLY | os.O_NONBLOCK), "w") as out:
                         cmd = f"action:#network.send.{status}"
                         out.write(cmd)
                 except OSError as e:
-                    if e.errno == errno.ENXIO:
-                        pass
+                    if e.errno != errno.ENXIO:
+                        raise
+
+            network_manager_status.last = status
 
     if (
         isinstance(event, DBusSignal)

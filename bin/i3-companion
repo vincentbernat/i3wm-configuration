@@ -469,7 +469,7 @@ async def network_manager_status(i3, event, *args):
         try:
             await network_manager_status__now()
         except Exception as e:
-            logger.exception("while updating network status: %s", e)
+            logger.warning("while updating network status: %s", str(e))
             if network_manager_status.running is None:
                 network_manager_status.running = asyncio.create_task(
                     network_manager_status_now(5)

@@ -505,7 +505,7 @@ async def network_manager_status(i3, event, *args):
                 name = await nmap.Ssid
                 strength = int(await nmap.Strength)
                 status.append(""[strength // 34])
-                status.append(bytes(name).decode("utf-8"))
+                status.append(bytes(name).decode("utf-8", errors='replace'))
             elif (
                 kind == NM_DEVICE_TYPE_ETHERNET
                 and state == NM_DEVICE_STATE_ACTIVATED

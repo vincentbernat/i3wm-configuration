@@ -23,28 +23,43 @@ from systemd import journal
 import ravel
 import dbussy
 
-# See https://fontawesome.com/v6.0/icons
+
+class Icon(str):
+    def __new__(cls, font, char):
+        return str.__new__(cls, "%%{T%s}%s%%{T-}" % (font, char))
+
+
+# See https://fontawesome.com/v6.0/icons, number is the font number in
+# polybar configuration.
 application_icons = {
-    "chromium": "",
-    "discord": "",
-    "emacs": "",
-    "firefox": "",
-    "gimp": "",
-    "gitg": "",
-    "google-chrome": "",
-    "inkscape": "",
-    "libreoffice": "",
-    "mpv": "",
-    "pavucontrol": "",
-    "signal": "",
-    "snes9x-gtk": "",
-    "spotify": "",
-    "steam": "",
-    "vbeterm": "",
-    "zathura": "",
-    "zoom": "",
+    "chromium": Icon(2, ""),
+    "discord": Icon(2, ""),
+    "emacs": Icon(1, ""),
+    "firefox": Icon(2, ""),
+    "gimp": Icon(1, ""),
+    "gitg": Icon(1, ""),
+    "google-chrome": Icon(2, ""),
+    "inkscape": Icon(1, ""),
+    "libreoffice": Icon(1, ""),
+    "mpv": Icon(1, ""),
+    "pavucontrol": Icon(1, ""),
+    "signal": Icon(1, ""),
+    "snes9x-gtk": Icon(1, ""),
+    "spotify": Icon(2, ""),
+    "steam": Icon(2, ""),
+    "vbeterm": Icon(1, ""),
+    "zathura": Icon(1, ""),
+    "zoom": Icon(1, ""),
 }
-application_icons_nomatch = ""
+icons = {
+    "nowifi": Icon(1, ""),
+    "vpn": Icon(1, ""),
+    "wifi-low": Icon(1, ""),
+    "wifi-medium": Icon(1, ""),
+    "wifi-high": Icon(1, ""),
+    "wired": Icon(1, ""),
+}
+application_icons_nomatch = Icon(1, "")
 application_icons_alone = {application_icons[k] for k in {"vbeterm"}}
 exclusive_apps = {"emacs", "firefox"}
 intrusive_apps = {"vbeterm"}
@@ -102,7 +117,7 @@ async def notify(i3, **kwargs):
     return await notifications.Notify(**parameters)
 
 
-@on(I3Event.WINDOW_MOVE, I3Event.WINDOW_NEW, I3Event.WINDOW_CLOSE)
+@on(StartEvent, I3Event.WINDOW_MOVE, I3Event.WINDOW_NEW, I3Event.WINDOW_CLOSE)
 async def workspace_rename(i3, event):
     """Rename workspaces using icons to match what's inside it."""
     tree = await i3.get_tree()
@@ -490,26 +505,36 @@ async def network_manager_status(i3, event, *args):
                 continue
             if kind == NM_DEVICE_TYPE_WIFI:
                 if state != NM_DEVICE_STATE_ACTIVATED:
-                    status.append("")
+                    status.append(icons["nowifi"])
                     continue
                 nmw = await bus[device].get_async_interface(
                     f"{ofnm}.Device.Wireless"
                 )
                 ap = await nmw.ActiveAccessPoint
                 if not ap:
-                    status.append("")
+                    status.append(icons["nowifi"])
                     continue
                 network_manager_status.active_ap = ap
                 nmap = await bus[ap].get_async_interface(f"{ofnm}.AccessPoint")
                 name = await nmap.Ssid
                 strength = int(await nmap.Strength)
-                status.append(""[strength // 34])
-                status.append(bytes(name).decode("utf-8", errors="replace"))
+                status.append(
+                    [
+                        icons["wifi-low"],
+                        icons["wifi-medium"],
+                        icons["wifi-high"],
+                    ][strength // 34]
+                )
+                status.append(
+                    bytes(name)
+                    .decode("utf-8", errors="replace")
+                    .replace("%", "%%")
+                )
             elif (
                 kind == NM_DEVICE_TYPE_ETHERNET
                 and state == NM_DEVICE_STATE_ACTIVATED
             ):
-                status.append("")
+                status.append(icons["wired"])
 
         # Build status for VPN connection
         connections = await nm.ActiveConnections
@@ -521,11 +546,11 @@ async def network_manager_status(i3, event, *args):
             if vpn:
                 state = await nma.State
                 if state == NM_ACTIVE_CONNECTION_STATE_ACTIVATED:
-                    status.append("")
+                    status.append("")
                     status.append(await nma.Id)
 
         # Final status line
-        status = " ".join(status).replace("%", "%%")
+        status = " ".join(status)
         last = getattr(network_manager_status, "last", None)
 
         if status != last:

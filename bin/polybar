@@ -1,7 +1,5 @@
 #!/bin/sh
 
-export LAN=$(nmcli -t device | awk -F: '($2 == "ethernet") {print $1; exit}')
-export WLAN=$(nmcli -t device | awk -F: '($2 == "wifi") {print $1; exit}')
 export DPI=$(xrdb -query | sed -nE 's/^Xft\.dpi:\s*//p')
 export HEIGHT=$((20 * DPI / 96))
 

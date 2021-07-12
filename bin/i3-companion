@@ -3,16 +3,20 @@
 """Personal i3 companion."""
 
 import argparse
+import asyncio
+import collections
+import errno
+import fcntl
+import functools
+import glob
+import html
 import logging
 import logging.handlers
-import sys
+import os
 import re
-import asyncio
 import shlex
 import subprocess
-import html
-import functools
-import collections
+import sys
 
 from i3ipc.aio import Connection
 from i3ipc import Event
@@ -25,6 +29,15 @@ logger = logging.getLogger("i3-companion")
 DBusSignal = collections.namedtuple(
     "DBusSignal", ["path", "interface", "member", "signature"]
 )
+StartEvent = object()
+
+
+NM_ACTIVE_CONNECTION_STATE_ACTIVATED = 2
+NM_DEVICE_TYPE_ETHERNET = 1
+NM_DEVICE_TYPE_WIFI = 2
+NM_DEVICE_TYPE_MODEM = 8
+NM_DEVICE_STATE_UNMANAGED = 10
+NM_DEVICE_STATE_ACTIVATED = 100
 
 
 def on(*events):
@@ -46,7 +59,9 @@ async def notify(i3, **kwargs):
     """Send a notification with notify-send."""
     peer = i3.session_bus["org.freedesktop.Notifications"]
     peer = peer["/org/freedesktop/Notifications"]
-    interface = await peer.get_async_interface("org.freedesktop.Notifications")
+    notifications = await peer.get_async_interface(
+        "org.freedesktop.Notifications"
+    )
     parameters = dict(
         app_name=logger.name,
         replaces_id=0,
@@ -57,7 +72,7 @@ async def notify(i3, **kwargs):
         expire_timeout=5000,
     )
     parameters.update(kwargs)
-    return await interface.Notify(**parameters)
+    return await notifications.Notify(**parameters)
 
 
 # See https://fontawesome.com/v5.15/icons
@@ -355,8 +370,11 @@ async def output_update(i3, event):
         running.cancel()
         output_update.running = None
 
-    def output_update_now():
-        """Execute actions to react to XRandR change."""
+    async def output_update_now():
+        try:
+            await asyncio.sleep(2)
+        except asyncio.CancelledError:
+            return
         output_update.running = None
 
         logger.info("XRandR change detected")
@@ -370,9 +388,7 @@ async def output_update(i3, event):
                 logger.warning(f"{cmd} exited with {proc.returncode}")
 
     logger.debug("schedule XRandR change")
-    output_update.running = asyncio.get_event_loop().call_later(
-        2, output_update_now
-    )
+    output_update.running = asyncio.create_task(output_update_now())
 
 
 @on(
@@ -384,22 +400,22 @@ async def output_update(i3, event):
     )
 )
 async def network_manager_notifications(i3, event, path, state, reason):
-    logger.debug("from %s state: %d, reason: %d", path, state, reason)
-    NM_ACTIVE_CONNECTION_STATE_ACTIVATED = 2
+    """Display notifications related to Network Manager state."""
+    logger.debug(f"from {path} state: {state}, reason: {reason}")
     if state not in {NM_ACTIVE_CONNECTION_STATE_ACTIVATED}:
         # We cannot get proper state unless the connection is
         # activated, unless we maintain state.
         return
     peer = i3.system_bus["org.freedesktop.NetworkManager"][path]
     try:
-        interface = await peer.get_async_interface(
+        nmca = await peer.get_async_interface(
             "org.freedesktop.NetworkManager.Connection.Active"
         )
     except dbussy.DBusError:
-        logger.info("interface %s has vanished", path)
+        logger.info(f"interface {path} has vanished")
         return
-    kind = await interface.Type
-    id = await interface.Id
+    kind = await nmca.Type
+    id = await nmca.Id
     if kind == "vpn":
         await notify(
             i3, app_icon="network-vpn", summary=f"{id}", body="VPN connected!"
@@ -418,6 +434,135 @@ async def network_manager_notifications(i3, event, path, state, reason):
             summary=f"{id}",
             body="Wireless connection established!",
         )
+
+
+@on(
+    StartEvent,
+    DBusSignal(
+        path="/",
+        interface="org.freedesktop.NetworkManager.Connection.Active",
+        member="StateChanged",
+        signature="uu",
+    ),
+    DBusSignal(
+        path="/",
+        interface="org.freedesktop.NetworkManager.AccessPoint",
+        member="PropertiesChanged",
+        signature="a{sv}",
+    ),
+)
+async def network_manager_status(i3, event, *args):
+    """Compute network manager status."""
+    if isinstance(event, DBusSignal) and event.interface == "org.freedesktop.NetworkManager.AccessPoint":
+        path, props = args
+        if getattr(network_manager_status, "active_ap", None) != path:
+            return
+        if not "Strength" in props:
+            return
+
+    running = getattr(network_manager_status, "running", None)
+    if running is not None:
+        running.cancel()
+        network_manager_status.running = None
+
+    async def network_manager_status_now(sleep=1):
+        try:
+            await asyncio.sleep(sleep)
+        except asyncio.CancelledError:
+            return
+        network_manager_status.running = None
+        try:
+            await network_manager_status__now()
+        except Exception as e:
+            logger.exception("while updating network status: %s", e)
+            if network_manager_status.running is None:
+                network_manager_status.running = asyncio.create_task(
+                    network_manager_status_now(5)
+                )
+
+    async def network_manager_status__now():
+        status = []
+
+        # Build status from devices
+        bus = i3.system_bus["org.freedesktop.NetworkManager"]
+        nm = await bus["/org/freedesktop/NetworkManager"].get_async_interface(
+            "org.freedesktop.NetworkManager"
+        )
+        devices = await nm.AllDevices
+        for device in devices:
+            nmd = await bus[device].get_async_interface(
+                "org.freedesktop.NetworkManager.Device"
+            )
+            kind = await nmd.DeviceType
+            state = await nmd.State
+            if state == NM_DEVICE_STATE_UNMANAGED:
+                continue
+            if kind == NM_DEVICE_TYPE_WIFI:
+                if state != NM_DEVICE_STATE_ACTIVATED:
+                    status.append("")
+                    continue
+                nmw = await bus[device].get_async_interface(
+                    "org.freedesktop.NetworkManager.Device.Wireless"
+                )
+                ap = await nmw.ActiveAccessPoint
+                if not ap:
+                    status.append("")
+                    continue
+                network_manager_status.active_ap = ap
+                nmap = await bus[ap].get_async_interface(
+                    "org.freedesktop.NetworkManager.AccessPoint"
+                )
+                name = await nmap.Ssid
+                strength = int(await nmap.Strength)
+                status.append(""[strength // 34])
+                status.append(bytes(name).decode("utf-8"))
+            elif (
+                kind == NM_DEVICE_TYPE_ETHERNET
+                and state == NM_DEVICE_STATE_ACTIVATED
+            ):
+                status.append("")
+
+        # Build status for VPN connection
+        connections = await nm.ActiveConnections
+        for conn in connections:
+            nma = await bus[conn].get_async_interface(
+                "org.freedesktop.NetworkManager.Connection.Active"
+            )
+            vpn = await nma.Vpn
+            if vpn:
+                state = await nma.State
+                if state == NM_ACTIVE_CONNECTION_STATE_ACTIVATED:
+                    status.append("︁")
+                    status.append(await nma.Id)
+
+        # Final status line
+        status = " ".join(status).replace("%", "%%")
+        last = getattr(network_manager_status, "last", None)
+
+        if status != last:
+            logger.info(f"network status: {status}")
+            network_manager_status.last = status
+
+            # Update cache file (for when polybar restarts)
+            with open(f"{os.getenv('XDG_RUNTIME_DIR')}/i3/network.txt", "w") as out:
+                out.write(status)
+
+            # Send it to module/network
+            for name in glob.glob("/tmp/polybar_mqueue.*"):
+                try:
+                    with open(name, "w") as out:
+                        fd = out.fileno()
+                        old_flags = fcntl.fcntl(fd, fcntl.F_GETFL)
+                        fcntl.fcntl(fd, fcntl.F_SETFL, old_flags | os.O_NONBLOCK)
+                        cmd = f"action:#network.send.{status}"
+                        out.write(cmd)
+                except OSError as e:
+                    if e.errno == errno.ENXIO:
+                        pass
+
+    network_manager_status.running = asyncio.create_task(
+        network_manager_status_now()
+    )
 
 
 async def main(options):
@@ -478,6 +623,12 @@ async def main(options):
                         func=wrapping(fn, event),
                     )
 
+    # Run events that should run on start
+    for fn, events in on.functions.items():
+        for event in events:
+            if event is StartEvent:
+                asyncio.create_task(fn(i3, event))
+
     await i3.main()
 
 
@@ -507,7 +658,7 @@ if __name__ == "__main__":
         root.addHandler(journal.JournalHandler(SYSLOG_IDENTIFIER=logger.name))
 
     try:
-        asyncio.get_event_loop().run_until_complete(main(options))
+        asyncio.run(main(options))
     except Exception as e:
         logger.exception("%s", e)
         sys.exit(1)

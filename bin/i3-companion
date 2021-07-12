@@ -401,16 +401,15 @@ async def output_update(i3, event):
 )
 async def network_manager_notifications(i3, event, path, state, reason):
     """Display notifications related to Network Manager state."""
+    ofnm = "org.freedesktop.NetworkManager"
     logger.debug(f"from {path} state: {state}, reason: {reason}")
     if state not in {NM_ACTIVE_CONNECTION_STATE_ACTIVATED}:
         # We cannot get proper state unless the connection is
         # activated, unless we maintain state.
         return
-    peer = i3.system_bus["org.freedesktop.NetworkManager"][path]
+    peer = i3.system_bus[ofnm][path]
     try:
-        nmca = await peer.get_async_interface(
-            "org.freedesktop.NetworkManager.Connection.Active"
-        )
+        nmca = await peer.get_async_interface(f"{ofnm}.Connection.Active")
     except dbussy.DBusError:
         logger.info(f"interface {path} has vanished")
         return
@@ -453,13 +452,20 @@ async def network_manager_notifications(i3, event, path, state, reason):
 )
 async def network_manager_status(i3, event, *args):
     """Compute network manager status."""
-    if isinstance(event, DBusSignal) and event.interface == "org.freedesktop.NetworkManager.AccessPoint":
+    ofnm = "org.freedesktop.NetworkManager"
+    # Skip AP updates when they are not about the current AccessPoint
+    # or not about Strength. Most of the time, updates are about that.
+    if (
+        isinstance(event, DBusSignal)
+        and event.interface == f"{ofnm}.AccessPoint"
+    ):
         path, props = args
         if getattr(network_manager_status, "active_ap", None) != path:
             return
         if not "Strength" in props:
             return
 
+    # Dampen updates
     running = getattr(network_manager_status, "running", None)
     if running is not None:
         running.cancel()
@@ -484,15 +490,13 @@ async def network_manager_status(i3, event, *args):
         status = []
 
         # Build status from devices
-        bus = i3.system_bus["org.freedesktop.NetworkManager"]
+        bus = i3.system_bus[ofnm]
         nm = await bus["/org/freedesktop/NetworkManager"].get_async_interface(
-            "org.freedesktop.NetworkManager"
+            ofnm
         )
         devices = await nm.AllDevices
         for device in devices:
-            nmd = await bus[device].get_async_interface(
-                "org.freedesktop.NetworkManager.Device"
-            )
+            nmd = await bus[device].get_async_interface(f"{ofnm}.Device")
             kind = await nmd.DeviceType
             state = await nmd.State
             if state == NM_DEVICE_STATE_UNMANAGED:
@@ -502,16 +506,14 @@ async def network_manager_status(i3, event, *args):
                     status.append("")
                     continue
                 nmw = await bus[device].get_async_interface(
-                    "org.freedesktop.NetworkManager.Device.Wireless"
+                    f"{ofnm}.Device.Wireless"
                 )
                 ap = await nmw.ActiveAccessPoint
                 if not ap:
                     status.append("")
                     continue
                 network_manager_status.active_ap = ap
-                nmap = await bus[ap].get_async_interface(
-                    "org.freedesktop.NetworkManager.AccessPoint"
-                )
+                nmap = await bus[ap].get_async_interface(f"{ofnm}.AccessPoint")
                 name = await nmap.Ssid
                 strength = int(await nmap.Strength)
                 status.append(""[strength // 34])
@@ -526,13 +528,13 @@ async def network_manager_status(i3, event, *args):
         connections = await nm.ActiveConnections
         for conn in connections:
             nma = await bus[conn].get_async_interface(
-                "org.freedesktop.NetworkManager.Connection.Active"
+                f"{ofnm}.Connection.Active"
             )
             vpn = await nma.Vpn
             if vpn:
                 state = await nma.State
                 if state == NM_ACTIVE_CONNECTION_STATE_ACTIVATED:
-                    status.append("︁")
+                    status.append("")
                     status.append(await nma.Id)
 
         # Final status line
@@ -544,25 +546,40 @@ async def network_manager_status(i3, event, *args):
             network_manager_status.last = status
 
             # Update cache file (for when polybar restarts)
-            with open(f"{os.getenv('XDG_RUNTIME_DIR')}/i3/network.txt", "w") as out:
+            with open(
+                f"{os.getenv('XDG_RUNTIME_DIR')}/i3/network.txt", "w"
+            ) as out:
                 out.write(status)
 
-            # Send it to module/network
+            # Send it to polybar's module/network
             for name in glob.glob("/tmp/polybar_mqueue.*"):
                 try:
                     with open(name, "w") as out:
+                        # Switch to non-blocking mode. If process on
+                        # the other side is dead, we get an ENXIO.
+                        # Buffer should ensure we don't block
+                        # otherwise.
                         fd = out.fileno()
                         old_flags = fcntl.fcntl(fd, fcntl.F_GETFL)
-                        fcntl.fcntl(fd, fcntl.F_SETFL, old_flags | os.O_NONBLOCK)
+                        fcntl.fcntl(
+                            fd, fcntl.F_SETFL, old_flags | os.O_NONBLOCK
+                        )
+
                         cmd = f"action:#network.send.{status}"
                         out.write(cmd)
                 except OSError as e:
                     if e.errno == errno.ENXIO:
                         pass
 
-    network_manager_status.running = asyncio.create_task(
-        network_manager_status_now()
-    )
+    if (
+        isinstance(event, DBusSignal)
+        and event.interface == f"{ofnm}.Connection.Active"
+    ):
+        await network_manager_status_now(0)
+    else:
+        network_manager_status.running = asyncio.create_task(
+            network_manager_status_now()
+        )
 
 
 async def main(options):

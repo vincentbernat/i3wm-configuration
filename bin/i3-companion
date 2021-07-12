@@ -140,6 +140,8 @@ async def workspace_rename(i3, event):
     for workspace in workspaces:
         icons = set()
         for window in workspace.leaves():
+            if window.sticky:
+                continue
             icon = application_icon(window)
             if icon is not None:
                 icons.add(icon)

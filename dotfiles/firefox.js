@@ -60,6 +60,10 @@ user_pref("gfx.webrender.all", true);
 user_pref("gfx.x11-egl.force-enabled", true);
 user_pref("media.ffmpeg.vaapi.enabled", true);
 
+// Legacy indicator is buggy (no content). New indicator stays
+// is only displayed when sharing screen.
+user_pref("privacy.webrtc.legacyGlobalIndicator", false);
+
 // Enable AVIF
 user_pref("image.avif.enabled", true);
 

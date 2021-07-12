@@ -707,9 +707,10 @@ if __name__ == "__main__":
     root = logging.getLogger("")
     root.setLevel(logging.WARNING)
     logger.setLevel(options.debug and logging.DEBUG or logging.INFO)
-    if sys.stdin.isatty():
+    if sys.stderr.isatty():
         ch = logging.StreamHandler()
         ch.setFormatter(logging.Formatter("%(levelname)s: %(message)s"))
+        root.addHandler(ch)
     else:
         root.addHandler(journal.JournalHandler(SYSLOG_IDENTIFIER=logger.name))
 

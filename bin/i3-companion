@@ -98,6 +98,53 @@ def on(*events):
     return decorator
 
 
+def dampen(sleep, *, unless=None, retry=0):
+    """Dampen a function call."""
+
+    def decorator(fn):
+        async def fn_now(retry, *args, **kwargs):
+            try:
+                if unless is not None and unless(*args, **kwargs):
+                    # see https://github.com/ldo/dbussy/issues/15
+                    await asyncio.sleep(0.1)
+                else:
+                    await asyncio.sleep(sleep)
+            except asyncio.CancelledError:
+                return
+            fn.running = None
+            try:
+                return await fn(*args, **kwargs)
+            except Exception as e:
+                if not retry:
+                    logger.exception(f"while executing {fn}: %s", e)
+                    return
+                retry -= 1
+                logger.warning(
+                    f"while executing {fn} (remaining tries: %d): %s",
+                    retry,
+                    str(e),
+                )
+                if fn.running is not None:
+                    return
+                fn.running = asyncio.create_task(
+                    fn_now(retry, *args, **kwargs)
+                )
+
+        @functools.wraps(fn)
+        async def wrapper(*args, **kwargs):
+            if fn.running is not None:
+                logger.debug(f"cancel call to previous {fn}")
+                fn.running.cancel()
+                fn.running = None
+            logger.debug(f"dampening call to {fn}")
+            fn.running = asyncio.create_task(fn_now(retry, *args, **kwargs))
+
+        fn.running = None
+        return wrapper
+
+    return decorator
+
+
 async def notify(i3, **kwargs):
     """Send a notification with notify-send."""
     peer = i3.session_bus["org.freedesktop.Notifications"]
@@ -379,32 +426,18 @@ async def workspace_info(i3, event):
 
 
 @on(I3Event.OUTPUT)
+@dampen(2)
 async def output_update(i3, event):
     """React to a XRandR change."""
-    running = getattr(output_update, "running", None)
-    if running is not None:
-        running.cancel()
-        output_update.running = None
-
-    async def output_update_now():
-        try:
-            await asyncio.sleep(2)
-        except asyncio.CancelledError:
-            return
-        output_update.running = None
-
-        logger.info("XRandR change detected")
-        cmds = (
-            "systemctl --user reload --no-block xsettingsd.service",
-            "systemctl --user start --no-block wallpaper.service",
-        )
-        for cmd in cmds:
-            proc = subprocess.run(shlex.split(cmd))
-            if proc.returncode != 0:
-                logger.warning(f"{cmd} exited with {proc.returncode}")
-
-    logger.debug("schedule XRandR change")
-    output_update.running = asyncio.create_task(output_update_now())
+    logger.info("XRandR change detected")
+    cmds = (
+        "systemctl --user reload --no-block xsettingsd.service",
+        "systemctl --user start --no-block wallpaper.service",
+    )
+    for cmd in cmds:
+        proc = subprocess.run(shlex.split(cmd))
+        if proc.returncode != 0:
+            logger.warning(f"{cmd} exited with {proc.returncode}")
 
 
 @on(
@@ -421,7 +454,7 @@ async def bluetooth_notifications(
     """Display notifications related to Bluetooth state."""
     if interface != "org.bluez.Device1":
         return
-    if not "Connected" in changed:
+    if "Connected" not in changed:
         return
     logger.info(changed["Connected"])
     peer = i3.system_bus["org.bluez"][path]
@@ -451,8 +484,8 @@ async def network_manager_notifications(i3, event, path, state, reason):
     ofnm = "org.freedesktop.NetworkManager"
     logger.debug(f"from {path} state: {state}, reason: {reason}")
     if state not in {NM_ACTIVE_CONNECTION_STATE_ACTIVATED}:
-        # We cannot get proper state unless the connection is
-        # activated, unless we maintain state.
+        # Deactivated state does not contain enough information,
+        # unless we maintain state.
         return
     peer = i3.system_bus[ofnm][path]
     try:
@@ -497,128 +530,98 @@ async def network_manager_notifications(i3, event, path, state, reason):
         signature="a{sv}",
     ),
 )
+@dampen(
+    1,
+    unless=lambda i3, event, *args: (
+        isinstance(event, DBusSignal) and event.interface.endswith(".Active")
+    ),
+    retry=2,
+)
 async def network_manager_status(i3, event, *args):
     """Compute network manager status."""
     ofnm = "org.freedesktop.NetworkManager"
+    status = []
 
-    # Dampen updates
-    running = getattr(network_manager_status, "running", None)
-    if running is not None:
-        running.cancel()
-        network_manager_status.running = None
-
-    async def network_manager_status_now(sleep=1):
-        try:
-            await asyncio.sleep(sleep)
-        except asyncio.CancelledError:
-            return
-        network_manager_status.running = None
-        try:
-            await _network_manager_status_now()
-        except Exception as e:
-            logger.warning("while updating network status: %s", str(e))
-            if network_manager_status.running is None:
-                network_manager_status.running = asyncio.create_task(
-                    network_manager_status_now(5)
-                )
-
-    async def _network_manager_status_now():
-        status = []
-
-        # Build status from devices
-        bus = i3.system_bus[ofnm]
-        nm = await bus["/org/freedesktop/NetworkManager"].get_async_interface(
-            ofnm
-        )
-        devices = await nm.AllDevices
-        for device in devices:
-            nmd = await bus[device].get_async_interface(f"{ofnm}.Device")
-            kind = await nmd.DeviceType
-            state = await nmd.State
-            if state == NM_DEVICE_STATE_UNMANAGED:
+    # Build status from devices
+    bus = i3.system_bus[ofnm]
+    nm = await bus["/org/freedesktop/NetworkManager"].get_async_interface(ofnm)
+    devices = await nm.AllDevices
+    for device in devices:
+        nmd = await bus[device].get_async_interface(f"{ofnm}.Device")
+        kind = await nmd.DeviceType
+        state = await nmd.State
+        if state == NM_DEVICE_STATE_UNMANAGED:
+            continue
+        if kind == NM_DEVICE_TYPE_WIFI:
+            if state != NM_DEVICE_STATE_ACTIVATED:
+                status.append(icons["nowifi"])
                 continue
-            if kind == NM_DEVICE_TYPE_WIFI:
-                if state != NM_DEVICE_STATE_ACTIVATED:
-                    status.append(icons["nowifi"])
-                    continue
-                nmw = await bus[device].get_async_interface(
-                    f"{ofnm}.Device.Wireless"
-                )
-                ap = await nmw.ActiveAccessPoint
-                if not ap:
-                    status.append(icons["nowifi"])
-                    continue
-                network_manager_status.active_ap = ap
-                nmap = await bus[ap].get_async_interface(f"{ofnm}.AccessPoint")
-                name = await nmap.Ssid
-                strength = int(await nmap.Strength)
-                status.append(
-                    [
-                        icons["wifi-low"],
-                        icons["wifi-medium"],
-                        icons["wifi-high"],
-                    ][strength // 34]
-                )
-                status.append(
-                    bytes(name)
-                    .decode("utf-8", errors="replace")
-                    .replace("%", "%%")
-                )
-            elif (
-                kind == NM_DEVICE_TYPE_ETHERNET
-                and state == NM_DEVICE_STATE_ACTIVATED
-            ):
-                status.append(icons["wired"])
-
-        # Build status for VPN connection
-        connections = await nm.ActiveConnections
-        for conn in connections:
-            nma = await bus[conn].get_async_interface(
-                f"{ofnm}.Connection.Active"
+            nmw = await bus[device].get_async_interface(
+                f"{ofnm}.Device.Wireless"
             )
-            vpn = await nma.Vpn
-            if vpn:
-                state = await nma.State
-                if state == NM_ACTIVE_CONNECTION_STATE_ACTIVATED:
-                    status.append(icons["vpn"])
-                    status.append(await nma.Id)
+            ap = await nmw.ActiveAccessPoint
+            if not ap:
+                status.append(icons["nowifi"])
+                continue
+            network_manager_status.active_ap = ap
+            nmap = await bus[ap].get_async_interface(f"{ofnm}.AccessPoint")
+            name = await nmap.Ssid
+            strength = int(await nmap.Strength)
+            status.append(
+                [
+                    icons["wifi-low"],
+                    icons["wifi-medium"],
+                    icons["wifi-high"],
+                ][strength // 34]
+            )
+            status.append(
+                bytes(name)
+                .decode("utf-8", errors="replace")
+                .replace("%", "%%")
+            )
+        elif (
+            kind == NM_DEVICE_TYPE_ETHERNET
+            and state == NM_DEVICE_STATE_ACTIVATED
+        ):
+            status.append(icons["wired"])
 
-        # Final status line
-        status = " ".join(status)
-        last = getattr(network_manager_status, "last", None)
+    # Build status for VPN connection
+    connections = await nm.ActiveConnections
+    for conn in connections:
+        nma = await bus[conn].get_async_interface(f"{ofnm}.Connection.Active")
+        vpn = await nma.Vpn
+        if vpn:
+            state = await nma.State
+            if state == NM_ACTIVE_CONNECTION_STATE_ACTIVATED:
+                status.append(icons["vpn"])
+                status.append(await nma.Id)
 
-        if status != last:
-            logger.info("updated network status")
+    # Final status line
+    status = " ".join(status)
+    last = getattr(network_manager_status, "last", None)
 
-            # Update cache file (for when polybar restarts)
-            with open(
-                f"{os.getenv('XDG_RUNTIME_DIR')}/i3/network.txt", "w"
-            ) as out:
-                out.write(status)
+    if status != last:
+        logger.info("updated network status")
 
-            # Send it to polybar's module/network
-            for name in glob.glob("/tmp/polybar_mqueue.*"):
-                try:
-                    with open(
-                        os.open(name, os.O_WRONLY | os.O_NONBLOCK), "w"
-                    ) as out:
-                        cmd = f"action:#network.send.{status}"
-                        out.write(cmd)
-                except OSError as e:
-                    if e.errno != errno.ENXIO:
-                        raise
+        # Update cache file (for when polybar restarts)
+        with open(
+            f"{os.getenv('XDG_RUNTIME_DIR')}/i3/network.txt", "w"
+        ) as out:
+            out.write(status)
 
-            network_manager_status.last = status
+        # Send it to polybar's module/network
+        for name in glob.glob("/tmp/polybar_mqueue.*"):
+            try:
+                with open(
+                    os.open(name, os.O_WRONLY | os.O_NONBLOCK), "w"
+                ) as out:
+                    cmd = f"action:#network.send.{status}"
+                    out.write(cmd)
+            except OSError as e:
+                if e.errno != errno.ENXIO:
+                    raise
 
-    if (
-        isinstance(event, DBusSignal)
-        and event.interface == f"{ofnm}.Connection.Active"
-    ):
-        await network_manager_status_now(0)
-    else:
-        network_manager_status.running = asyncio.create_task(
-            network_manager_status_now()
-        )
+        network_manager_status.last = status
 
 
 async def main(options):

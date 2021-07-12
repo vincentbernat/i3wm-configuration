@@ -23,6 +23,31 @@ from systemd import journal
 import ravel
 import dbussy
 
+# See https://fontawesome.com/v6.0/icons
+application_icons = {
+    "chromium": "",
+    "discord": "",
+    "emacs": "",
+    "firefox": "",
+    "gimp": "",
+    "gitg": "",
+    "google-chrome": "",
+    "inkscape": "",
+    "libreoffice": "",
+    "mpv": "",
+    "pavucontrol": "",
+    "signal": "",
+    "snes9x-gtk": "",
+    "spotify": "",
+    "steam": "",
+    "vbeterm": "",
+    "zathura": "",
+    "zoom": "",
+}
+application_icons_nomatch = ""
+application_icons_alone = {application_icons[k] for k in {"vbeterm"}}
+exclusive_apps = {"emacs", "firefox"}
+intrusive_apps = {"vbeterm"}
 
 logger = logging.getLogger("i3-companion")
 
@@ -33,7 +58,6 @@ DBusSignal = collections.namedtuple(
 StartEvent = object()
 I3Event = i3ipc.Event
 CommandEvent = collections.namedtuple("CommandEvent", ["name"])
-
 
 NM_ACTIVE_CONNECTION_STATE_ACTIVATED = 2
 NM_DEVICE_TYPE_ETHERNET = 1
@@ -76,31 +100,6 @@ async def notify(i3, **kwargs):
     )
     parameters.update(kwargs)
     return await notifications.Notify(**parameters)
-
-
-# See https://fontawesome.com/v5.15/icons
-application_icons = {
-    "chromium": "",
-    "discord": "",
-    "emacs": "",
-    "firefox": "",
-    "gimp": "",
-    "gitg": "",
-    "google-chrome": "",
-    "inkscape": "",
-    "libreoffice": "",
-    "mpv": "",
-    "pavucontrol": "",
-    "signal": "",
-    "snes9x-gtk": "",
-    "spotify": "",
-    "steam": "",
-    "vbeterm": "",
-    "zathura": "",
-    "zoom": "",
-}
-application_icons_nomatch = ""
-application_icons_alone = {application_icons[k] for k in {"vbeterm"}}
 
 
 @on(I3Event.WINDOW_MOVE, I3Event.WINDOW_NEW, I3Event.WINDOW_CLOSE)
@@ -165,10 +164,6 @@ async def new_workspace(i3, event):
         await current.command(
             f"move container to workspace " f'number "{num}"'
         )
-
-
-exclusive_apps = {"emacs", "firefox"}
-intrusive_apps = {"vbeterm"}
 
 
 @on(I3Event.WINDOW_NEW)

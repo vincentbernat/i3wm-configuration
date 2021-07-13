@@ -516,7 +516,6 @@ async def bluetooth_notifications(
         return
     if "Connected" not in changed:
         return
-    logger.info(changed["Connected"])
     peer = i3.system_bus["org.bluez"][path]
     obd = await peer.get_async_interface(interface)
     name = await obd.Name

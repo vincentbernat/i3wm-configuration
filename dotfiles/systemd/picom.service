@@ -3,5 +3,5 @@ Description=Compositor for X11
 PartOf=graphical-session.target
 
 [Service]
-ExecStart=/usr/bin/picom
+ExecStart=/usr/bin/picom --experimental-backends
 Restart=on-failure

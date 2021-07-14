@@ -38,6 +38,7 @@ def icon(font_number, char):
 application_icons = {
     "chromium": icon(3, ""),
     "discord": icon(3, ""),
+    "d-feet": icon(2, ""),
     "emacs": icon(2, ""),
     "firefox": icon(3, ""),
     "gimp": icon(2, ""),

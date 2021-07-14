@@ -62,8 +62,8 @@ icons = {
     "wifi-medium": icon(2, ""),
     "wifi-high": icon(2, ""),
     "wired": icon(2, ""),
-    "notifications-enabled": icon(2, ""),
-    "notifications-disabled": icon(2, ""),
+    "notifications-enabled": icon(2, ""),
+    "notifications-disabled": icon(2, "🔕"),
 }
 application_icons_nomatch = icon(2, "")
 application_icons_alone = {application_icons[k] for k in {"vbeterm"}}

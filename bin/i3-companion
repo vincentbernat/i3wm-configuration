@@ -28,42 +28,42 @@ import dbussy
 def icon(font_number, char):
     """Turn an icon into a string for Polybar."""
     # Font number is from Polybar configuration.
-    # 1: https://fontawesome.com/v6.0/icons?s=solid
-    # 2: https://fontawesome.com/v6.0/icons?s=brands
+    # 2: https://fontawesome.com/v6.0/icons?s=solid
+    # 3: https://fontawesome.com/v6.0/icons?s=brands
     return "%%{T%d}%s%%{T-}" % (font_number, char)
 
 
 # Configuration
 
 application_icons = {
-    "chromium": icon(2, ""),
-    "discord": icon(2, ""),
-    "emacs": icon(1, ""),
-    "firefox": icon(2, ""),
-    "gimp": icon(1, ""),
-    "gitg": icon(1, ""),
-    "google-chrome": icon(2, ""),
-    "inkscape": icon(1, ""),
-    "libreoffice": icon(1, ""),
-    "mpv": icon(1, ""),
-    "pavucontrol": icon(1, ""),
-    "signal": icon(1, ""),
-    "snes9x-gtk": icon(1, ""),
-    "spotify": icon(2, ""),
-    "steam": icon(2, ""),
-    "vbeterm": icon(1, ""),
-    "zathura": icon(1, ""),
-    "zoom": icon(1, ""),
+    "chromium": icon(3, ""),
+    "discord": icon(3, ""),
+    "emacs": icon(2, ""),
+    "firefox": icon(3, ""),
+    "gimp": icon(2, ""),
+    "gitg": icon(2, ""),
+    "google-chrome": icon(3, ""),
+    "inkscape": icon(2, ""),
+    "libreoffice": icon(2, ""),
+    "mpv": icon(2, ""),
+    "pavucontrol": icon(2, ""),
+    "signal": icon(2, ""),
+    "snes9x-gtk": icon(2, ""),
+    "spotify": icon(3, ""),
+    "steam": icon(3, ""),
+    "vbeterm": icon(2, ""),
+    "zathura": icon(2, ""),
+    "zoom": icon(2, ""),
 }
 icons = {
-    "nowifi": icon(1, ""),
-    "vpn": icon(1, ""),
-    "wifi-low": icon(1, ""),
-    "wifi-medium": icon(1, ""),
-    "wifi-high": icon(1, ""),
-    "wired": icon(1, ""),
+    "nowifi": icon(2, ""),
+    "vpn": icon(2, ""),
+    "wifi-low": icon(2, ""),
+    "wifi-medium": icon(2, ""),
+    "wifi-high": icon(2, ""),
+    "wired": icon(2, ""),
 }
-application_icons_nomatch = icon(1, "")
+application_icons_nomatch = icon(2, "")
 application_icons_alone = {application_icons[k] for k in {"vbeterm"}}
 exclusive_apps = {"emacs", "firefox"}
 intrusive_apps = {"vbeterm"}

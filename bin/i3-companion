@@ -317,11 +317,16 @@ async def worksplace_exclusive(i3, event):
         logger.debug(f"window {w.name} can intrude")
         return
 
-    # Does the current workspace contains an exclusive app?
+    # Get the workspace. From an event, w.workspace() is None, so
+    # search it in the tree.
     tree = await i3.get_tree()
-    workspace = tree.find_focused().workspace()
+    workspace = next(
+        (ow.workspace() for ow in tree.leaves() if w.id == ow.id), None
+    )
     if not workspace:
         return
+
+    # Does the target workspace contains an exclusive app?
     ids = {
         s is not None and s.lower() or None
         for ow in workspace.leaves()

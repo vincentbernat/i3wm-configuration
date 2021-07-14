@@ -62,6 +62,8 @@ icons = {
     "wifi-medium": icon(2, ""),
     "wifi-high": icon(2, ""),
     "wired": icon(2, ""),
+    "notifications-enabled": icon(2, ""),
+    "notifications-disabled": icon(2, ""),
 }
 application_icons_nomatch = icon(2, "")
 application_icons_alone = {application_icons[k] for k in {"vbeterm"}}
@@ -547,6 +549,46 @@ async def bluetooth_notifications(
         app_icon=icon,
         summary=name,
         body=f"Bluetooth device {state}",
+    )
+
+
+@on(
+    DBusSignal(
+        system=False,
+        path="/org/freedesktop/Notifications",
+        interface="org.freedesktop.DBus.Properties",
+        member="PropertiesChanged",
+        signature="sa{sv}as",
+    )
+)
+async def dunst_status_update(
+    i3, event, path, interface, changed, invalid
+):
+    """Update notification status in polybar."""
+    if interface != "org.dunstproject.cmd0":
+        return
+    if "paused" not in changed:
+        return
+    polybar(
+        "dunst",
+        icons[
+            changed["paused"][1]
+            and "notifications-disabled"
+            or "notifications-enabled"
+        ],
+    )
+
+
+@on(StartEvent)
+async def dunst_status_check(i3, event):
+    """Display notification status for polybar."""
+    conn = i3.session_bus["org.freedesktop.Notifications"]
+    obj = conn["/org/freedesktop/Notifications"]
+    dunst = await obj.get_async_interface("org.dunstproject.cmd0")
+    paused = await dunst.paused
+    polybar(
+        "dunst",
+        icons[paused and "notifications-disabled" or "notifications-enabled"],
     )
 
 

@@ -72,7 +72,7 @@ logger = logging.getLogger("i3-companion")
 
 # Events for @on decorator
 DBusSignal = collections.namedtuple(
-    "DBusSignal", ["path", "interface", "member", "signature"]
+    "DBusSignal", ["system", "path", "interface", "member", "signature"]
 )
 StartEvent = object()
 I3Event = i3ipc.Event
@@ -521,6 +521,7 @@ async def output_update(i3, event):
 
 @on(
     DBusSignal(
+        system=True,
         path="/org/bluez",
         interface="org.freedesktop.DBus.Properties",
         member="PropertiesChanged",
@@ -551,6 +552,7 @@ async def bluetooth_notifications(
 
 @on(
     DBusSignal(
+        system=True,
         path="/",
         interface="org.freedesktop.NetworkManager.Connection.Active",
         member="StateChanged",
@@ -596,12 +598,14 @@ async def network_manager_notifications(i3, event, path, state, reason):
 @on(
     StartEvent,
     DBusSignal(
+        system=True,
         path="/",
         interface="org.freedesktop.NetworkManager.Connection.Active",
         member="StateChanged",
         signature="uu",
     ),
     DBusSignal(
+        system=True,
         path="/",
         interface="org.freedesktop.NetworkManager.AccessPoint",
         member="PropertiesChanged",
@@ -723,27 +727,27 @@ async def main(options):
     for fn, events in on.functions.items():
         for event in events:
             if isinstance(event, DBusSignal):
-                for bus in {i3.session_bus, i3.system_bus}:
+                bus = i3.system_bus if event.system else i3.session_bus
 
-                    def wrapping(fn, event):
-                        @ravel.signal(
-                            name=event.member,
-                            in_signature=event.signature,
-                            path_keyword="path",
-                            args_keyword="args",
-                        )
-                        async def wrapped(path, args):
-                            return await fn(i3, event, path, *args)
-
-                        return wrapped
-
-                    bus.listen_signal(
-                        path=event.path,
-                        fallback=True,
-                        interface=event.interface,
+                def wrapping(fn, event):
+                    @ravel.signal(
                         name=event.member,
-                        func=wrapping(fn, event),
+                        in_signature=event.signature,
+                        path_keyword="path",
+                        args_keyword="args",
                     )
+                    async def wrapped(path, args):
+                        return await fn(i3, event, path, *args)
+
+                    return wrapped
+
+                bus.listen_signal(
+                    path=event.path,
+                    fallback=True,
+                    interface=event.interface,
+                    name=event.member,
+                    func=wrapping(fn, event),
+                )
 
     # Run events that should run on start
     for fn, events in on.functions.items():

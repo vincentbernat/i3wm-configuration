@@ -4,7 +4,7 @@
 // Theme
 user_pref("extensions.activeThemeID", "default-theme@mozilla.org");
 user_pref("devtools.theme", "dark");
-// user_pref("privacy.resistFingerprinting", true); (can be used to have prefers-color-scheme: light)
+user_pref("privacy.resistFingerprinting", true); // prefers-color-scheme: light
 
 // Ensure context menus stay open after left-click (useful when scale
 // == 1.5)

@@ -198,9 +198,9 @@ def debounce(sleep, *, unless=None, retry=0):
 
 async def notify(i3, **kwargs):
     """Send a notification with notify-send."""
-    peer = i3.session_bus["org.freedesktop.Notifications"]
-    peer = peer["/org/freedesktop/Notifications"]
-    notifications = await peer.get_async_interface(
+    conn = i3.session_bus["org.freedesktop.Notifications"]
+    obj = conn["/org/freedesktop/Notifications"]
+    notifications = await obj.get_async_interface(
         "org.freedesktop.Notifications"
     )
     parameters = dict(
@@ -536,8 +536,8 @@ async def bluetooth_notifications(
         return
     if "Connected" not in changed:
         return
-    peer = i3.system_bus["org.bluez"][path]
-    obd = await peer.get_async_interface(interface)
+    obj = i3.system_bus["org.bluez"][path]
+    obd = await obj.get_async_interface(interface)
     name = await obd.Name
     icon = await obd.Icon
     state = await obd.Connected
@@ -567,9 +567,9 @@ async def network_manager_notifications(i3, event, path, state, reason):
         # Deactivated state does not contain enough information,
         # unless we maintain state.
         return
-    peer = i3.system_bus[ofnm][path]
+    obj = i3.system_bus[ofnm][path]
     try:
-        nmca = await peer.get_async_interface(f"{ofnm}.Connection.Active")
+        nmca = await obj.get_async_interface(f"{ofnm}.Connection.Active")
     except dbussy.DBusError:
         logger.info(f"interface {path} has vanished")
         return
@@ -626,11 +626,13 @@ async def network_manager_status(i3, event, *args):
     status = []
 
     # Build status from devices
-    bus = i3.system_bus[ofnm]
-    nm = await bus["/org/freedesktop/NetworkManager"].get_async_interface(ofnm)
+    conn = i3.system_bus[ofnm]
+    nm = await conn["/org/freedesktop/NetworkManager"].get_async_interface(
+        ofnm
+    )
     devices = await nm.AllDevices
     for device in devices:
-        nmd = await bus[device].get_async_interface(f"{ofnm}.Device")
+        nmd = await conn[device].get_async_interface(f"{ofnm}.Device")
         kind = await nmd.DeviceType
         state = await nmd.State
         if state == NM_DEVICE_STATE_UNMANAGED:
@@ -639,7 +641,7 @@ async def network_manager_status(i3, event, *args):
             if state != NM_DEVICE_STATE_ACTIVATED:
                 status.append(icons["nowifi"])
                 continue
-            nmw = await bus[device].get_async_interface(
+            nmw = await conn[device].get_async_interface(
                 f"{ofnm}.Device.Wireless"
             )
             ap = await nmw.ActiveAccessPoint
@@ -647,7 +649,7 @@ async def network_manager_status(i3, event, *args):
                 status.append(icons["nowifi"])
                 continue
             network_manager_status.active_ap = ap
-            nmap = await bus[ap].get_async_interface(f"{ofnm}.AccessPoint")
+            nmap = await conn[ap].get_async_interface(f"{ofnm}.AccessPoint")
             name = await nmap.Ssid
             strength = int(await nmap.Strength)
             status.append(
@@ -670,8 +672,10 @@ async def network_manager_status(i3, event, *args):
 
     # Build status for VPN connection
     connections = await nm.ActiveConnections
-    for conn in connections:
-        nma = await bus[conn].get_async_interface(f"{ofnm}.Connection.Active")
+    for connection in connections:
+        nma = await conn[connection].get_async_interface(
+            f"{ofnm}.Connection.Active"
+        )
         vpn = await nma.Vpn
         if vpn:
             state = await nma.State

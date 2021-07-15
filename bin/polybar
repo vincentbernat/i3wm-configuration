@@ -4,7 +4,8 @@ export DPI=$(xrdb -query | sed -nE 's/^Xft\.dpi:\s*//p')
 export HEIGHT=$((20 * DPI / 96))
 
 MONITORS=$(xrandr --current | awk '($0 ~ / connected / && $0 ~ / [0-9]+x[0-9]+\+/) {print $1}')
-PRIMARY=$(xrandr --current | awk '($0 ~ / primary /) {print $1; exit}')
+PRIMARY=$(xrandr --current | awk '($0 ~ / connected primary / && $0 ~ / [0-9]+x[0-9]+\+/) {print $1; exit}')
+PRIMARY=${PRIMARY:-${MONITORS%% *}}
 NUMS=$(echo $MONITORS | wc -w)
 case $NUMS in
     1)

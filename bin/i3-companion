@@ -776,7 +776,7 @@ async def network_manager_status(i3, event, *args):
 
 
 async def main(options):
-    i3 = await Connection().connect()
+    i3 = await Connection(auto_reconnect=True).connect()
     i3.session_bus = await ravel.session_bus_async()
     i3.system_bus = await ravel.system_bus_async()
 

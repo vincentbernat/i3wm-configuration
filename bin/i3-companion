@@ -507,11 +507,42 @@ async def workspace_info(i3, event):
     workspace_info.last_id = result[0]
 
 
-@on(I3Event.OUTPUT)
+@on(I3Event.OUTPUT, StartEvent)
+@static(last_setup={})
 @debounce(2)
 async def output_update(i3, event):
     """React to a XRandR change."""
-    logger.info("XRandR change detected")
+    proc = await asyncio.create_subprocess_exec(
+        "xrandr", "--current", stdout=asyncio.subprocess.PIPE
+    )
+    stdout, _ = await proc.communicate()
+    if proc.returncode != 0:
+        logger.warning(f"xrandr exited with {proc.returncode}")
+        return
+    stdout = stdout.decode("ascii")
+    xrandr_re = re.compile(
+        r"^"
+        r"(?P<output>\S+) connected"
+        r"(?: (?P<primary>primary))? "
+        r"(?P<geometry>\d+x\d+\+\d+\+\d+) "
+        r"\(.*?\) "
+        r"\d+mm x \d+mm"
+        r"$"
+    )
+    current_setup = {
+        mo.groups()
+        for mo in {xrandr_re.match(line) for line in stdout.split("\n")}
+        if mo
+    }
+    if current_setup == output_update.last_setup:
+        logger.debug("current xrandr setup unchanged")
+        return
+    output_update.last_setup = current_setup
+    logger.info("xrandr setup: %s", current_setup)
+    if event is StartEvent:
+        return
+
+    logger.info("xrandr change detected")
     cmds = (
         "systemctl --user reload --no-block xsettingsd.service",
         "systemctl --user start --no-block wallpaper.service",
@@ -562,9 +593,7 @@ async def bluetooth_notifications(
         signature="sa{sv}as",
     )
 )
-async def dunst_status_update(
-    i3, event, path, interface, changed, invalid
-):
+async def dunst_status_update(i3, event, path, interface, changed, invalid):
     """Update notification status in polybar."""
     if interface != "org.dunstproject.cmd0":
         return

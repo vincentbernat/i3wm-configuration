@@ -3,7 +3,6 @@
 me="$(readlink -f "$0")"
 timeout=600
 notify=$((timeout/30))
-display=$(systemd-escape -- "$DISPLAY")
 
 configure() {
     xset s $((timeout - notify)) $notify
@@ -21,8 +20,8 @@ case "$1" in
         ;;
     dim|notify)
         echo "notify: start (idle: $(xprintidle))"
-        systemctl --user kill -s STOP redshift@${display}.service
-        trap "systemctl --user kill -s CONT redshift@${display}.service" EXIT
+        systemctl --user kill -s STOP redshift.service
+        trap "systemctl --user kill -s CONT redshift.service" EXIT
         trap 'echo notify: user activity; kill %% 2> /dev/null; exit 0' HUP  # user activity
         trap 'echo notify: locker started; kill %% 2> /dev/null; exit 0' TERM # locker started
         outputs=($(xrandr --current | sed -n 's/\([^ ]*\) connected .*/\1/p'))
@@ -35,7 +34,7 @@ case "$1" in
         ;;
     lock)
         echo "lock: lock screen (idle: $(xprintidle))"
-        # Something may have mendled with screensaver settings
+        # Something may have meddled with screensaver settings
         configure
         # Pause music player and notifications
         playerctl -a pause

@@ -1,28 +1,27 @@
 #!/bin/sh
 
-DISPLAY=${DISPLAY%.0}
-
 # Compute DPI of each screens
-dpis=""
-for info in $(xrandr --current \
-                  | sed -n 's/^\([^ ]\{1,\}\)* connected.* \([0-9]\{1,\}\)x.* \([0-9]\{1,\}\)mm x .*/\1,\2,\3/p'); do
-    output=${info%%,*}
-    pixels=${info#*,}
-    pixels=${pixels%%,*}
-    mm=${info##*,}
-    dpi=$(($pixels * 254 / 10 / $mm))
+dpi=$(xrandr --current \
+    | sed -En 's/^([^ ]+)* connected.* ([0-9]+)x.* ([0-9]+)mm x .*/\1 \2 \3/p' \
+    | while read output pixels mm; do
+
+    # Compute DPI
+    dpi=$((pixels * 254 / 10 / mm))
+
     # For laptop screens, we need to apply a correction factor
     case $output in
         eDP-1|eDP1) corrected=$(($dpi * 96/144)) ;;
         *) corrected=$dpi ;;
     esac
+
     # Authorized factors: 1, 1.5, 2, 3, 4, ...
     rounded=$(((corrected + 24) / 48 * 48))
     [ $rounded -gt 192 ] && rounded=$(((corrected + 48) / 96 * 96))
     [ $rounded -lt 96 ] && rounded=96
-    dpis="$dpis$rounded "
+
     echo "$output: ${dpi}dpi (corrected to ${corrected}dpi, rounded to ${rounded}dpi)" >&2
-done
+    echo "$rounded"
+done)
 
 # Use first screen DPI
 dpi=${dpis%% *}

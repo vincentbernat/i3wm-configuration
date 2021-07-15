@@ -90,7 +90,9 @@ logger = logging.getLogger("i3-companion")
 
 # Events for @on decorator
 DBusSignal = collections.namedtuple(
-    "DBusSignal", ["system", "path", "interface", "member", "signature"]
+    "DBusSignal",
+    ["system", "path", "interface", "member", "signature", "onlyif"],
+    defaults=(None,),
 )
 StartEvent = object()
 I3Event = i3ipc.Event
@@ -584,16 +586,15 @@ async def output_update(i3, event):
         interface="org.freedesktop.DBus.Properties",
         member="PropertiesChanged",
         signature="sa{sv}as",
+        onlyif=lambda args: (
+            args[0] == "org.bluez.Device1" and "Connected" in args[1]
+        ),
     )
 )
 async def bluetooth_notifications(
     i3, event, path, interface, changed, invalid
 ):
     """Display notifications related to Bluetooth state."""
-    if interface != "org.bluez.Device1":
-        return
-    if "Connected" not in changed:
-        return
     obj = i3.system_bus["org.bluez"][path]
     obd = await obj.get_async_interface(interface)
     name = await obd.Name
@@ -616,9 +617,16 @@ async def bluetooth_notifications(
         interface="org.freedesktop.DBus.Properties",
         member="PropertiesChanged",
         signature="sa{sv}as",
+        onlyif=lambda args: (
+            args[0] == "org.bluez.Device1"
+            and "Connected" in args[1]
+            or args[0] == "org.bluez.Adapter1"
+            and "Powered" in args[1]
+        ),
     ),
 )
 @static(last=None)
+@debounce(0.2, retry=2)
 async def bluetooth_status(i3, event, *args):
     """Update bluetooth status for polybar."""
     if event is StartEvent:
@@ -626,17 +634,6 @@ async def bluetooth_status(i3, event, *args):
         if not os.path.exists("/sys/class/bluetooth"):
             logger.info("no bluetooth detected")
             polybar("bluetooth", "")
-            return
-
-    else:
-        # Is it a change for an adapter or a device?
-        _, interface, changed, invalid = args
-        if not (
-            interface == "org.bluez.Device1"
-            and "Connected" in changed
-            or interface == "org.bluez.Adapter1"
-            and "Powered" not in changed
-        ):
             return
 
     # OK, get the info
@@ -711,6 +708,9 @@ async def bluetooth_status(i3, event, *args):
         interface="org.freedesktop.DBus.Properties",
         member="PropertiesChanged",
         signature="sa{sv}as",
+        onlyif=lambda args: (
+            args[0] == "org.dunstproject.cmd0" and "paused" in args[1]
+        ),
     )
 )
 async def dunst_status_update(i3, event, path, interface, changed, invalid):
@@ -933,10 +933,9 @@ async def main(options):
                         args_keyword="args",
                     )
                     async def wrapped(path, args):
-                        try:
-                            return await fn(i3, event, path, *args)
-                        except Exception as e:
-                            logger.exception(f"during {fn}: %s", e)
+                        if event.onlyif is not None and not event.onlyif(args):
+                            return
+                        return await fn(i3, event, path, *args)
 
                     return wrapped
 
@@ -953,14 +952,7 @@ async def main(options):
     for fn, events in on.functions.items():
         for event in events:
             if event is StartEvent:
-
-                async def wrapped(fn, event):
-                    try:
-                        return await fn(i3, event)
-                    except Exception as e:
-                        logger.exception(f"during {fn}: %s", e)
-
-                start_tasks.append(asyncio.create_task(wrapped(fn, event)))
+                start_tasks.append(asyncio.create_task(fn(i3, event)))
 
     await i3.main()
 

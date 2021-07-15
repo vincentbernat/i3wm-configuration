@@ -2,10 +2,12 @@
 // Settings synced through Firefox Accounts may not be present.
 
 // Theme
-user_pref("extensions.activeThemeID", "default-theme@mozilla.org");
+user_pref("extensions.activeThemeID", "firefox-compact-dark@mozilla.org");
 user_pref("devtools.theme", "dark");
 // Dark interface but light web pages. Patch:
 // https://bugzilla.mozilla.org/show_bug.cgi?id=1720508#c2
+// From 91, we can restore the proper option:
+// user_pref("ui.systemUsesDarkTheme", 0)
 
 // Ensure context menus stay open after left-click (useful when scale
 // == 1.5)

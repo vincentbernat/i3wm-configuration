@@ -91,8 +91,8 @@ logger = logging.getLogger("i3-companion")
 # Events for @on decorator
 DBusSignal = collections.namedtuple(
     "DBusSignal",
-    ["system", "path", "interface", "member", "signature", "onlyif"],
-    defaults=(None,),
+    ["interface", "member", "signature", "system", "path", "onlyif"],
+    defaults=(True, "/", None),
 )
 StartEvent = object()
 I3Event = i3ipc.Event
@@ -581,7 +581,6 @@ async def output_update(i3, event):
 
 @on(
     DBusSignal(
-        system=True,
         path="/org/bluez",
         interface="org.freedesktop.DBus.Properties",
         member="PropertiesChanged",
@@ -612,7 +611,6 @@ async def bluetooth_notifications(
 @on(
     StartEvent,
     DBusSignal(
-        system=True,
         path="/org/bluez",
         interface="org.freedesktop.DBus.Properties",
         member="PropertiesChanged",
@@ -744,8 +742,6 @@ async def dunst_status_check(i3, event):
 
 @on(
     DBusSignal(
-        system=True,
-        path="/",
         interface="org.freedesktop.NetworkManager.Connection.Active",
         member="StateChanged",
         signature="uu",
@@ -790,15 +786,11 @@ async def network_manager_notifications(i3, event, path, state, reason):
 @on(
     StartEvent,
     DBusSignal(
-        system=True,
-        path="/",
         interface="org.freedesktop.NetworkManager.Connection.Active",
         member="StateChanged",
         signature="uu",
     ),
     DBusSignal(
-        system=True,
-        path="/",
         interface="org.freedesktop.NetworkManager.AccessPoint",
         member="PropertiesChanged",
         signature="a{sv}",

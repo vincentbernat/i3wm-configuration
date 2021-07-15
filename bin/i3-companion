@@ -59,14 +59,27 @@ application_icons = {
     "zoom": icon(2, ""),
 }
 icons = {
+    "access-point": icon(2, ""),
+    "bluetooth": icon(2, ""),
+    "car": icon(2, "🚘"),
+    "gamepad": icon(2, "🎮"),
+    "headphones": icon(2, "🎧"),
+    "headset": icon(2, ""),
+    "keyboard": icon(2, "⌨"),
+    "laptop": icon(2, "💻"),
+    "loudspeaker": icon(2, ""),
+    "microphone": icon(2, ""),
+    "mouse": icon(2, ""),
+    "notifications-disabled": icon(2, "🔕"),
+    "notifications-enabled": icon(2, ""),
     "nowifi": icon(2, ""),
+    "phone": icon(2, "📞"),
+    "unknown": icon(2, ""),
     "vpn": icon(2, ""),
+    "wifi-high": icon(2, ""),
     "wifi-low": icon(2, ""),
     "wifi-medium": icon(2, ""),
-    "wifi-high": icon(2, ""),
     "wired": icon(2, ""),
-    "notifications-enabled": icon(2, ""),
-    "notifications-disabled": icon(2, "🔕"),
 }
 application_icons_nomatch = icon(2, "")
 application_icons_alone = {application_icons[k] for k in {"vbeterm"}}
@@ -596,6 +609,102 @@ async def bluetooth_notifications(
 
 
 @on(
+    StartEvent,
+    DBusSignal(
+        system=True,
+        path="/org/bluez",
+        interface="org.freedesktop.DBus.Properties",
+        member="PropertiesChanged",
+        signature="sa{sv}as",
+    ),
+)
+@static(last=None)
+async def bluetooth_status(i3, event, *args):
+    """Update bluetooth status for polybar."""
+    if event is StartEvent:
+        # Do we have a bluetooth device?
+        if not os.path.exists("/sys/class/bluetooth"):
+            logger.info("no bluetooth detected")
+            polybar("bluetooth", "")
+            return
+
+    else:
+        # Is it a change for an adapter or a device?
+        _, interface, changed, invalid = args
+        if not (
+            interface == "org.bluez.Device1"
+            and "Connected" in changed
+            or interface == "org.bluez.Adapter1"
+            and "Powered" not in changed
+        ):
+            return
+
+    # OK, get the info
+    conn = i3.system_bus["org.bluez"]
+    om = await conn["/"].get_async_interface(
+        "org.freedesktop.DBus.ObjectManager"
+    )
+    objects = await om.GetManagedObjects()
+    objects = objects[0]
+    powered = False
+    devices = []
+    for path, interfaces in objects.items():
+        if "org.bluez.Adapter1" in interfaces:
+            # We get an adapter!
+            adapter = interfaces["org.bluez.Adapter1"]
+            if adapter["Powered"][1]:
+                powered = True
+        elif "org.bluez.Device1" in interfaces:
+            # We have a device!
+            device = interfaces["org.bluez.Device1"]
+            if not device["Connected"][1]:
+                continue
+            device_class = device["Class"][1]
+            major = (device_class & 0x1F00) >> 8
+            minor = (device_class & 0xFC) >> 2
+            devices.append((major, minor))
+    if not powered:
+        polybar("bluetooth", "")
+        return
+
+    # Generate output
+    # See: https://btprodspecificationrefs.blob.core.windows.net/assigned-numbers/Assigned%20Number%20Types/Baseband.pdf
+    output = [icons["bluetooth"]]
+    for major, minor in devices:
+        if major == 1:
+            output.append(icons["laptop"])
+        elif major == 2:
+            output.append(icons["phone"])
+        elif major == 3:
+            output.append(icons["access-point"])
+        elif major == 4 and minor in {1, 2}:
+            output.append(icons["headset"])
+        elif major == 4 and minor == 4:
+            output.append(icons["microphone"])
+        elif major == 4 and minor in {5, 7, 10}:
+            output.append(icons["loudspeaker"])
+        elif major == 4 and minor == 6:
+            output.append(icons["headphones"])
+        elif major == 4 and minor == 8:
+            output.append(icons["car"])
+        elif major == 5 and minor in {1, 2}:
+            output.append(icons["gamepad"])
+        elif major == 5 and minor & 0x10:
+            output.append(icons["keyboard"])
+        elif major == 5 and minor & 0x20:
+            output.append(icons["mouse"])
+        else:
+            output.append(icons["unknown"])
+    output = "|".join(output)
+
+    # Update polybar
+    if bluetooth_status.last != output:
+        logger.info("updated bluetooth status")
+        polybar("bluetooth", output)
+        bluetooth_status.last = output
+
+
+@on(
     DBusSignal(
         system=False,
         path="/org/freedesktop/Notifications",
@@ -824,7 +933,10 @@ async def main(options):
                         args_keyword="args",
                     )
                     async def wrapped(path, args):
-                        return await fn(i3, event, path, *args)
+                        try:
+                            return await fn(i3, event, path, *args)
+                        except Exception as e:
+                            logger.exception(f"during {fn}: %s", e)
 
                     return wrapped
 
@@ -837,10 +949,18 @@ async def main(options):
                 )
 
     # Run events that should run on start
+    start_tasks = []
     for fn, events in on.functions.items():
         for event in events:
             if event is StartEvent:
-                asyncio.create_task(fn(i3, event))
+
+                async def wrapped(fn, event):
+                    try:
+                        return await fn(i3, event)
+                    except Exception as e:
+                        logger.exception(f"during {fn}: %s", e)
+
+                start_tasks.append(asyncio.create_task(wrapped(fn, event)))
 
     await i3.main()
 

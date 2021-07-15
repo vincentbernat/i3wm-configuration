@@ -357,7 +357,7 @@ async def worksplace_exclusive(i3, event):
 
     # Create a new workspace and move the window here
     num = await _new_workspace(i3)
-    logger.info(f"move window {w.name} to workspace {num}")
+    logger.info(f"move window {w.window_class} to workspace {num}")
     await w.command(f'move container to workspace number "{num}"')
 
 

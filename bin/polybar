@@ -3,17 +3,18 @@
 export DPI=$(xrdb -query | sed -nE 's/^Xft\.dpi:\s*//p')
 export HEIGHT=$((20 * DPI / 96))
 
-NUMS=$(polybar --list-monitors | wc -l)
-PRIMARY=$(polybar --list-monitors | awk -F: '($0 ~ /primary/) {print $1; exit}')
+MONITORS=$(xrandr --current | awk '($0 ~ / connected / && $0 ~ / [0-9]+x[0-9]+\+/) {print $1}')
+PRIMARY=$(xrandr --current | awk '($0 ~ / primary /) {print $1; exit}')
+NUMS=$(echo $MONITORS | wc -w)
 case $NUMS in
     1)
         MONITOR=$PRIMARY polybar --reload alone &
         ;;
     *)
         MONITOR=$PRIMARY polybar --reload primary &
-        for MONITOR in $(polybar --list-monitors | awk -F: '($0 !~ /primary/) {print $1}'); do
-            export MONITOR
-            polybar --reload secondary &
+        for MONITOR in ${MONITORS}; do
+            [ $MONITOR != $PRIMARY ] || continue
+            MONITOR=$MONITOR polybar --reload secondary &
         done
         ;;
 esac

@@ -40,7 +40,7 @@ background = Image.new('RGB', (screen.width_in_pixels, screen.height_in_pixels))
 
 # Query randr extension
 screens = []
-screen_resources = randr.get_screen_resources(window)
+screen_resources = randr.get_screen_resources_current(window)
 for output in screen_resources.outputs:
     output_info = randr.get_output_info(window, output,
                                         screen_resources.timestamp)

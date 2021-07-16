@@ -658,39 +658,39 @@ async def bluetooth_status(i3, event, *args):
             major = (device_class & 0x1F00) >> 8
             minor = (device_class & 0xFC) >> 2
             devices.append((major, minor))
-    if not powered:
-        polybar("bluetooth", "")
-        return
 
     # Generate output
     # See: https://btprodspecificationrefs.blob.core.windows.net/assigned-numbers/Assigned%20Number%20Types/Baseband.pdf
-    output = [icons["bluetooth"]]
-    for major, minor in devices:
-        if major == 1:
-            output.append(icons["laptop"])
-        elif major == 2:
-            output.append(icons["phone"])
-        elif major == 3:
-            output.append(icons["access-point"])
-        elif major == 4 and minor in {1, 2}:
-            output.append(icons["headset"])
-        elif major == 4 and minor == 4:
-            output.append(icons["microphone"])
-        elif major == 4 and minor in {5, 7, 10}:
-            output.append(icons["loudspeaker"])
-        elif major == 4 and minor == 6:
-            output.append(icons["headphones"])
-        elif major == 4 and minor == 8:
-            output.append(icons["car"])
-        elif major == 5 and minor in {1, 2}:
-            output.append(icons["gamepad"])
-        elif major == 5 and minor & 0x10:
-            output.append(icons["keyboard"])
-        elif major == 5 and minor & 0x20:
-            output.append(icons["mouse"])
-        else:
-            output.append(icons["unknown"])
-    output = "|".join(output)
+    if not powered:
+        output = ""
+    else:
+        output = [icons["bluetooth"]]
+        for major, minor in devices:
+            if major == 1:
+                output.append(icons["laptop"])
+            elif major == 2:
+                output.append(icons["phone"])
+            elif major == 3:
+                output.append(icons["access-point"])
+            elif major == 4 and minor in {1, 2}:
+                output.append(icons["headset"])
+            elif major == 4 and minor == 4:
+                output.append(icons["microphone"])
+            elif major == 4 and minor in {5, 7, 10}:
+                output.append(icons["loudspeaker"])
+            elif major == 4 and minor == 6:
+                output.append(icons["headphones"])
+            elif major == 4 and minor == 8:
+                output.append(icons["car"])
+            elif major == 5 and minor in {1, 2}:
+                output.append(icons["gamepad"])
+            elif major == 5 and minor & 0x10:
+                output.append(icons["keyboard"])
+            elif major == 5 and minor & 0x20:
+                output.append(icons["mouse"])
+            else:
+                output.append(icons["unknown"])
+        output = "|".join(output)
 
     # Update polybar
     if bluetooth_status.last != output:

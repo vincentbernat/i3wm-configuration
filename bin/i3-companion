@@ -135,14 +135,39 @@ def on(*events):
     return decorator
 
 
-def debounce(sleep, *, unless=None, retry=0):
-    """Debounce a function call (batch successive calls into only one).
-    Optional immediate execution. Optional retry on failure. Ensure
-    only one instance is executed. It is assumed the arguments
-    provided to the debounced function have no effect on its
-    execution.
+def retry(max_retries):
+    """Retry an async function."""
 
-    """
+    def decorator(fn):
+        @functools.wraps(fn)
+        async def wrapper(*args, **kwargs):
+            retries = max_retries
+            while True:
+                try:
+                    logger.debug(f"execute {fn} (remaining tries: {retries})")
+                    return await fn(*args, **kwargs)
+                except Exception as e:
+                    if retries > 0:
+                        retries -= 1
+                        logger.warning(
+                            f"while executing {fn} (remaining tries: %d): %s",
+                            retries,
+                            e,
+                        )
+                    else:
+                        logger.exception(f"while executing {fn}: %s", e)
+                        return
+
+        return wrapper
+
+    return decorator
+
+
+def debounce(sleep, *, unless=None):
+    """Debounce a function call (batch successive calls into only one).
+    Optional immediate execution. Ensure only one instance is
+    executed. It is assumed the arguments provided to the debounced
+    function have no effect on its execution."""
 
     def decorator(fn):
         async def worker():
@@ -155,7 +180,7 @@ def debounce(sleep, *, unless=None, retry=0):
                     logger.debug(f"urgent work received for {fn}")
                 except asyncio.TimeoutError:
                     pass
-                retry, args, kwargs = workers[fn].queue
+                args, kwargs = workers[fn].queue
                 workers[fn].queue = None
                 workers[fn].urgent.clear()
 
@@ -164,26 +189,10 @@ def debounce(sleep, *, unless=None, retry=0):
                 try:
                     await fn(*args, **kwargs)
                 except Exception as e:
-                    if not retry:
-                        logger.exception(f"while executing {fn}: %s", e)
-                        return
-                    retry -= 1
-                    logger.warning(
-                        f"while executing {fn} (remaining tries: %d): %s",
-                        retry,
-                        str(e),
-                    )
+                    logger.debug(f"while running {fn}, worker got %s", e)
+                    workers[fn] = None
+                    raise
 
-                    # Retry, unless we have something already scheduled
-                    if workers[fn].queue is not None:
-                        logger.debug(f"retry now with queued event for {fn}")
-                        workers[fn].urgent.set()
-                        continue
-                    logger.debug(f"reschedule retry for {fn}")
-                    workers[fn].queue = (retry, args, kwargs)
-                    if unless is not None and unless(*args, **kwargs):
-                        logger.debug(f"wake up now for retry of {fn}")
-                        workers[fn].urgent.set()
                 # Do we still have something to do?
                 if workers[fn].queue is None:
                     break
@@ -199,12 +208,13 @@ def debounce(sleep, *, unless=None, retry=0):
                 workers[fn] = types.SimpleNamespace()
                 workers[fn].task = asyncio.create_task(worker())
                 workers[fn].urgent = asyncio.Event()
-                workers[fn].queue = (retry, args, kwargs)
+                workers[fn].queue = (args, kwargs)
             else:
                 logger.debug(f"enqueue new work for {fn}")
             if unless is not None and unless(*args, **kwargs):
                 logger.debug(f"wake up now for {fn}")
                 workers[fn].urgent.set()
+            return await workers[fn].task
 
         workers[fn] = None
         return wrapper
@@ -624,7 +634,8 @@ async def bluetooth_notifications(
     ),
 )
 @static(last=None)
-@debounce(0.2, retry=2)
+@retry(2)
+@debounce(0.2)
 async def bluetooth_status(i3, event, *args):
     """Update bluetooth status for polybar."""
     if event is StartEvent:
@@ -797,12 +808,12 @@ async def network_manager_notifications(i3, event, path, state, reason):
     ),
 )
 @static(last=None)
+@retry(2)
 @debounce(
     1,
     unless=lambda i3, event, *args: (
         isinstance(event, DBusSignal) and event.interface.endswith(".Active")
     ),
-    retry=2,
 )
 async def network_manager_status(i3, event, *args):
     """Compute network manager status."""

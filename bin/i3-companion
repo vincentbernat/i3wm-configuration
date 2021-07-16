@@ -61,6 +61,7 @@ application_icons = {
 icons = {
     "access-point": icon(2, ""),
     "bluetooth": icon(2, ""),
+    "camera": icon(2, "⎙"),
     "car": icon(2, "🚘"),
     "gamepad": icon(2, "🎮"),
     "headphones": icon(2, "🎧"),
@@ -74,8 +75,11 @@ icons = {
     "notifications-enabled": icon(2, ""),
     "nowifi": icon(2, ""),
     "phone": icon(2, "📞"),
+    "printer": icon(2, "⎙"),
+    "scanner": icon(2, ""),
     "unknown": icon(2, ""),
     "vpn": icon(2, ""),
+    "webcam": icon(2, ""),
     "wifi-high": icon(2, ""),
     "wifi-low": icon(2, ""),
     "wifi-medium": icon(2, ""),
@@ -144,7 +148,9 @@ def retry(max_retries):
             retries = max_retries
             while True:
                 try:
-                    logger.debug("execute %s (remaining tries: %s)", fn, retries)
+                    logger.debug(
+                        "execute %s (remaining tries: %s)", fn, retries
+                    )
                     return await fn(*args, **kwargs)
                 except Exception as e:
                     if retries > 0:
@@ -282,7 +288,9 @@ async def workspace_rename(i3, event):
                 continue
             for k, v in application_icons.items():
                 if re.match(rf"^{k}\b", name, re.IGNORECASE):
-                    logger.debug("in %s, found '%s', matching %s", attr, name, k)
+                    logger.debug(
+                        "in %s, found '%s', matching %s", attr, name, k
+                    )
                     return v
         return application_icons_nomatch
 
@@ -670,38 +678,48 @@ async def bluetooth_status(i3, event, *args):
             minor = (device_class & 0xFC) >> 2
             devices.append((major, minor))
 
-    # Generate output
+    # Choose appropriate icons for output
     # See: https://btprodspecificationrefs.blob.core.windows.net/assigned-numbers/Assigned%20Number%20Types/Baseband.pdf
     if not powered:
         output = ""
     else:
-        output = [icons["bluetooth"]]
+        output = ["bluetooth"]
         for major, minor in devices:
-            if major == 1:
-                output.append(icons["laptop"])
-            elif major == 2:
-                output.append(icons["phone"])
-            elif major == 3:
-                output.append(icons["access-point"])
-            elif major == 4 and minor in {1, 2}:
-                output.append(icons["headset"])
-            elif major == 4 and minor == 4:
-                output.append(icons["microphone"])
-            elif major == 4 and minor in {5, 7, 10}:
-                output.append(icons["loudspeaker"])
-            elif major == 4 and minor == 6:
-                output.append(icons["headphones"])
-            elif major == 4 and minor == 8:
-                output.append(icons["car"])
-            elif major == 5 and minor in {1, 2}:
-                output.append(icons["gamepad"])
-            elif major == 5 and minor & 0x10:
-                output.append(icons["keyboard"])
-            elif major == 5 and minor & 0x20:
-                output.append(icons["mouse"])
-            else:
-                output.append(icons["unknown"])
-        output = "|".join(output)
+            classes = {
+                1: "laptop",
+                2: "phone",
+                3: "access-point",
+                (4, 1): "headset",
+                (4, 2): "headset",
+                (4, 4): "microphone",
+                (4, 5): "loudspeaker",
+                (4, 7): "loudspeaker",
+                (4, 10): "loudspeaker",
+                (4, 6): "headphones",
+                (4, 8): "car",
+                (4, 12): "webcam",
+                (5, 1): "gamepad",
+                (5, 2): "gamepad",
+                5: [
+                    (lambda x: x & 0x10, "keyboard"),
+                    (lambda x: x & 0x20, "mouse"),
+                ],
+                6: [
+                    (lambda x: x & 0x8, "camera"),
+                    (lambda x: x & 0x10, "scanner"),
+                    (lambda x: x & 0x20, "printer"),
+                ],
+            }
+            icon = classes.get((major, minor)) or classes.get(major, "unknown")
+            if type(icon) is list:
+                for matcher, name in icon:
+                    if matcher(minor):
+                        icon = name
+                        break
+                else:
+                    icon = "unknown"
+            output.append(icon)
+        output = "|".join(icons[o] for o in output)
 
     # Update polybar
     if bluetooth_status.last != output:
@@ -899,11 +917,14 @@ async def main(options):
     for fn, events in on.functions.items():
         for event in events:
             if isinstance(event, I3Event):
+
                 def wrapping(fn, event):
                     async def wrapped(i3, event):
                         logger.debug("received i3 event %s for %s", event, fn)
                         return await fn(i3, event)
+
                     return wrapped
+
                 i3.on(event, wrapping(fn, event))
 
     # React to some bindings
@@ -943,10 +964,14 @@ async def main(options):
                     )
                     async def wrapped(path, args):
                         if event.onlyif is not None and not event.onlyif(args):
-                            logger.debug("received DBus event for %s but not interested",
-                                         fn)
+                            logger.debug(
+                                "received DBus event for %s, not interested",
+                                fn,
+                            )
                             return
-                        logger.debug("received DBus event %s for %s", event, fn)
+                        logger.debug(
+                            "received DBus event %s for %s", event, fn
+                        )
                         return await fn(i3, event, path, *args)
 
                     return wrapped

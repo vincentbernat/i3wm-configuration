@@ -376,12 +376,13 @@ async def worksplace_exclusive(i3, event):
     if not workspace:
         return
 
-    # Does the target workspace contains an exclusive app?
+    # Does the target workspace contains an exclusive app (not using
+    # the same class).
     ids = {
         s is not None and s.lower() or None
         for ow in workspace.leaves()
         for s in {ow.name, ow.window_class, ow.window_instance}
-        if w.id != ow.id
+        if w.id != ow.id and w.window_class != ow.window_class
     }
     exclusives = ids.intersection(exclusive_apps)
     if not exclusives:

@@ -347,52 +347,67 @@ async def worksplace_exclusive(i3, event):
     with an exclusive app."""
     w = event.container
 
-    def can_intrude(w):
-        """Can this new window intrude any workspace?"""
-        if w.floating in {"auto_on", "user_on"}:
-            return True
-        if w.ipc_data["window_type"] not in {"normal", "splash", "unknown"}:
-            return True
-        if w.sticky:
-            return True
-        ids = {
+    def partof(w, apps):
+        """Provided window is part of the provided apps."""
+        names = {
             s is not None and s.lower() or None
             for s in {w.name, w.window_class, w.window_instance}
         }
-        if ids.intersection(intrusive_apps):
-            return True
+        return bool(names.intersection(apps))
 
-    # Can the new window just intrude?
-    if can_intrude(w):
+    # Can the current window intrude the workspace?
+    if (
+        w.floating in {"auto_on", "user_on"}
+        or w.ipc_data["window_type"] not in {"normal", "splash", "unknown"}
+        or w.sticky
+        or partof(w, intrusive_apps)
+    ):
         logger.debug("window %s can intrude", w.name)
         return
 
-    # Get the workspace. From an event, w.workspace() is None, so
-    # search it in the tree.
     tree = await i3.get_tree()
-    workspace = next(
-        (ow.workspace() for ow in tree.leaves() if w.id == ow.id), None
+
+    # Get the window workspace. From an event, w.workspace() is None,
+    # so search it in the tree.
+    current_workspace = next(
+        (ow.workspace().num for ow in tree.leaves() if w.id == ow.id), None
     )
-    if not workspace:
+    if not current_workspace:
+        logger.info(f"cannot get workspace for {w.window_class}")
         return
 
-    # Does the target workspace contains an exclusive app (not using
-    # the same class).
-    ids = {
-        s is not None and s.lower() or None
-        for ow in workspace.leaves()
-        for s in {ow.name, ow.window_class, ow.window_instance}
-        if w.id != ow.id and w.window_class != ow.window_class
+    # Get the list of workspaces with an exclusive app, excluding the
+    # current window and windows of the same class.
+    exclusive_workspaces = {
+        ow.workspace().num
+        for ow in tree.leaves()
+        if w.id != ow.id
+        and (w.window_class or object()) != ow.window_class
+        and partof(ow, exclusive_apps)
     }
-    exclusives = ids.intersection(exclusive_apps)
-    if not exclusives:
-        logger.debug("no exclusive app, %s can go there", w.name)
+
+    # If current one is OK, don't move
+    if current_workspace not in exclusive_workspaces:
+        logger.debug("no exclusive app, %s can go there", w.window_class)
         return
 
-    # Create a new workspace and move the window here
-    num = await _new_workspace(i3)
+    # Are there other workspaces with the same app but no exclusive apps?
+    candidate_workspaces = {
+        ow.workspace().num
+        for ow in tree.leaves()
+        if w.id != ow.id and (w.window_class or object()) == ow.window_class
+    }
+    candidate_workspaces -= exclusive_workspaces
+
+    if candidate_workspaces:
+        # Use one of the candidates
+        num = next(iter(candidate_workspaces))
+    else:
+        # Create a new workspace
+        num = await _new_workspace(i3)
+
     logger.info(f"move window {w.window_class} to workspace {num}")
-    await w.command(f'move container to workspace number "{num}"')
+    await w.command(f'move container to workspace number "{num}", focus')
 
 
 @on(CommandEvent("quake-console"))

@@ -9,7 +9,7 @@ PRIMARY=${PRIMARY:-${MONITORS%% *}}
 
 case $(echo $MONITORS | wc -w) in
     1)
-        MONITOR=$PRIMARY polybar --reload alone &
+        MONITOR=$PRIMARY exec polybar --reload alone
         ;;
     *)
         MONITOR=$PRIMARY polybar --reload primary &

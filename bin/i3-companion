@@ -5,6 +5,7 @@
 import argparse
 import asyncio
 import collections
+import contextlib
 import errno
 import functools
 import glob
@@ -12,7 +13,6 @@ import html
 import logging
 import logging.handlers
 import os
-import re
 import shlex
 import subprocess
 import sys
@@ -177,12 +177,10 @@ def debounce(sleep, *, unless=None):
     def decorator(fn):
         async def worker():
             while True:
-                try:
+                with contextlib.suppress(asyncio.TimeoutError):
                     # Wait for an urgent work or until sleep is elapsed
                     await asyncio.wait_for(workers[fn].urgent.wait(), timeout=sleep)
                     logger.debug("urgent work received for %s", fn)
-                except asyncio.TimeoutError:
-                    pass
                 args, kwargs = workers[fn].queue
                 workers[fn].queue = None
                 workers[fn].urgent.clear()
@@ -533,8 +531,7 @@ async def output_update(i3, event):
     """React to a XRandR change."""
 
     # Grab current setup. Synchronous, but it's short enough
-    d = display.Display()
-    try:
+    with contextlib.closing(display.Display()) as d:
         screen = d.screen()
         window = screen.root.create_window(0, 0, 1, 1, 1, screen.root_depth)
         screen_resources = randr.get_screen_resources_current(window)
@@ -557,8 +554,6 @@ async def output_update(i3, event):
                     crtc_info.y,
                 )
             )
-    finally:
-        d.close()
 
     # Compare to current setup
     if current_setup == output_update.last_setup:

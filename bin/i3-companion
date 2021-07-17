@@ -53,6 +53,7 @@ application_icons = {
     "signal": icon(2, ""),
     "snes9x-gtk": icon(2, ""),
     "spotify": icon(3, ""),
+    "sxiv": icon(2, ""),
     "steam": icon(3, ""),
     "vbeterm": icon(2, ""),
     "zathura": icon(2, ""),
@@ -274,24 +275,14 @@ async def workspace_rename(i3, event):
     workspaces = tree.workspaces()
     commands = []
 
-    def application_icon(window):
-        """Get application icon for a window."""
-        for attr in ("window_instance", "window_class"):
-            name = getattr(window, attr, None)
-            if name is None:
-                continue
-            for k, v in application_icons.items():
-                if re.match(rf"^{k}\b", name, re.IGNORECASE):
-                    logger.debug("in %s, found '%s', matching %s", attr, name, k)
-                    return v
-        return application_icons_nomatch
-
     for workspace in workspaces:
         icons = set()
         for window in workspace.leaves():
             if window.sticky:
                 continue
-            icon = application_icon(window)
+            icon = application_icons.get(
+                window.window_class.lower(), application_icons_nomatch
+            )
             if icon is not None:
                 icons.add(icon)
         if any([i not in application_icons_alone for i in icons]):
@@ -351,12 +342,7 @@ async def worksplace_exclusive(i3, event):
 
     # Get the window workspace. From an event, w.workspace() is None,
     # so search it in the tree.
-    current_workspace = next(
-        (ow.workspace().num for ow in tree.leaves() if w.id == ow.id), None
-    )
-    if not current_workspace:
-        logger.info(f"cannot get workspace for {w.window_class}")
-        return
+    current_workspace = tree.find_by_id(w.id).workspace()
 
     # Get the list of workspaces with an exclusive app, excluding the
     # current window and windows of the same class.

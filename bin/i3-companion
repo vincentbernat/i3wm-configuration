@@ -87,8 +87,8 @@ icons = {
 }
 application_icons_nomatch = icon(2, "")
 application_icons_alone = {application_icons[k] for k in {"vbeterm"}}
-exclusive_apps = {"emacs", "firefox"}
-intrusive_apps = {"vbeterm"}
+exclusive_apps = {"Emacs", "Firefox"}
+intrusive_apps = {"Vbeterm"}
 
 logger = logging.getLogger("i3-companion")
 
@@ -337,20 +337,12 @@ async def worksplace_exclusive(i3, event):
     with an exclusive app."""
     w = event.container
 
-    def partof(w, apps):
-        """Provided window is part of the provided apps."""
-        names = {
-            s is not None and s.lower() or None
-            for s in {w.name, w.window_class, w.window_instance}
-        }
-        return bool(names.intersection(apps))
-
     # Can the current window intrude the workspace?
     if (
         w.floating in {"auto_on", "user_on"}
         or w.ipc_data["window_type"] not in {"normal", "splash", "unknown"}
         or w.sticky
-        or partof(w, intrusive_apps)
+        or w.window_class in intrusive_apps
     ):
         logger.debug("window %s can intrude", w.name)
         return
@@ -373,7 +365,7 @@ async def worksplace_exclusive(i3, event):
         for ow in tree.leaves()
         if w.id != ow.id
         and (w.window_class or object()) != ow.window_class
-        and partof(ow, exclusive_apps)
+        and ow.window_class in exclusive_apps
     }
 
     # If current one is OK, don't move

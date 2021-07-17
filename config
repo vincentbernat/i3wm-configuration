@@ -58,7 +58,7 @@ bindsym $mod+Return exec exec $term
 bindsym $mod+x kill
 
 # execute command
-bindsym $mod+r exec --no-startup-id exec i3-dmenu-desktop
+bindsym $mod+r exec --no-startup-id exec j4-dmenu-desktop
 
 # change focus
 bindsym $mod+$left  focus left

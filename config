@@ -58,7 +58,7 @@ bindsym $mod+Return exec exec $term
 bindsym $mod+x kill
 
 # execute command
-bindsym $mod+r exec --no-startup-id exec rofi -show drun -show-icons -drun-match-fields name -sidebar-mode -modi drun#run 
+bindsym $mod+r exec --no-startup-id exec rofi -modi drun -show drun -show-icons -drun-match-fields name
 
 # change focus
 bindsym $mod+$left  focus left

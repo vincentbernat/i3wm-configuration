@@ -340,12 +340,7 @@ async def workspace_exclusive(i3, event):
     w = event.container
 
     # Can the current window intrude the workspace?
-    if (
-        w.floating in {"auto_on", "user_on"}
-        or w.ipc_data["window_type"] not in {"normal", "splash", "unknown"}
-        or w.sticky
-        or w.window_class in intrusive_apps
-    ):
+    if w.floating in {"auto_on", "user_on"} or w.window_class in intrusive_apps:
         logger.debug("window %s can intrude", w.window_class)
         return
 

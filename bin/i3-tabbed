@@ -1,0 +1,45 @@
+#!/usr/bin/env python3
+#
+# Splits the current terminal into a tab layout, runs a command, then restores the original layout.
+# Handy for opening images and videos "inside" a terminal.
+#
+# This effect is similar to dwm's window swallowing patch: https://www.youtube.com/watch?v=92uo5OBOKfY
+#
+# To be super minimal, configure i3 to use a 0px font size to hide the tab title bars. With the
+# unfortunate caveat that this will cause i3 error messages to become unreadable.
+
+from i3ipc import Connection
+import subprocess
+import sys
+
+if len(sys.argv) < 2:
+    print("Usage: %s <command...>" % sys.argv[0])
+    sys.exit(1)
+
+i3 = Connection()
+orig = i3.get_tree().find_focused()
+
+# If the layout was already tabbed or stacked, don't do anything
+layout = orig.parent.layout
+if layout == "splith":
+    orig.command("split v")
+    orig.command("layout tabbed")
+elif layout == "splitv":
+    orig.command("split h")
+    orig.command("layout tabbed")
+
+try:
+    # Run the given command
+    code = subprocess.run(sys.argv[1:]).returncode
+
+finally:
+    # Unsplit the container if it was previously split to restore the old layout
+    if layout == "splith":
+        orig.command("layout default")
+        orig.command("move left")
+    elif layout == "splitv":
+        orig.command("layout default")
+        orig.command("move up")
+
+# Pass along the command's return code
+sys.exit(code)

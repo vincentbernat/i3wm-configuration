@@ -344,7 +344,7 @@ async def worksplace_exclusive(i3, event):
         or w.sticky
         or w.window_class in intrusive_apps
     ):
-        logger.debug("window %s can intrude", w.name)
+        logger.debug("window %s can intrude", w.window_class)
         return
 
     tree = await i3.get_tree()

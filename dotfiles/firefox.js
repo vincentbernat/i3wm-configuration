@@ -51,8 +51,8 @@ user_pref("browser.tabs.tabClipWidth", 1000);
 user_pref("full-screen-api.warning.timeout", 0);
 user_pref("full-screen-api.transition.timeout", 0);
 
-// Don't autoplay videos (even without audio)
-user_pref("media.autoplay.default", 5);
+// Don't autoplay videos (except when no audio)
+user_pref("media.autoplay.default", 1);
 
 // Remove some annoying animations (notably when going full screen)
 user_pref("toolkit.cosmeticAnimations.enabled", false);

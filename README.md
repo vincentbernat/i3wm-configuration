@@ -39,3 +39,7 @@ Required Debian packages to make everything work can be found in my
 HEAD (`dunst` and `polybar`) to get access to some features.
 
 [Puppet configuration]: https://github.com/vincentbernat/puppet-workstation/blob/master/local-modules/desktop/manifests/i3.pp
+
+## Interesting links
+
+ - [Hacking i3: Automatic Layout](https://aduros.com/blog/hacking-i3-automatic-layout/)

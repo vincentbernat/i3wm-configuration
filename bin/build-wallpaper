@@ -18,14 +18,32 @@ from Xlib.ext import randr
 from PIL import Image
 
 parser = optparse.OptionParser()
-parser.add_option("-d", "--directory", dest="directory", default=".",
-                  help="search for images in DIRECTORY", metavar="DIRECTORY")
-parser.add_option("-t", "--target", dest="target", default="background.png",
-                  help="write background to FILE", metavar="FILE")
-parser.add_option("-c", "--crop", dest="crop", action="store_true",
-                  help="crop image instead of centering them")
-parser.add_option("--compression", default=0, type=int,
-                  help="compression level when saving")
+parser.add_option(
+    "-d",
+    "--directory",
+    dest="directory",
+    default=".",
+    help="search for images in DIRECTORY",
+    metavar="DIRECTORY",
+)
+parser.add_option(
+    "-t",
+    "--target",
+    dest="target",
+    default="background.png",
+    help="write background to FILE",
+    metavar="FILE",
+)
+parser.add_option(
+    "-c",
+    "--crop",
+    dest="crop",
+    action="store_true",
+    help="crop image instead of centering them",
+)
+parser.add_option(
+    "--compression", default=0, type=int, help="compression level when saving"
+)
 options, args = parser.parse_args()
 
 assert not args, "No additional arguments are accepted"
@@ -36,36 +54,31 @@ background = None
 d = display.Display()
 screen = d.screen()
 window = screen.root.create_window(0, 0, 1, 1, 1, screen.root_depth)
-background = Image.new('RGB', (screen.width_in_pixels, screen.height_in_pixels))
+background = Image.new("RGB", (screen.width_in_pixels, screen.height_in_pixels))
 
 # Query randr extension
 screens = []
 screen_resources = randr.get_screen_resources_current(window)
 for output in screen_resources.outputs:
-    output_info = randr.get_output_info(window, output,
-                                        screen_resources.timestamp)
+    output_info = randr.get_output_info(window, output, screen_resources.timestamp)
     if output_info.crtc == 0:
         continue
-    crtc_info = randr.get_crtc_info(window, output_info.crtc,
-                                    output_info.timestamp)
-    screens.append((crtc_info.width, crtc_info.height,
-                    crtc_info.x, crtc_info.y))
+    crtc_info = randr.get_crtc_info(window, output_info.crtc, output_info.timestamp)
+    screens.append((crtc_info.width, crtc_info.height, crtc_info.x, crtc_info.y))
 if not screens:
     screens = [(background.size[0], background.size[1], 0, 0)]
-screens.sort(key=lambda screen: -screen[0]*screen[1])
+screens.sort(key=lambda screen: -screen[0] * screen[1])
 
 # Get as many random image as we have screens
 images = []
 for base, _, files in os.walk(os.path.join(options.directory)):
     for i in files:
-        if os.path.splitext(i)[1].lower() in ('.jpg',
-                                              '.jpeg',
-                                              '.png'):
+        if os.path.splitext(i)[1].lower() in (".jpg", ".jpeg", ".png"):
             images.append(os.path.join(base, i))
 images = random.sample(images, len(screens))
 images = [Image.open(image) for image in images]
-images.sort(key=lambda im: -im.size[0]*im.size[1])
-images = images[:len(screens)]
+images.sort(key=lambda im: -im.size[0] * im.size[1])
+images = images[: len(screens)]
 
 # If more than one screen and one image has the right aspect ratio,
 # use it.
@@ -78,16 +91,21 @@ if len(screens) > 1:
     except ValueError:
         pass
 
-print("wallpaper: {}".format(" + ".join(
-    ["`%s`" % x.filename[(len(options.directory) + 1):]
-     for x in images])))
+print(
+    "wallpaper: {}".format(
+        " + ".join(
+            ["`%s`" % x.filename[(len(options.directory) + 1) :] for x in images]
+        )
+    )
+)
 
 if len(screens) > 1 and len(images) == 1:
     # Wide wallpaper
     image = images[0]
     if image.size != (screen.width_in_pixels, screen.height_in_pixels):
-        image = image.resize((screen.width_in_pixels, screen.height_in_pixels),
-                             Image.CUBIC)
+        image = image.resize(
+            (screen.width_in_pixels, screen.height_in_pixels), Image.CUBIC
+        )
     background.paste(image, (0, 0))
 else:
     for index in range(len(screens)):
@@ -95,23 +113,23 @@ else:
         image = images[index]
 
         # Find the right size for the screen
-        imx, imy = x, image.size[1]*x//image.size[0]
+        imx, imy = x, image.size[1] * x // image.size[0]
         if (options.crop and imy < y) or (not options.crop and imy > y):
-            imx, imy = image.size[0]*y//image.size[1], y
+            imx, imy = image.size[0] * y // image.size[1], y
         if image.size != (imx, imy):
             image = image.resize((imx, imy), Image.CUBIC)
         if options.crop:
-            image = image.crop(((imx-x)/2, (imy-y)/2,
-                                imx-(imx-x)/2, imy-(imy-y)/2))
+            image = image.crop(
+                ((imx - x) / 2, (imy - y) / 2, imx - (imx - x) / 2, imy - (imy - y) / 2)
+            )
             background.paste(image, (offsetx, offsety))
         else:
-            background.paste(image, ((x-imx)/2 + offsetx,
-                                     (y-imy)/2 + offsety))
+            background.paste(image, ((x - imx) / 2 + offsetx, (y - imy) / 2 + offsety))
 
 # Save
 assert background, "Don't know the size of the display area"
 with tempfile.NamedTemporaryFile(
-        delete=False,
-        dir=os.path.dirname(os.path.realpath(options.target))) as tmp:
+    delete=False, dir=os.path.dirname(os.path.realpath(options.target))
+) as tmp:
     background.save(tmp, "png", compress_level=options.compression)
     os.rename(tmp.name, options.target)

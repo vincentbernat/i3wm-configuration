@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 #
-# Splits the current terminal into a tab layout, runs a command, then restores the original layout.
-# Handy for opening images and videos "inside" a terminal.
+# Splits the current terminal into a tab layout, runs a command, then
+# restores the original layout. Handy for opening images and videos
+# "inside" a terminal.
 #
 # This effect is similar to dwm's window swallowing patch: https://www.youtube.com/watch?v=92uo5OBOKfY
 #
-# To be super minimal, configure i3 to use a 0px font size to hide the tab title bars. With the
-# unfortunate caveat that this will cause i3 error messages to become unreadable.
+# Stolen from https://github.com/aduros/dotfiles/blob/master/home/bin/i3-tabbed
 
 from i3ipc import Connection
 import subprocess
@@ -27,6 +27,9 @@ if layout == "splith":
 elif layout == "splitv":
     orig.command("split h")
     orig.command("layout tabbed")
+
+# Ensure we don't collide with exclusive app handling
+i3.send_tick("inhibit-exclusive")
 
 try:
     # Run the given command

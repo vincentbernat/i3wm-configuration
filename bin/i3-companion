@@ -320,10 +320,23 @@ async def new_workspace(i3, event):
         await current.command(f"move container to workspace " f'number "{num}"')
 
 
-@on(I3Event.WINDOW_NEW)
-async def worksplace_exclusive(i3, event):
+@on(I3Event.WINDOW_NEW, CommandEvent("inhibit-exclusive"))
+@static(inhibited_by=False)
+async def workspace_exclusive(i3, event):
     """Move new windows on a new workspace instead of sharing a workspace
     with an exclusive app."""
+    if event == "inhibit-exclusive":
+        logger.debug("inhibit exclusive workspace")
+        me = object()
+        workspace_exclusive.inhibited_by = me
+        await asyncio.sleep(1)
+        if workspace_exclusive.inhibited_by is me:
+            logger.info("cancel exclusive workspace inhibition")
+            workspace_exclusive.inhibited_by = None
+        return
+    if workspace_exclusive.inhibited_by:
+        workspace_exclusive.inhibited_by = None
+        return
     w = event.container
 
     # Can the current window intrude the workspace?
@@ -904,6 +917,18 @@ async def main(options):
                     await fn(i3, cmd)
 
     i3.on(I3Event.BINDING, binding_event)
+
+    # React to ticks
+    async def tick_event(i3, event):
+        """Process tick events."""
+        kind = event.payload.split(":")[0]
+        for fn, events in on.functions.items():
+            for e in events:
+                if isinstance(e, CommandEvent) and e.name == kind:
+                    logger.debug("received command event %s for %s", event, fn)
+                    await fn(i3, event.payload)
+
+    i3.on(I3Event.TICK, tick_event)
 
     # Listen to DBus events
     for fn, events in on.functions.items():

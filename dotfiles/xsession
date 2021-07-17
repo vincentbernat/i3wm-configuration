@@ -33,6 +33,7 @@ systemd      .config/systemd/user
 dunstrc      .config/dunst/dunstrc
 picom.conf   .config/picom.conf
 polybar.conf .config/polybar/config
+rofi.conf    .config/rofi/config.rasi
 EOF
 rm -f ~/.config/gtk-3.0/settings.ini
 

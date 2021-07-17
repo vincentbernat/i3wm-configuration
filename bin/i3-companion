@@ -148,9 +148,7 @@ def retry(max_retries):
             retries = max_retries
             while True:
                 try:
-                    logger.debug(
-                        "execute %s (remaining tries: %s)", fn, retries
-                    )
+                    logger.debug("execute %s (remaining tries: %s)", fn, retries)
                     return await fn(*args, **kwargs)
                 except Exception as e:
                     if retries > 0:
@@ -180,9 +178,7 @@ def debounce(sleep, *, unless=None):
             while True:
                 try:
                     # Wait for an urgent work or until sleep is elapsed
-                    await asyncio.wait_for(
-                        workers[fn].urgent.wait(), timeout=sleep
-                    )
+                    await asyncio.wait_for(workers[fn].urgent.wait(), timeout=sleep)
                     logger.debug("urgent work received for %s", fn)
                 except asyncio.TimeoutError:
                     pass
@@ -236,9 +232,7 @@ async def notify(i3, **kwargs):
     """Send a notification with notify-send."""
     conn = i3.session_bus["org.freedesktop.Notifications"]
     obj = conn["/org/freedesktop/Notifications"]
-    notifications = await obj.get_async_interface(
-        "org.freedesktop.Notifications"
-    )
+    notifications = await obj.get_async_interface("org.freedesktop.Notifications")
     parameters = dict(
         app_name=logger.name,
         replaces_id=0,
@@ -288,9 +282,7 @@ async def workspace_rename(i3, event):
                 continue
             for k, v in application_icons.items():
                 if re.match(rf"^{k}\b", name, re.IGNORECASE):
-                    logger.debug(
-                        "in %s, found '%s', matching %s", attr, name, k
-                    )
+                    logger.debug("in %s, found '%s', matching %s", attr, name, k)
                     return v
         return application_icons_nomatch
 
@@ -336,9 +328,7 @@ async def new_workspace(i3, event):
 
     # Move the window to this workspace
     if event == "move-to-new-workspace":
-        await current.command(
-            f"move container to workspace " f'number "{num}"'
-        )
+        await current.command(f"move container to workspace " f'number "{num}"')
 
 
 @on(I3Event.WINDOW_NEW)
@@ -619,14 +609,10 @@ async def output_update(i3, event):
         interface="org.freedesktop.DBus.Properties",
         member="PropertiesChanged",
         signature="sa{sv}as",
-        onlyif=lambda args: (
-            args[0] == "org.bluez.Device1" and "Connected" in args[1]
-        ),
+        onlyif=lambda args: args[0] == "org.bluez.Device1" and "Connected" in args[1],
     )
 )
-async def bluetooth_notifications(
-    i3, event, path, interface, changed, invalid
-):
+async def bluetooth_notifications(i3, event, path, interface, changed, invalid):
     """Display notifications related to Bluetooth state."""
     obj = i3.system_bus["org.bluez"][path]
     obd = await obj.get_async_interface(interface)
@@ -671,9 +657,7 @@ async def bluetooth_status(i3, event, *args):
 
     # OK, get the info
     conn = i3.system_bus["org.bluez"]
-    om = await conn["/"].get_async_interface(
-        "org.freedesktop.DBus.ObjectManager"
-    )
+    om = await conn["/"].get_async_interface("org.freedesktop.DBus.ObjectManager")
     objects = await om.GetManagedObjects()
     objects = objects[0]
     powered = False
@@ -751,9 +735,7 @@ async def bluetooth_status(i3, event, *args):
         interface="org.freedesktop.DBus.Properties",
         member="PropertiesChanged",
         signature="sa{sv}as",
-        onlyif=lambda args: (
-            args[0] == "org.dunstproject.cmd0" and "paused" in args[1]
-        ),
+        onlyif=lambda args: args[0] == "org.dunstproject.cmd0" and "paused" in args[1],
     )
 )
 async def dunst_status_update(i3, event, path, interface, changed, invalid):
@@ -765,9 +747,7 @@ async def dunst_status_update(i3, event, path, interface, changed, invalid):
     polybar(
         "dunst",
         icons[
-            changed["paused"][1]
-            and "notifications-disabled"
-            or "notifications-enabled"
+            changed["paused"][1] and "notifications-disabled" or "notifications-enabled"
         ],
     )
 
@@ -809,9 +789,7 @@ async def network_manager_notifications(i3, event, path, state, reason):
     kind = await nmca.Type
     id = await nmca.Id
     if kind == "vpn":
-        await notify(
-            i3, app_icon="network-vpn", summary=f"{id}", body="VPN connected!"
-        )
+        await notify(i3, app_icon="network-vpn", summary=f"{id}", body="VPN connected!")
     elif kind == "802-3-ethernet":
         await notify(
             i3,
@@ -856,9 +834,7 @@ async def network_manager_status(i3, event, *args):
 
     # Build status from devices
     conn = i3.system_bus[ofnm]
-    nm = await conn["/org/freedesktop/NetworkManager"].get_async_interface(
-        ofnm
-    )
+    nm = await conn["/org/freedesktop/NetworkManager"].get_async_interface(ofnm)
     devices = await nm.AllDevices
     for device in devices:
         nmd = await conn[device].get_async_interface(f"{ofnm}.Device")
@@ -870,9 +846,7 @@ async def network_manager_status(i3, event, *args):
             if state != NM_DEVICE_STATE_ACTIVATED:
                 status.append(icons["nowifi"])
                 continue
-            nmw = await conn[device].get_async_interface(
-                f"{ofnm}.Device.Wireless"
-            )
+            nmw = await conn[device].get_async_interface(f"{ofnm}.Device.Wireless")
             ap = await nmw.ActiveAccessPoint
             if not ap:
                 status.append(icons["nowifi"])
@@ -889,22 +863,15 @@ async def network_manager_status(i3, event, *args):
                 ][strength // 34]
             )
             status.append(
-                bytes(name)
-                .decode("utf-8", errors="replace")
-                .replace("%", "%%")
+                bytes(name).decode("utf-8", errors="replace").replace("%", "%%")
             )
-        elif (
-            kind == NM_DEVICE_TYPE_ETHERNET
-            and state == NM_DEVICE_STATE_ACTIVATED
-        ):
+        elif kind == NM_DEVICE_TYPE_ETHERNET and state == NM_DEVICE_STATE_ACTIVATED:
             status.append(icons["wired"])
 
     # Build status for VPN connection
     connections = await nm.ActiveConnections
     for connection in connections:
-        nma = await conn[connection].get_async_interface(
-            f"{ofnm}.Connection.Active"
-        )
+        nma = await conn[connection].get_async_interface(f"{ofnm}.Connection.Active")
         vpn = await nma.Vpn
         if vpn:
             state = await nma.State
@@ -981,13 +948,10 @@ async def main(options):
                     async def wrapped(path, args):
                         if event.onlyif is not None and not event.onlyif(args):
                             logger.debug(
-                                "received DBus event for %s, not interested",
-                                fn,
+                                "received DBus event for %s, not interested", fn
                             )
                             return
-                        logger.debug(
-                            "received DBus event %s for %s", event, fn
-                        )
+                        logger.debug("received DBus event %s for %s", event, fn)
                         return await fn(i3, event, path, *args)
 
                     return wrapped

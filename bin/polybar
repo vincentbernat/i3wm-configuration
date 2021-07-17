@@ -9,7 +9,7 @@ PRIMARY=${PRIMARY:-${MONITORS%% *}}
 
 case $(echo $MONITORS | wc -w) in
     1)
-        MONITOR=$PRIMARY exec polybar --reload alone
+        MONITOR=$PRIMARY polybar --reload alone &
         ;;
     *)
         MONITOR=$PRIMARY polybar --reload primary &
@@ -19,4 +19,3 @@ case $(echo $MONITORS | wc -w) in
         done
         ;;
 esac
-wait

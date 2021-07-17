@@ -327,8 +327,7 @@ async def workspace_exclusive(i3, event):
     with an exclusive app."""
     if event == "inhibit-exclusive":
         logger.debug("inhibit exclusive workspace")
-        me = object()
-        workspace_exclusive.inhibited_by = me
+        workspace_exclusive.inhibited_by = me = object()
         await asyncio.sleep(1)
         if workspace_exclusive.inhibited_by is me:
             logger.info("cancel exclusive workspace inhibition")

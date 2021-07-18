@@ -42,4 +42,5 @@ HEAD (`dunst` and `polybar`) to get access to some features.
 
 ## Interesting links
 
+ - [/r/unixporn on reddit](https://www.reddit.com/r/unixporn/search?q=i3&restrict_sr=1)
  - [Hacking i3: Automatic Layout](https://aduros.com/blog/hacking-i3-automatic-layout/)

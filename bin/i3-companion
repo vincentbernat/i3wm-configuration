@@ -262,6 +262,17 @@ def polybar(module, content):
                 raise
 
 
+async def create_new_workspace(i3):
+    """Create a new workspace and returns its number."""
+    workspaces = await i3.get_workspaces()
+    workspace_nums = {w.num for w in workspaces}
+    max_num = max(workspace_nums)
+    available = (set(range(1, max_num + 2)) - workspace_nums).pop()
+    logger.info(f"create new workspace number {available}")
+    await i3.command(f'workspace number "{available}"')
+    return available
+
+
 # Event handlers
 
 
@@ -293,16 +304,6 @@ async def workspace_rename(i3, event):
     await i3.command(";".join(commands))
 
 
-async def _new_workspace(i3):
-    workspaces = await i3.get_workspaces()
-    workspace_nums = {w.num for w in workspaces}
-    max_num = max(workspace_nums)
-    available = (set(range(1, max_num + 2)) - workspace_nums).pop()
-    logger.info(f"create new workspace number {available}")
-    await i3.command(f'workspace number "{available}"')
-    return available
-
-
 @on(CommandEvent("new-workspace"), CommandEvent("move-to-new-workspace"))
 async def new_workspace(i3, event):
     """Create a new workspace and optionally move a window to it."""
@@ -313,7 +314,7 @@ async def new_workspace(i3, event):
         if not current:
             return
 
-    num = await _new_workspace(i3)
+    num = await create_new_workspace(i3)
 
     # Move the window to this workspace
     if event == "move-to-new-workspace":
@@ -377,7 +378,7 @@ async def workspace_exclusive(i3, event):
         num = next(iter(candidate_workspaces))
     else:
         # Create a new workspace
-        num = await _new_workspace(i3)
+        num = await create_new_workspace(i3)
 
     logger.info(f"move window {w.window_class} to workspace {num}")
     await w.command(f'move container to workspace number "{num}", focus')

@@ -539,29 +539,28 @@ async def output_update(i3, event):
     """React to a XRandR change."""
 
     # Grab current setup. Synchronous, but it's short enough
-    with contextlib.closing(display.Display()) as d:
-        screen = d.screen()
-        window = screen.root.create_window(0, 0, 1, 1, 1, screen.root_depth)
-        screen_resources = randr.get_screen_resources_current(window)
-        current_setup = set()
-        for output in screen_resources.outputs:
-            output_info = randr.get_output_info(
-                window, output, screen_resources.timestamp
+    screen = i3.x11.screen()
+    window = screen.root.create_window(0, 0, 1, 1, 1, screen.root_depth)
+    screen_resources = randr.get_screen_resources_current(window)
+    current_setup = set()
+    for output in screen_resources.outputs:
+        output_info = randr.get_output_info(
+            window, output, screen_resources.timestamp
+        )
+        if output_info.crtc == 0:
+            continue
+        crtc_info = randr.get_crtc_info(
+            window, output_info.crtc, output_info.timestamp
+        )
+        current_setup.add(
+            (
+                output_info.name,
+                crtc_info.width,
+                crtc_info.height,
+                crtc_info.x,
+                crtc_info.y,
             )
-            if output_info.crtc == 0:
-                continue
-            crtc_info = randr.get_crtc_info(
-                window, output_info.crtc, output_info.timestamp
-            )
-            current_setup.add(
-                (
-                    output_info.name,
-                    crtc_info.width,
-                    crtc_info.height,
-                    crtc_info.x,
-                    crtc_info.y,
-                )
-            )
+        )
 
     # Compare to current setup
     if current_setup == output_update.last_setup:
@@ -871,6 +870,7 @@ async def main(options):
     i3 = await Connection(auto_reconnect=True).connect()
     i3.session_bus = await ravel.session_bus_async()
     i3.system_bus = await ravel.system_bus_async()
+    i3.x11 = display.Display()
 
     # Regular events
     for fn, events in on.functions.items():

@@ -152,9 +152,7 @@ bindsym $mod+Delete exec --no-startup-id exec xset s activate
 bindsym Print exec --no-startup-id "flameshot gui -r | xclip -selection clipboard -t image/png"
 
 # Quake window
-set $quake QuakeConsoleNeedsUniqueName
-for_window [instance="$quake" title=$term] move window to scratchpad
-bindsym $mod+grave nop "quake-console:$term:$quake:0.3"
+bindsym $mod+grave nop "quake-console:$term:QuakeConsoleNeedsUniqueName:0.3"
 
 # Get info about container/workspace
 bindsym $mod+i nop "container-info"

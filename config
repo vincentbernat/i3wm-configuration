@@ -31,18 +31,7 @@ bindsym XF86AudioPause       exec --no-startup-id exec playerctl -p $mediaplayer
 bindsym XF86AudioStop        exec --no-startup-id exec playerctl -p $mediaplayer stop
 bindsym XF86AudioNext        exec --no-startup-id exec playerctl -p $mediaplayer next
 bindsym XF86AudioPrev        exec --no-startup-id exec playerctl -p $mediaplayer previous
-mode "mediaplayer" {
-  bindsym "z" exec --no-startup-id exec playerctl -p $mediaplayer previous; mode "default"
-  bindsym "x" exec --no-startup-id exec playerctl -p $mediaplayer play-pause; mode "default"
-  bindsym "c" exec --no-startup-id exec playerctl -p $mediaplayer pause; mode "default"
-  bindsym "v" exec --no-startup-id exec playerctl -p $mediaplayer stop; mode "default"
-  bindsym "b" exec --no-startup-id exec playerctl -p $mediaplayer next; mode "default"
-  bindsym "m" exec exec pavucontrol; mode "default"
-  bindsym "s" [class="(?i)$mediaplayer"] focus; mode "default"
-  bindsym Escape mode "default"
-  bindsym Return mode "default"
-}
-bindsym $mod+s mode "mediaplayer"
+bindsym $mod+s exec --no-startup-id exec ~/.config/i3/bin/rofi-mediaplayer
 
 # Brightness
 bindsym XF86MonBrightnessUp exec --no-startup-id exec brightnessctl set +5%

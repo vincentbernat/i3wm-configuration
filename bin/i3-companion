@@ -291,7 +291,7 @@ async def workspace_rename(i3, event):
             if window.sticky:
                 continue
             icon = application_icons.get(
-                window.window_class.lower(), application_icons_nomatch
+                (window.window_class or "").lower(), application_icons_nomatch
             )
             if icon is not None:
                 icons.add(icon)

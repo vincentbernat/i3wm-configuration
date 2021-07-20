@@ -1,12 +1,21 @@
-#!/bin/sh
+#!/bin/bash
 
 # Media player menu with rofi
 
+mediaplayer=$1
+status=$(playerctl -p $mediaplayer status)
+case $status in
+    Playing|Paused)
+        title="$(playerctl -p $mediaplayer metadata xesam:title)"
+        artist="$(playerctl -p $mediaplayer metadata xesam:artist)"
+        status="$status <span weight='light'><i>${title} (${artist})</i></span>"
+        ;;
+esac
 choice=$(
     while read icon description
     do
       printf "$description\00icon\37$icon\n"
-    done <<EOF | rofi -dmenu -show-icons -no-custom -i -p "media player action" \
+    done <<EOF | rofi -dmenu -show-icons -no-custom -i -p "media player action" -mesg "$status" \
              -kb-select-1 Super+z \
              -kb-select-2 Super+x \
              -kb-select-3 Super+c \
@@ -20,7 +29,7 @@ media-playback-pause      Pause
 media-playback-stop       Stop
 go-next                   Next track
 multimedia-volume-control Open mixer panel
-com.spotify.Client        Open Spotify
+com.spotify.Client        Open ${mediaplayer^}
 EOF
       )
 case $choice in
@@ -30,5 +39,5 @@ case $choice in
     Pause)     xdotool key --clearmodifiers XF86AudioPause ;;
     Stop)      xdotool key --clearmodifiers XF86AudioStop ;;
     *mixer*)   i3-msg '[class="Pavucontrol"] focus' || i3-msg exec exec pavucontrol ;;
-    *Spotify*) i3-msg '[class="Spotify"] focus' || i3-msg exec exec spotify ;;
+    *Spotify*) i3-msg '[class="'${mediaplayer^}'"] focus' || i3-msg exec exec spotify ;;
 esac

@@ -26,6 +26,6 @@ case $choice in
     Play) xdotool key --clearmodifiers XF86AudioPlay ;;
     Pause) xdotool key --clearmodifiers XF86AudioPause ;;
     Stop) xdotool key --clearmodifiers XF86AudioStop ;;
-    Open*) i3-msg exec exec pavucontrol ;;
+    Open*) i3-msg '[class="Pavucontrol"] focus' || i3-msg exec exec pavucontrol ;;
     *Spotify*) i3-msg '[class="Spotify"] focus' || i3-msg exec exec spotify ;;
 esac

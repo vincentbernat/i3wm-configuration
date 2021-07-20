@@ -3,29 +3,32 @@
 # Media player menu with rofi
 
 choice=$(
-    {
-        printf "Previous track\00icon\37go-previous\n"
-        printf "Play\00icon\37media-playback-start\n"
-        printf "Pause\00icon\37media-playback-pause\n"
-        printf "Stop\00icon\37media-playback-stop\n"
-        printf "Next track\00icon\37go-next\n"
-        printf "Open mixer panel\00icon\37multimedia-volume-control\n"
-        printf "Show Spotify\00icon\37com.spotify.Client\n"
-    } | rofi -dmenu -show-icons -no-custom -i -p "media player action" \
+    while read icon description
+    do
+      printf "$description\00icon\37$icon\n"
+    done <<EOF | rofi -dmenu -show-icons -no-custom -i -p "media player action" \
              -kb-select-1 Super+z \
              -kb-select-2 Super+x \
              -kb-select-3 Super+c \
              -kb-select-4 Super+v \
              -kb-select-5 Super+b \
              -kb-select-6 Super+m \
-             -kb-select-7 Super+s \
+             -kb-select-7 Super+s
+go-previous               Previous track
+media-playback-start      Play
+media-playback-pause      Pause
+media-playback-stop       Stop
+go-next                   Next track
+multimedia-volume-control Open mixer panel
+com.spotify.Client        Open Spotify
+EOF
       )
 case $choice in
     Previous*) xdotool key --clearmodifiers XF86AudioPrev ;;
-    Next*) xdotool key --clearmodifiers XF86AudioNext ;;
-    Play) xdotool key --clearmodifiers XF86AudioPlay ;;
-    Pause) xdotool key --clearmodifiers XF86AudioPause ;;
-    Stop) xdotool key --clearmodifiers XF86AudioStop ;;
-    Open*) i3-msg '[class="Pavucontrol"] focus' || i3-msg exec exec pavucontrol ;;
+    Next*)     xdotool key --clearmodifiers XF86AudioNext ;;
+    Play)      xdotool key --clearmodifiers XF86AudioPlay ;;
+    Pause)     xdotool key --clearmodifiers XF86AudioPause ;;
+    Stop)      xdotool key --clearmodifiers XF86AudioStop ;;
+    *mixer*)   i3-msg '[class="Pavucontrol"] focus' || i3-msg exec exec pavucontrol ;;
     *Spotify*) i3-msg '[class="Spotify"] focus' || i3-msg exec exec spotify ;;
 esac

@@ -50,6 +50,7 @@ application_icons = {
     "libreoffice": icon(2, ""),
     "mpv": icon(2, ""),
     "pavucontrol": icon(2, ""),
+    "qalculate-gtk": icon(2, ""),
     "signal": icon(2, ""),
     "snes9x-gtk": icon(2, ""),
     "spotify": icon(3, ""),

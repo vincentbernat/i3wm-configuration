@@ -39,9 +39,10 @@ def icon(font_number, char):
 
 application_icons = {
     "chromium": icon(3, ""),
-    "discord": icon(3, ""),
     "d-feet": icon(2, ""),
+    "discord": icon(3, ""),
     "emacs": icon(2, ""),
+    "file-roller": icon(2, ""),
     "firefox": icon(3, ""),
     "gimp": icon(2, ""),
     "gitg": icon(2, ""),
@@ -54,8 +55,9 @@ application_icons = {
     "signal": icon(2, ""),
     "snes9x-gtk": icon(2, ""),
     "spotify": icon(3, ""),
-    "sxiv": icon(2, ""),
     "steam": icon(3, ""),
+    "sxiv": icon(2, ""),
+    "thunar": icon(2, ""),
     "vbeterm": icon(2, ""),
     "zathura": icon(2, ""),
     "zoom": icon(2, ""),

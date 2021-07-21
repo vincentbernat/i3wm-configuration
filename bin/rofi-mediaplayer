@@ -50,11 +50,11 @@ EOF
         ;;
     1)
         case $ROFI_INFO in
-            1) xdotool key --clearmodifiers XF86AudioPrev ;;
-            2) xdotool key --clearmodifiers XF86AudioPlay ;;
-            3) xdotool key --clearmodifiers XF86AudioPause ;;
-            4) xdotool key --clearmodifiers XF86AudioStop ;;
-            5) xdotool key --clearmodifiers XF86AudioNext ;;
+            1) playerctl -p $mediaplayer previous ;;
+            2) playerctl -p $mediaplayer play-pause ;;
+            3) playerctl -p $mediaplayer pause ;;
+            4) playerctl -p $mediaplayer stop ;;
+            5) playerctl -p $mediaplayer next ;;
             6) i3-msg '[class="Pavucontrol"] focus' || i3-msg exec exec pavucontrol ;;
             7) i3-msg '[class="'${Mediaplayer}'"] focus' || i3-msg exec exec spotify ;;
         esac >&2

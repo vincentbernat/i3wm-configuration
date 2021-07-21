@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Compute DPI of each screens
-dpi=$(xrandr --current \
+dpis=$(xrandr --current \
     | sed -En 's/^([^ ]+)* connected.* ([0-9]+)x.* ([0-9]+)mm x .*/\1 \2 \3/p' \
     | while read output pixels mm; do
 
@@ -21,7 +21,8 @@ dpi=$(xrandr --current \
 
     echo "$output: ${dpi}dpi (corrected to ${corrected}dpi, rounded to ${rounded}dpi)" >&2
     echo "$rounded"
-done)
+ done |
+    tr '\n' ' ')
 
 # Use first screen DPI
 dpi=${dpis%% *}

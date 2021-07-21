@@ -31,7 +31,8 @@ case $ROFI_RETV in
                            }
                            ($1 == "SIGNAL") {
                              if (p["IN-USE"] == "*") {
-                               printf("\00message\x1fConnected to <i>%s</i> (%s)\n", p["SSID"], p["FREQ"]);
+                               printf("\00message\x1fConnected to <i>%s</i> (%s, %s, %s%%)\n",
+                                      p["SSID"], p["FREQ"], p["SECURITY"], p["SIGNAL"]);
                              } else {
                                printf("%s (<i><small>%s, %s</small></i>)",
                                       p["SSID"], p["FREQ"], p["SECURITY"]);

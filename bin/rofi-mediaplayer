@@ -2,13 +2,30 @@
 
 # Media player menu with rofi
 
-mediaplayer=$1
-choice=$(
-    {
+if [ -z "${ROFI_OUTSIDE}" ]; then
+    export mediaplayer=$1
+    exec rofi -show-icons -no-custom -modi m:$0 -show m \
+              -kb-select-1 Super+z \
+              -kb-select-2 Super+x \
+              -kb-select-3 Super+c \
+              -kb-select-4 Super+v \
+              -kb-select-5 Super+b \
+              -kb-select-6 Super+m \
+              -kb-select-7 Super+s
+fi
+
+case $ROFI_RETV in
+    0)
+        # Prompt
+        printf "\00prompt\x1fmedia player\n"
+        printf "\00message\x1f$...\n"
+
         # Available actions
+        i=0
         while read icon description
         do
-          printf "$description\00icon\37$icon\n"
+          i=$((i+1))
+          printf "$description\00icon\x1f$icon\x1finfo\x1f$i\n"
         done <<EOF
 go-previous               Previous track
 media-playback-start      Play
@@ -29,21 +46,16 @@ EOF
                 ;;
         esac
         printf "\00message\x1f${status}\n"
-    } | rofi -dmenu -show-icons -no-custom -i -p "media player action" -format d -async-pre-read 0 -mesg "..." \
-             -kb-select-1 Super+z \
-             -kb-select-2 Super+x \
-             -kb-select-3 Super+c \
-             -kb-select-4 Super+v \
-             -kb-select-5 Super+b \
-             -kb-select-6 Super+m \
-             -kb-select-7 Super+s
-      )
-case $choice in
-    1) xdotool key --clearmodifiers XF86AudioPrev ;;
-    2) xdotool key --clearmodifiers XF86AudioPlay ;;
-    3) xdotool key --clearmodifiers XF86AudioPause ;;
-    4) xdotool key --clearmodifiers XF86AudioStop ;;
-    5) xdotool key --clearmodifiers XF86AudioNext ;;
-    6) i3-msg '[class="Pavucontrol"] focus' || i3-msg exec exec pavucontrol ;;
-    7) i3-msg '[class="'${mediaplayer^}'"] focus' || i3-msg exec exec spotify ;;
+        ;;
+    1)
+        case $ROFI_INFO in
+            1) xdotool key --clearmodifiers XF86AudioPrev ;;
+            2) xdotool key --clearmodifiers XF86AudioPlay ;;
+            3) xdotool key --clearmodifiers XF86AudioPause ;;
+            4) xdotool key --clearmodifiers XF86AudioStop ;;
+            5) xdotool key --clearmodifiers XF86AudioNext ;;
+            6) i3-msg '[class="Pavucontrol"] focus' || i3-msg exec exec pavucontrol ;;
+            7) i3-msg '[class="'${mediaplayer^}'"] focus' || i3-msg exec exec spotify ;;
+        esac >&2
+        ;;
 esac

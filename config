@@ -157,5 +157,5 @@ for_window [title="Firefox — Sharing Indicator"] border none, sticky enable, m
 exec_always --no-startup-id exec systemctl --user start --no-block i3-session.target
 exec --no-startup-id exec i3-msg "\
   workspace number 1; append_layout ~/.config/i3/ws-emacs.json; exec exec emacs; exec exec $term; exec exec $term; \
-  workspace number 2; exec exec firefox; \
+  workspace number 2; exec nm-online -q -t 5 && exec firefox; \
   workspace number 1"

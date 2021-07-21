@@ -21,8 +21,8 @@ dpis=$(xrandr --current \
 
     echo "$output: ${dpi}dpi (corrected to ${corrected}dpi, rounded to ${rounded}dpi)" >&2
     echo "$rounded"
- done |
-    tr '\n' ' ')
+ done \
+    | tr '\n' ' ')
 
 # Use first screen DPI
 dpi=${dpis%% *}

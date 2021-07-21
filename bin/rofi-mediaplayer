@@ -1,9 +1,10 @@
-#!/bin/bash
+#!/bin/sh
 
 # Media player menu with rofi
 
 if [ -z "${ROFI_OUTSIDE}" ]; then
     export mediaplayer=$1
+    export Mediaplayer=$(echo $1 | sed -E 's/(.)/\U\1/')
     exec rofi -show-icons -no-custom -modi m:$0 -show m \
               -kb-select-1 Super+z \
               -kb-select-2 Super+x \
@@ -17,15 +18,15 @@ fi
 case $ROFI_RETV in
     0)
         # Prompt
-        printf "\00prompt\x1fmedia player\n"
-        printf "\00message\x1f$...\n"
+        printf "\00prompt\037media player\n"
+        printf "\00message\037$...\n"
 
         # Available actions
         i=0
         while read icon description
         do
           i=$((i+1))
-          printf "$description\00icon\x1f$icon\x1finfo\x1f$i\n"
+          printf "$description\00icon\037$icon\037info\037$i\n"
         done <<EOF
 go-previous               Previous track
 media-playback-start      Play
@@ -33,7 +34,7 @@ media-playback-pause      Pause
 media-playback-stop       Stop
 go-next                   Next track
 multimedia-volume-control Open mixer panel
-com.spotify.Client        Open ${mediaplayer^}
+com.spotify.Client        Open ${Mediaplayer}
 EOF
 
         # Player status
@@ -45,7 +46,7 @@ EOF
                 status="$status <span weight='light'><i>${title} (${artist})</i></span>"
                 ;;
         esac
-        printf "\00message\x1f${status}\n"
+        printf "\00message\037${status}\n"
         ;;
     1)
         case $ROFI_INFO in
@@ -55,7 +56,7 @@ EOF
             4) xdotool key --clearmodifiers XF86AudioStop ;;
             5) xdotool key --clearmodifiers XF86AudioNext ;;
             6) i3-msg '[class="Pavucontrol"] focus' || i3-msg exec exec pavucontrol ;;
-            7) i3-msg '[class="'${mediaplayer^}'"] focus' || i3-msg exec exec spotify ;;
+            7) i3-msg '[class="'${Mediaplayer}'"] focus' || i3-msg exec exec spotify ;;
         esac >&2
         ;;
 esac

@@ -823,27 +823,33 @@ async def network_manager_status(i3, event, *args):
         if state == NM_DEVICE_STATE_UNMANAGED:
             continue
         if kind == NM_DEVICE_TYPE_WIFI:
+
+            def wrap(s):
+                rofi = os.path.expanduser("~/.config/i3/bin/rofi-wifi")
+                return "%%{A1:%s:}%s%%{A}" % (rofi, s)
+
             if state != NM_DEVICE_STATE_ACTIVATED:
-                status.append(icons["nowifi"])
+                status.append(wrap(icons["nowifi"]))
                 continue
             nmw = await conn[device].get_async_interface(f"{ofnm}.Device.Wireless")
             ap = await nmw.ActiveAccessPoint
             if not ap:
-                status.append(icons["nowifi"])
+                status.append(wrap(icons["nowifi"]))
                 continue
             network_manager_status.active_ap = ap
             nmap = await conn[ap].get_async_interface(f"{ofnm}.AccessPoint")
             name = await nmap.Ssid
             strength = int(await nmap.Strength)
             status.append(
-                [
-                    icons["wifi-low"],
-                    icons["wifi-medium"],
-                    icons["wifi-high"],
-                ][strength // 34]
-            )
-            status.append(
-                bytes(name).decode("utf-8", errors="replace").replace("%", "%%")
+                wrap(
+                    [
+                        icons["wifi-low"],
+                        icons["wifi-medium"],
+                        icons["wifi-high"],
+                    ][strength // 34]
+                    + " "
+                    + bytes(name).decode("utf-8", errors="replace").replace("%", "%%")
+                )
             )
         elif kind == NM_DEVICE_TYPE_ETHERNET and state == NM_DEVICE_STATE_ACTIVATED:
             status.append(icons["wired"])

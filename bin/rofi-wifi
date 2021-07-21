@@ -16,7 +16,7 @@ case $ROFI_RETV in
         case $(nmcli radio wifi) in
             enabled)
                 printf "Turn wifi off\00info\037off\n"
-                printf "Scan wifi networks\00info\037rescan\n"
+                printf "Scan wifi networks...\00info\037rescan\n"
                 ;;
             disabled)
                 printf "Turn wifi on\00info\037on\n"
@@ -24,10 +24,11 @@ case $ROFI_RETV in
         esac
 
         nmcli -f IN-USE,SSID,BSSID,SECURITY,FREQ,SIGNAL -m multiline device wifi list --rescan no \
+            | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' \
             | awk -F': *' '{
                              property=$1;
                              value=gensub(property ": *", "", 1);
-                             p[property]=gensub("<", "&lt;", "g", value);
+                             p[property]=value;
                            }
                            ($1 == "SIGNAL") {
                              if (p["IN-USE"] == "*") {

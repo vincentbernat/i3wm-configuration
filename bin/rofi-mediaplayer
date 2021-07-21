@@ -41,8 +41,8 @@ EOF
         status=$(playerctl -p $mediaplayer status)
         case $status in
             Playing|Paused)
-                title="$(playerctl -p $mediaplayer metadata xesam:title)"
-                artist="$(playerctl -p $mediaplayer metadata xesam:artist)"
+                title="$(playerctl -p $mediaplayer metadata xesam:title | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g')"
+                artist="$(playerctl -p $mediaplayer metadata xesam:artist | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g')"
                 status="$status <span weight='light'><i>${title} (${artist})</i></span>"
                 ;;
         esac

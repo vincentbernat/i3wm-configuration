@@ -50,6 +50,7 @@ application_icons = {
     "inkscape": icon(2, ""),
     "libreoffice": icon(2, ""),
     "mpv": icon(2, ""),
+    "nestopia": icon(2, ""),
     "pavucontrol": icon(2, ""),
     "qalculate-gtk": icon(2, ""),
     "signal": icon(2, ""),

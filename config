@@ -138,7 +138,7 @@ bindsym $mod+Shift+r restart
 # Lock screen and print screen
 bindsym XF86ScreenSaver exec --no-startup-id exec xset s activate
 bindsym $mod+Delete exec --no-startup-id exec xset s activate
-bindsym Print exec --no-startup-id "flameshot gui -r | xclip -selection clipboard -t image/png"
+bindsym Print exec --no-startup-id flameshot gui
 
 # Quake window
 bindsym $mod+grave nop "quake-console:$term:QuakeConsoleNeedsUniqueName:0.3"

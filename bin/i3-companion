@@ -352,7 +352,11 @@ async def workspace_exclusive(i3, event):
 
     # Get the window workspace. From an event, w.workspace() is None,
     # so search it in the tree.
-    current_workspace = tree.find_by_id(w.id).workspace().num
+    current_window = tree.find_by_id(w.id)
+    if current_window is None:
+        logger.debug("cannot find new window in tree?")
+        return
+    current_workspace = current_window.workspace().num
 
     # Get the list of workspaces with an exclusive app, excluding the
     # current window and windows of the same class.

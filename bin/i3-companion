@@ -48,13 +48,13 @@ application_icons = {
     "gitg": icon(2, ""),
     "google-chrome": icon(3, ""),
     "inkscape": icon(2, ""),
-    "libreoffice": icon(2, ""),
+    "libreoffice": icon(2, "📄"),
     "mpv": icon(2, ""),
     "nestopia": icon(2, ""),
     "pavucontrol": icon(2, ""),
-    "qalculate-gtk": icon(2, ""),
+    "qalculate": icon(2, ""),
     "signal": icon(2, ""),
-    "snes9x-gtk": icon(2, ""),
+    "snes9x": icon(2, ""),
     "spotify": icon(3, ""),
     "steam": icon(3, ""),
     "sxiv": icon(2, ""),
@@ -293,8 +293,12 @@ async def workspace_rename(i3, event):
         for window in workspace.leaves():
             if window.sticky:
                 continue
+            cls = (window.window_class or "").lower()
             icon = application_icons.get(
-                (window.window_class or "").lower(), application_icons_nomatch
+                cls,
+                application_icons.get(
+                    cls.split("-")[0], application_icons.get(application_icons_nomatch)
+                ),
             )
             if icon is not None:
                 icons.add(icon)
@@ -669,7 +673,8 @@ async def bluetooth_status(i3, event, *args):
             devices.append((major, minor))
 
     # Choose appropriate icons for output
-    # See: https://btprodspecificationrefs.blob.core.windows.net/assigned-numbers/Assigned%20Number%20Types/Baseband.pdf
+    # See: https://btprodspecificationrefs.blob.core.windows.net/assigned-numbers
+    #      /Assigned%20Number%20Types/Baseband.pdf
     if not powered:
         output = ""
     else:

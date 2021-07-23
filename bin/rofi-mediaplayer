@@ -5,7 +5,7 @@
 if [ -z "${ROFI_OUTSIDE}" ]; then
     export mediaplayer=$1
     export Mediaplayer=$(echo $1 | sed -E 's/(.)/\U\1/')
-    exec rofi -show-icons -no-custom -modi m:$0 -show m \
+    exec rofi -no-lazy-grab -show-icons -no-custom -modi m:$0 -show m \
               -kb-select-1 Super+z \
               -kb-select-2 Super+x \
               -kb-select-3 Super+c \

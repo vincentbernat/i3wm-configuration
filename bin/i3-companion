@@ -311,14 +311,8 @@ async def workspace_rename(i3, event):
             if window.sticky:
                 continue
             cls = (window.window_class or "").lower()
-            icon = application_icons.get(
-                cls,
-                application_icons.get(
-                    cls.split("-")[0], application_icons.get(application_icons_nomatch)
-                ),
-            )
-            if icon is not None:
-                icons.add(icon)
+            icon = application_icons.get(cls, application_icons.get(cls.split("-")[0]))
+            icons.add(icon or application_icons_nomatch)
         if any([i not in application_icons_alone for i in icons]):
             icons -= application_icons_alone
         new_name = f"{workspace.num}:{'|'.join(icons)}".rstrip(":")

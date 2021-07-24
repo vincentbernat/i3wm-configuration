@@ -228,6 +228,40 @@ def debounce(sleep, *, unless=None):
     return decorator
 
 
+def polybar(module):
+    """Use returned string to update polybar module"""
+
+    def decorator(fn):
+        @functools.wraps(fn)
+        async def wrapper(*args, **kwargs):
+            content = await fn(*args, **kwargs)
+            if type(content) is not str or cache.get(module) == content:
+                return content
+
+            # Update cache file (for when polybar restarts)
+            with open(f"{os.getenv('XDG_RUNTIME_DIR')}/i3/{module}.txt", "w") as out:
+                out.write(content)
+
+            # Send it to polybar
+            for name in glob.glob("/tmp/polybar_mqueue.*"):
+                try:
+                    with open(os.open(name, os.O_WRONLY | os.O_NONBLOCK), "w") as out:
+                        cmd = f"action:#{module}.send.{content}"
+                        out.write(cmd)
+                except OSError as e:
+                    if e.errno != errno.ENXIO:
+                        raise
+
+            logger.info(f"polybar/{module}: content updated")
+            cache[module] = content
+            return content
+
+        return wrapper
+
+    cache = {}
+    return decorator
+
+
 # Other helpers
 
 
@@ -247,23 +281,6 @@ async def notify(i3, **kwargs):
     )
     parameters.update(kwargs)
     return await notifications.Notify(**parameters)
-
-
-def polybar(module, content):
-    """Update Polybar module with the provided content."""
-    # Update cache file (for when polybar restarts)
-    with open(f"{os.getenv('XDG_RUNTIME_DIR')}/i3/{module}.txt", "w") as out:
-        out.write(content)
-
-    # Send it to polybar
-    for name in glob.glob("/tmp/polybar_mqueue.*"):
-        try:
-            with open(os.open(name, os.O_WRONLY | os.O_NONBLOCK), "w") as out:
-                cmd = f"action:#{module}.send.{content}"
-                out.write(cmd)
-        except OSError as e:
-            if e.errno != errno.ENXIO:
-                raise
 
 
 async def create_new_workspace(i3):
@@ -637,17 +654,16 @@ async def bluetooth_notifications(i3, event, path, interface, changed, invalid):
         ),
     ),
 )
-@static(last=None)
 @retry(2)
 @debounce(0.2)
+@polybar("bluetooth")
 async def bluetooth_status(i3, event, *args):
     """Update bluetooth status for Polybar."""
     if event is StartEvent:
         # Do we have a bluetooth device?
         if not os.path.exists("/sys/class/bluetooth"):
             logger.info("no bluetooth detected")
-            polybar("bluetooth", "")
-            return
+            return ""
 
     # OK, get the info
     conn = i3.system_bus["org.bluez"]
@@ -714,13 +730,7 @@ async def bluetooth_status(i3, event, *args):
                 else:
                     icon = "unknown"
             output.append(icon)
-        output = "|".join(icons[o] for o in output)
-
-    # Update polybar
-    if bluetooth_status.last != output:
-        logger.info("updated bluetooth status")
-        polybar("bluetooth", output)
-        bluetooth_status.last = output
+        return "|".join(icons[o] for o in output)
 
 
 @on(
@@ -733,26 +743,22 @@ async def bluetooth_status(i3, event, *args):
         onlyif=lambda args: args[0] == "org.dunstproject.cmd0" and "paused" in args[1],
     )
 )
+@polybar("dunst")
 async def dunst_status_update(i3, event, path, interface, changed, invalid):
     """Update notification status in Polybar."""
-    polybar(
-        "dunst",
-        icons[
-            changed["paused"][1] and "notifications-disabled" or "notifications-enabled"
-        ],
-    )
+    paused = changed["paused"][1]
+    return icons[paused and "notifications-disabled" or "notifications-enabled"]
 
 
 @on(StartEvent)
+@polybar("dunst")
 async def dunst_status_check(i3, event):
     """Display notification status for Polybar."""
     conn = i3.session_bus["org.freedesktop.Notifications"]
     obj = conn["/org/freedesktop/Notifications"]
     dunst = await obj.get_async_interface("org.dunstproject.cmd0")
     paused = await dunst.paused
-    polybar(
-        "dunst", icons[paused and "notifications-disabled" or "notifications-enabled"]
-    )
+    return icons[paused and "notifications-disabled" or "notifications-enabled"]
 
 
 @on(
@@ -809,7 +815,6 @@ async def network_manager_notifications(i3, event, path, state, reason):
         signature="a{sv}",
     ),
 )
-@static(last=None)
 @retry(2)
 @debounce(
     1,
@@ -817,6 +822,7 @@ async def network_manager_notifications(i3, event, path, state, reason):
         isinstance(event, DBusSignal) and event.interface.endswith(".Active")
     ),
 )
+@polybar("network")
 async def network_manager_status(i3, event, *args):
     """Compute network manager status."""
     ofnm = "org.freedesktop.NetworkManager"
@@ -876,12 +882,7 @@ async def network_manager_status(i3, event, *args):
                 status.append(await nma.Id)
 
     # Final status line
-    status = " ".join(status)
-
-    if status != network_manager_status.last:
-        logger.info("updated network status")
-        polybar("network", status)
-        network_manager_status.last = status
+    return " ".join(status)
 
 
 # Main function

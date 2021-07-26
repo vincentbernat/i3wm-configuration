@@ -1,10 +1,7 @@
 [Unit]
 Description=i3 window manager
 PartOf=graphical-session.target
-After=autorandr.service
-After=picom.service
-After=xsettingsd.service
-After=ssh-agent.service
+After=xsession.target
 
 [Service]
 ExecStart=/usr/bin/i3

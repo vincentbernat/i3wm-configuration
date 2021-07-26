@@ -5,3 +5,4 @@ Wants=wallpaper.service
 Wants=wallpaper.timer
 Wants=polybar.service
 Wants=i3-companion.service
+Wants=misc-x.service

@@ -5,7 +5,6 @@ Wants=autorandr.service
 Wants=dunst.socket
 Wants=i3.service
 Wants=inputplug.service
-Wants=misc-x.service
 Wants=picom.service
 Wants=policykit-agent.service
 Wants=pipewire-pulse.socket

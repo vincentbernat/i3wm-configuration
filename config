@@ -149,6 +149,8 @@ bindsym $mod+Shift+i nop "workspace-info"
 
 # Random rules
 no_focus [window_type="splash"]
+for_window [tiling] border pixel 3
+for_window [floating] border pixel 3
 for_window [class="Shadow"] fullscreen enable
 for_window [window_role="PictureInPicture"] floating enable
 for_window [title="Firefox — Sharing Indicator"] border none, sticky enable, move position 20 ppt -5 px

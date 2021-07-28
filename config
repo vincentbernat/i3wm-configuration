@@ -8,7 +8,7 @@ set $right semicolon
 set $term vbeterm
 set $mediaplayer spotify
 
-font pango:Iosevka 9
+font pango:Iosevka Aile 9
 
 # Style and colors
 default_border pixel 3

@@ -62,6 +62,7 @@ application_icons = {
     "sxiv": icon(2, ""),
     "thunar": icon(2, ""),
     "vbeterm": icon(2, ""),
+    "webex": icon(2, ""),
     "zathura": icon(2, ""),
     "zoom": icon(2, ""),
 }

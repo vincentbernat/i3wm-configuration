@@ -16,6 +16,9 @@ user_pref("ui.context_menus.after_mouseup", true);
 // Don't display menubar when pressing Alt
 user_pref("ui.key.menuAccessKeyFocuses", false);
 
+// Be more compact
+user_pref("browser.uidensity", 1);
+
 // No popup at all!
 user_pref("browser.link.open_newwindow.restriction", 0);
 

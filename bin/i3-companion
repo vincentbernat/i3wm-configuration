@@ -38,6 +38,7 @@ def icon(font_number, char):
 # Configuration
 
 application_icons = {
+    "calibre": icon(2, "📚"),
     "chromium": icon(3, ""),
     "d-feet": icon(2, ""),
     "discord": icon(3, ""),

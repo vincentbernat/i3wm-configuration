@@ -62,7 +62,7 @@ case $ROFI_RETV in
                 >&2 nmcli radio wifi off
                 ;;
             *)
-                >&2 nmcli device wifi connect ${ROFI_INFO}
+                >&2 nmcli -w 0 device wifi connect ${ROFI_INFO}
                 exit 0
                 ;;
         esac

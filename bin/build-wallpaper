@@ -5,11 +5,9 @@
 # First argument is the directory where the wallpapers can be
 # found. We use xinerama to know the dimension of each screen.
 
-from __future__ import print_function, unicode_literals, division
-
 import os
 import random
-import optparse
+import argparse
 import tempfile
 
 from Xlib import display
@@ -17,37 +15,32 @@ from Xlib.ext import randr
 
 from PIL import Image
 
-parser = optparse.OptionParser()
-parser.add_option(
+parser = argparse.ArgumentParser()
+parser.add_argument(
     "-d",
     "--directory",
-    dest="directory",
     default=".",
     help="search for images in DIRECTORY",
     metavar="DIRECTORY",
 )
-parser.add_option(
+parser.add_argument(
     "-t",
     "--target",
-    dest="target",
     default="background.png",
     help="write background to FILE",
     metavar="FILE",
 )
-parser.add_option(
+parser.add_argument(
     "-c",
     "--crop",
     dest="crop",
     action="store_true",
     help="crop image instead of centering them",
 )
-parser.add_option(
+parser.add_argument(
     "--compression", default=0, type=int, help="compression level when saving"
 )
-options, args = parser.parse_args()
-
-assert not args, "No additional arguments are accepted"
-
+options = parser.parse_args()
 background = None
 
 # Get display size

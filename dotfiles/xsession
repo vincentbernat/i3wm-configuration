@@ -14,8 +14,7 @@ export QT_QPA_PLATFORMTHEME=qt5ct
 export NO_AT_BRIDGE=1
 
 # Environment variables
-unset LC_ALL
-[ -e ~/.zshenv ] && . ~/.zshenv
+. ~/.zshenv
 export TERMINAL=vbeterm
 
 # Copy some configuration files

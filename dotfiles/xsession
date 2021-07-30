@@ -19,10 +19,8 @@ export TERMINAL=vbeterm
 
 # Copy some configuration files
 while read source target; do
-    for t in $target; do
-        mkdir -p $(dirname $HOME/$t)
-        ln -nsf ~/.config/i3/dotfiles/$source $HOME/$t
-    done
+    mkdir -p $(dirname $HOME/$target)
+    ln -nsf ~/.config/i3/dotfiles/$source $HOME/$target
 done <<EOF
 Xresources   .Xresources
 gtkrc-2.0    .gtkrc-2.0

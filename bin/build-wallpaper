@@ -76,8 +76,8 @@ images = images[: len(screens)]
 # If more than one screen and one image has the right aspect ratio,
 # use it.
 if len(screens) > 1:
-    target = screen.width_in_pixels * 100 / screen.height_in_pixels
-    ratios = [image.size[0] * 100 / image.size[1] for image in images]
+    target = screen.width_in_pixels * 100 // screen.height_in_pixels
+    ratios = [image.size[0] * 100 // image.size[1] for image in images]
     try:
         index = ratios.index(target)
         images = [images[index]]

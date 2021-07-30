@@ -375,7 +375,10 @@ async def workspace_exclusive(i3, event):
     if current_window is None:
         logger.debug("cannot find new window in tree?")
         return
-    current_workspace = current_window.workspace().num
+    current_workspace = current_window.workspace()
+    if current_workspace is None:
+        logger.debug("cannot find new window workspace?")
+        return
 
     # Get the list of workspaces with an exclusive app, excluding the
     # current window and windows of the same class.
@@ -388,7 +391,7 @@ async def workspace_exclusive(i3, event):
     }
 
     # If current one is OK, don't move
-    if current_workspace not in exclusive_workspaces:
+    if current_workspace.num not in exclusive_workspaces:
         logger.debug("no exclusive app, %s can go there", w.window_class)
         return
 

@@ -33,6 +33,7 @@ polybar.conf .config/polybar/config
 rofi.conf    .config/rofi/config.rasi
 EOF
 rm -f ~/.config/gtk-3.0/settings.ini
+dconf load / < ~/.config/i3/dotfiles/dconf.ini
 
 # Services are started with systemd
 systemctl --user import-environment

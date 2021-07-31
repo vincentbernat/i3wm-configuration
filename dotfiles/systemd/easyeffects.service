@@ -6,3 +6,6 @@ PartOf=graphical-session.target
 Type=dbus
 BusName=com.github.wwmm.easyeffects
 ExecStart=%h/.nix-profile/bin/easyeffects --gapplication-service
+ExecStartPost=-%h/.nix-profile/bin/easyeffects -l default-input
+ExecStartPost=-%h/.nix-profile/bin/easyeffects -l default-output
+Restart=on-failure

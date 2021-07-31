@@ -42,6 +42,7 @@ application_icons = {
     "chromium": icon(3, ""),
     "d-feet": icon(2, ""),
     "discord": icon(3, ""),
+    "easyeffects": icon(2, ""),
     "emacs": icon(2, ""),
     "file-roller": icon(2, ""),
     "firefox": icon(3, ""),

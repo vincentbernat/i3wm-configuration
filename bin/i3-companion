@@ -23,8 +23,9 @@ from i3ipc.aio import Connection
 from systemd import journal
 import ravel
 import dbussy
-from Xlib import display
-from Xlib.ext import randr
+import xcffib
+import xcffib.xproto
+import xcffib.randr
 
 
 def icon(font_number, char):
@@ -576,24 +577,19 @@ async def output_update(i3, event):
     """React to a XRandR change."""
 
     # Grab current setup. Synchronous, but it's short enough
-    screen = i3.x11.screen()
-    window = screen.root.create_window(0, 0, 1, 1, 1, screen.root_depth)
-    screen_resources = randr.get_screen_resources_current(window)
-    current_setup = set()
-    for output in screen_resources.outputs:
-        output_info = randr.get_output_info(window, output, screen_resources.timestamp)
-        if output_info.crtc == 0:
-            continue
-        crtc_info = randr.get_crtc_info(window, output_info.crtc, output_info.timestamp)
-        current_setup.add(
-            (
-                output_info.name,
-                crtc_info.width,
-                crtc_info.height,
-                crtc_info.x,
-                crtc_info.y,
-            )
+    randr = i3.x11(xcffib.randr.key)
+    screen = i3.x11.get_setup().roots[0]
+    monitors = randr.GetMonitors(screen.root, 1).reply().monitors
+    current_setup = {
+        (
+            i3.x11.core.GetAtomName(m.name).reply().name.to_string(),
+            m.width,
+            m.height,
+            m.x,
+            m.y,
         )
+        for m in monitors
+    }
 
     # Compare to current setup
     if current_setup == output_update.last_setup:
@@ -894,7 +890,7 @@ async def main(options):
     i3 = await Connection(auto_reconnect=True).connect()
     i3.session_bus = await ravel.session_bus_async()
     i3.system_bus = await ravel.system_bus_async()
-    i3.x11 = display.Display()
+    i3.x11 = xcffib.connect()
 
     # Regular events
     for fn, events in on.functions.items():

@@ -347,12 +347,10 @@ async def new_workspace(i3, event):
 
 
 @on(I3Event.WORKSPACE_INIT)
-@static(lock=None)
+@static(lock=asyncio.Lock())
 async def workspace_rename_duplicate(i3, event):
     """Rename a workspace when initialized empty with a duplicate number."""
     # This will not be needed once https://github.com/i3/i3/pull/4252 is released.
-    if workspace_rename_duplicate.lock is None:
-        workspace_rename_duplicate.lock = asyncio.Lock()
     async with workspace_rename_duplicate.lock:
         workspace = event.current
         workspaces = await i3.get_workspaces()

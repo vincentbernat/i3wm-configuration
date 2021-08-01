@@ -8,5 +8,5 @@ Wants=xsession.target
 ExecStart=/usr/bin/i3
 ExecReload=/usr/bin/i3-msg reload
 ExecReload=/bin/systemctl --user restart i3-companion.service
-ExecStopPost=/bin/systemctl --user stop graphical-session.target
+ExecStopPost=/bin/systemctl --user stop --no-block graphical-session.target
 Restart=on-failure

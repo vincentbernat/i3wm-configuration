@@ -2,6 +2,7 @@
 Description=i3 window manager
 PartOf=graphical-session.target
 After=xsession.target
+Wants=xsession.target
 
 [Service]
 ExecStart=/usr/bin/i3

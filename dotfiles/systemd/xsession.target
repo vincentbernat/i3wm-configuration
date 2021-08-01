@@ -4,7 +4,6 @@ BindsTo=graphical-session.target
 Wants=autorandr.service
 Wants=dunst.socket
 Wants=easyeffects.service
-Wants=i3.service
 Wants=inputplug.service
 Wants=picom.service
 Wants=policykit-agent.service

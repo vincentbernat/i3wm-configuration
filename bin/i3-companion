@@ -346,6 +346,23 @@ async def new_workspace(i3, event):
         await current.command(f"move container to workspace " f'number "{num}"')
 
 
+@on(I3Event.WORKSPACE_INIT)
+@static(lock=None)
+async def workspace_rename_duplicate(i3, event):
+    """Rename a workspace when initialized empty with a duplicate number."""
+    # This will not be needed once https://github.com/i3/i3/pull/4252 is released.
+    if workspace_rename_duplicate.lock is None:
+        workspace_rename_duplicate.lock = asyncio.Lock()
+    async with workspace_rename_duplicate.lock:
+        workspace = event.current
+        workspaces = await i3.get_workspaces()
+        workspace_nums = {w.num for w in workspaces if workspace.id != w.ipc_data["id"]}
+        if workspace.num in workspace_nums:
+            max_num = max(workspace_nums)
+            available = (set(range(1, max_num + 2)) - workspace_nums).pop()
+            await i3.command(f"rename workspace {workspace.num} to {available}")
+
+
 @on(I3Event.WINDOW_NEW, CommandEvent("inhibit-exclusive"))
 @static(inhibited_by=False)
 async def workspace_exclusive(i3, event):

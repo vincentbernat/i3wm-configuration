@@ -153,6 +153,7 @@ for_window [tiling] border pixel 3
 for_window [class="Shadow"] fullscreen enable
 for_window [window_role="PictureInPicture"] floating enable
 for_window [title="Firefox — Sharing Indicator"] border none, sticky enable, move position 20 ppt -5 px
+no_focus [title="Firefox — Sharing Indicator"]
 
 # Start stuff
 exec_always --no-startup-id exec systemctl --user start --no-block i3-session.target

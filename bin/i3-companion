@@ -405,6 +405,7 @@ async def workspace_exclusive(i3, event):
         if w.id != ow.id
         and (w.window_class or object()) != ow.window_class
         and ow.window_class in exclusive_apps
+        and not ow.sticky
     }
 
     # If current one is OK, don't move

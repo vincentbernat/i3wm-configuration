@@ -7,6 +7,9 @@ MONITORS=$(xrandr --current --listactivemonitors | sed -nE 's/ *([0-9]+): [+*]*(
 PRIMARY=$(xrandr --current --listactivemonitors | sed -nE 's/ *([0-9]+): [+]?[*]([^ ]*).*/\2/p')
 PRIMARY=${PRIMARY:-${MONITORS%% *}}
 
+awk 'BEGIN { i=0 } ($4 == "/" && $3 !~ /^0:/) {print "mount-"i" = "$5; i++}' /proc/self/mountinfo \
+    > $XDG_RUNTIME_DIR/i3/polybar-filesystems.conf
+
 case $(echo $MONITORS | wc -w) in
     1)
         MONITOR=$PRIMARY polybar --reload alone &

@@ -330,6 +330,41 @@ async def workspace_rename(i3, event):
     await i3.command(";".join(commands))
 
 
+@on(CommandEvent("previous-workspace"), I3Event.WORKSPACE_FOCUS)
+@static(history=collections.defaultdict(list))
+async def previous_workspace(i3, event):
+    """Go to previous workspace on the same output."""
+    history = previous_workspace.history
+    if isinstance(event, i3ipc.WorkspaceEvent) and event.old:
+        data = event.old.ipc_data
+        output, num = data["output"], data["num"]
+        if history[output][-1:] != [num]:
+            history[output].append(num)
+            history[output] = history[output][-2:]
+            logger.debug("on %s, history is %s", output, history[output])
+    elif event == "previous-workspace":
+        workspaces = await i3.get_workspaces()
+        try:
+            focused = [w for w in workspaces if w.focused][0]
+        except IndexError:
+            return
+        output = focused.output
+        while True:
+            try:
+                previous = history[output].pop()
+                if [
+                    w
+                    for w in workspaces
+                    if w.num != focused.num and w.num == previous and w.output == output
+                ]:
+                    break
+            except IndexError:
+                logger.debug("no previous workspace on %s", output)
+                return
+        logger.debug("switching to workspace %d on %s", previous, output)
+        await i3.command(f"workspace number {previous}")
+
+
 @on(CommandEvent("new-workspace"), CommandEvent("move-to-new-workspace"))
 async def new_workspace(i3, event):
     """Create a new workspace and optionally move a window to it."""

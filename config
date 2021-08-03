@@ -73,8 +73,8 @@ bindsym $mod+f fullscreen toggle
 bindsym $mod+Shift+f fullscreen toggle global
 
 # change container layout (tabbed, toggle split)
-bindsym $mod+w layout toggle splitv splith tabbed; nop "layout-changed"
-bindsym $mod+v split toggle; nop "layout-changed"
+bindsym $mod+w layout toggle splitv splith tabbed
+bindsym $mod+v split toggle
 
 # toggle tiling / floating
 bindsym $mod+Shift+space floating toggle

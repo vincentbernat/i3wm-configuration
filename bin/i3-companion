@@ -80,10 +80,6 @@ icons = {
     "headset": icon(2, ""),
     "keyboard": icon(2, "⌨"),
     "laptop": icon(2, "💻"),
-    "layout-splith": icon(2, ""),
-    "layout-splitv": icon(2, ""),
-    "layout-stacking": icon(2, ""),
-    "layout-tabbed": icon(2, ""),
     "loudspeaker": icon(2, ""),
     "microphone": icon(2, ""),
     "mouse": icon(2, ""),
@@ -239,7 +235,7 @@ def debounce(sleep, *, unless=None):
     return decorator
 
 
-def polybar(module, silent=False):
+def polybar(module):
     """Use returned string to update polybar module"""
 
     def decorator(fn):
@@ -263,8 +259,7 @@ def polybar(module, silent=False):
                     if e.errno != errno.ENXIO:
                         raise
 
-            log = logger.debug if silent else logger.info
-            log("polybar/%s: content updated", module)
+            logger.info(f"polybar/{module}: content updated")
             cache[module] = content
             return content
 
@@ -590,18 +585,6 @@ async def workspace_info(i3, event):
         replaces_id=workspace_info.last_id,
     )
     workspace_info.last_id = result[0]
-
-
-@on(I3Event.WINDOW_FOCUS, CommandEvent("layout-changed"), StartEvent)
-@polybar("i3layout", silent=True)
-async def layout_update(i3, event):
-    """Display layout of the current focused container."""
-    tree = await i3.get_tree()
-    focused = tree.find_focused()
-    if not focused:
-        return ""
-    layout = focused.parent.layout
-    return icons.get(f"layout-{layout}", icons['unknown'])
 
 
 @on(I3Event.OUTPUT, StartEvent)

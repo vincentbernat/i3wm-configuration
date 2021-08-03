@@ -2,8 +2,7 @@
 
 """Simple dimmer for xss-lock."""
 
-# It assumes we are using a compositor and the application gets killed
-# as soon as there is a movement.
+# It assumes we are using a compositor.
 
 import gi ; gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gdk, GLib

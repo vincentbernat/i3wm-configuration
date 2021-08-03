@@ -22,7 +22,8 @@ case "$1" in
         echo "notify: start (idle: $(xprintidle))"
         trap 'echo notify: user activity; kill %% 2> /dev/null; exit 0' HUP  # user activity
         trap 'echo notify: locker started; kill %% 2> /dev/null; exit 0' TERM # locker started
-        ~/.config/i3/bin/dimmer --delay $notify
+        ~/.config/i3/bin/dimmer --delay $notify &
+        wait
         echo "notify: end"
         ;;
     lock)

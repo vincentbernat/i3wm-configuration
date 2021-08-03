@@ -1,0 +1,69 @@
+#!/usr/bin/env -S python3 -W ignore::DeprecationWarning
+
+"""Simple dimmer for xss-lock."""
+
+# It assumes we are using a compositor and the application gets killed
+# as soon as there is a movement.
+
+import gi ; gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk, Gdk, GLib
+import cairo
+import argparse
+
+
+def expose_draw(widget, event, options, current):
+    def dim(once=False):
+        cr = Gdk.cairo_create(window)
+        cr.set_source_rgba(0, 0, 0, current[0])
+        cr.set_operator(cairo.OPERATOR_SOURCE)
+        cr.paint()
+        if not once:
+            current[0] += options.step
+            delta = options.max_opacity - options.min_opacity
+            delay = options.delay * options.step * 1000 / delta
+            if current[0] <= options.max_opacity:
+                GLib.timeout_add(delay, dim)
+
+    window = widget.get_window()
+    if not current:
+        # First time we are called.
+        current.append(options.min_opacity)
+        dim()
+    else:
+        dim(once=True)
+
+
+if __name__ == "__main__":
+    # Parse arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--min-opacity", type=float, default=0.2)
+    parser.add_argument("--max-opacity", type=float, default=1)
+    parser.add_argument("--step", type=float, default=0.02)
+    parser.add_argument("--delay", type=float, default=10)
+    options = parser.parse_args()
+
+    display = Gdk.Display.get_default()
+    for i in range(display.get_n_monitors()):
+        geom = display.get_monitor(i).get_geometry()
+        once = []
+
+        # Create window
+        window = Gtk.Window()
+        window.set_wmclass("dimmer", "Dimmer")
+        window.set_app_paintable(True)
+        window.set_skip_pager_hint(True)
+        window.set_skip_taskbar_hint(True)
+        window.set_resizable(False)
+        window.set_decorated(False)
+        window.set_accept_focus(False)
+        window.set_type_hint(Gdk.WindowTypeHint.SPLASHSCREEN)
+        window.set_default_size(geom.width, geom.height)
+        window.set_visual(window.get_screen().get_rgba_visual())
+
+        window.connect("draw", expose_draw, options, [])
+        window.connect("delete-event", Gtk.main_quit)
+
+        window.show_all()
+        window.move(geom.x, geom.y)
+
+    Gtk.main()

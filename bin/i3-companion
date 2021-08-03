@@ -80,6 +80,10 @@ icons = {
     "headset": icon(2, ""),
     "keyboard": icon(2, "⌨"),
     "laptop": icon(2, "💻"),
+    "layout-splith": icon(2, ""),
+    "layout-splitv": icon(2, ""),
+    "layout-stacking": icon(2, ""),
+    "layout-tabbed": icon(2, ""),
     "loudspeaker": icon(2, ""),
     "microphone": icon(2, ""),
     "mouse": icon(2, ""),
@@ -235,7 +239,7 @@ def debounce(sleep, *, unless=None):
     return decorator
 
 
-def polybar(module):
+def polybar(module, silent=False):
     """Use returned string to update polybar module"""
 
     def decorator(fn):
@@ -259,7 +263,8 @@ def polybar(module):
                     if e.errno != errno.ENXIO:
                         raise
 
-            logger.info(f"polybar/{module}: content updated")
+            log = logger.debug if silent else logger.info
+            log("polybar/%s: content updated", module)
             cache[module] = content
             return content
 
@@ -585,6 +590,18 @@ async def workspace_info(i3, event):
         replaces_id=workspace_info.last_id,
     )
     workspace_info.last_id = result[0]
+
+
+@on(I3Event.WINDOW_FOCUS, CommandEvent("layout-changed"), StartEvent)
+@polybar("i3layout", silent=True)
+async def layout_update(i3, event):
+    """Display layout of the current focused container."""
+    tree = await i3.get_tree()
+    focused = tree.find_focused()
+    if not focused:
+        return ""
+    layout = focused.parent.layout
+    return icons.get(f"layout-{layout}", icons['unknown'])
 
 
 @on(I3Event.OUTPUT, StartEvent)
@@ -930,18 +947,19 @@ async def main(options):
         # this mechanism as an IPC mechanism. The alternative would be
         # to use ticks but we would need to spawn an i3-msg process
         # for that.
-        cmd = event.binding.command
-        if not cmd.startswith("nop "):
-            return
-        cmd = cmd[4:].strip("\"'")
-        if not cmd:
-            return
-        kind = cmd.split(":")[0]
-        for fn, events in on.functions.items():
-            for e in events:
-                if isinstance(e, CommandEvent) and e.name == kind:
-                    logger.debug("received command event %s for %s", event, fn)
-                    await fn(i3, cmd)
+        for cmd in event.binding.command.split(";"):
+            cmd = cmd.strip()
+            if not cmd.startswith("nop "):
+                continue
+            cmd = cmd[4:].strip(" \"'")
+            if not cmd:
+                continue
+            kind = cmd.split(":")[0]
+            for fn, events in on.functions.items():
+                for e in events:
+                    if isinstance(e, CommandEvent) and e.name == kind:
+                        logger.debug("received command event %s for %s", event, fn)
+                        await fn(i3, cmd)
 
     i3.on(I3Event.BINDING, binding_event)
 

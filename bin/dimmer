@@ -1,4 +1,5 @@
 #!/usr/bin/env -S python3 -W ignore::DeprecationWarning
+# -*- python -*-
 
 """Simple dimmer for xss-lock."""
 
@@ -10,7 +11,7 @@ import cairo
 import argparse
 
 
-def expose_draw(widget, event, options, current):
+def draw(widget, event, options, current):
     def dim(once=False):
         cr = Gdk.cairo_create(window)
         cr.set_source_rgba(0, 0, 0, current[0])
@@ -29,11 +30,11 @@ def expose_draw(widget, event, options, current):
         current.append(options.min_opacity)
         dim()
     else:
+        # Timers already running, just dim to current value
         dim(once=True)
 
 
 if __name__ == "__main__":
-    # Parse arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("--min-opacity", type=float, default=0.2)
     parser.add_argument("--max-opacity", type=float, default=1)
@@ -46,7 +47,6 @@ if __name__ == "__main__":
         geom = display.get_monitor(i).get_geometry()
         once = []
 
-        # Create window
         window = Gtk.Window()
         window.set_wmclass("dimmer", "Dimmer")
         window.set_app_paintable(True)
@@ -59,7 +59,7 @@ if __name__ == "__main__":
         window.set_default_size(geom.width, geom.height)
         window.set_visual(window.get_screen().get_rgba_visual())
 
-        window.connect("draw", expose_draw, options, [])
+        window.connect("draw", draw, options, [])
         window.connect("delete-event", Gtk.main_quit)
 
         window.show_all()

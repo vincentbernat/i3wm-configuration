@@ -12,6 +12,9 @@ unconfigure() {
     xset s 0
     xset dpms 0 0 0
 }
+dimmer() {
+    systemctl --user $1 dimmer@$notify.service
+}
 
 case "$1" in
     start)
@@ -20,9 +23,10 @@ case "$1" in
         ;;
     dim|notify)
         echo "notify: start (idle: $(xprintidle))"
-        trap 'echo notify: user activity; kill %% 2> /dev/null; exit 0' HUP  # user activity
+        trap 'echo notify: user activity; dimmer stop; kill %% 2> /dev/null; exit 0' HUP  # user activity
         trap 'echo notify: locker started; kill %% 2> /dev/null; exit 0' TERM # locker started
-        ~/.config/i3/bin/dimmer --delay $notify &
+        dimmer start
+        sleep infinity &
         wait
         echo "notify: end"
         ;;
@@ -36,7 +40,7 @@ case "$1" in
         # Then, lock screen
         i3lock -n -e -i $HOME/.cache/i3/current-wallpaper.png -t -f
         echo "lock: unlock screen"
-        # Resume notifications
+        dimmer stop
         dunstctl set-paused false
         ;;
 esac

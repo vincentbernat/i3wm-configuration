@@ -8,10 +8,6 @@ configure() {
     xset s $((timeout - notify)) $notify
     xset dpms $((timeout * 2)) $((timeout * 22 / 10)) $((timeout * 24 / 10))
 }
-unconfigure() {
-    xset s 0
-    xset dpms 0 0 0
-}
 dimmer() {
     systemctl --user $1 dimmer@$notify.service
 }
@@ -40,6 +36,7 @@ case "$1" in
         # Then, lock screen
         i3lock -n -e -i $HOME/.cache/i3/current-wallpaper.png -t -f
         echo "lock: unlock screen"
+        # After unlocking screen, stop dimmer, restore notifications
         dimmer stop
         dunstctl set-paused false
         ;;

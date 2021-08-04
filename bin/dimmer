@@ -5,32 +5,51 @@
 
 # It assumes we are using a compositor.
 
-import gi ; gi.require_version("Gtk", "3.0")
+import gi
+
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gdk, GLib
 import cairo
 import argparse
 
 
-def draw(widget, event, options, current):
+def draw(widget, event, options, elapsed):
     def dim(once=False):
         cr = Gdk.cairo_create(window)
-        cr.set_source_rgba(0, 0, 0, current[0])
+
+        # Background
+        delta = options.max_opacity - options.min_opacity
+        current = elapsed[0] / options.delay
+        opacity = delta * current + options.min_opacity
+        cr.set_source_rgba(0, 0, 0, opacity)
         cr.set_operator(cairo.OPERATOR_SOURCE)
         cr.paint()
+
+        # Remaining time
+        remaining = str(round(options.delay - elapsed[0]))
+        wwidth, wheight = widget.get_default_size()
+        cr.set_source_rgba(1, 1, 1, opacity)
+        cr.select_font_face(
+            options.font, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD
+        )
+        cr.set_font_size(wheight // 4)
+        _, _, twidth, theight, _, _ = cr.text_extents(remaining)
+        cr.move_to(wwidth // 2 - twidth // 2, wheight // 2 + theight // 2)
+        cr.show_text(remaining)
+
+        # Rearm timer
         if not once:
-            current[0] += options.step
-            delta = options.max_opacity - options.min_opacity
-            delay = options.delay * options.step * 1000 / delta
-            if current[0] <= options.max_opacity:
-                GLib.timeout_add(delay, dim)
+            elapsed[0] += options.step
+            if elapsed[0] <= options.delay:
+                GLib.timeout_add(options.step * 1000, dim)
 
     window = widget.get_window()
-    if not current:
+    if not elapsed:
         # First time we are called.
-        current.append(options.min_opacity)
+        elapsed.append(0)
         dim()
     else:
-        # Timers already running, just dim to current value
+        # Timers already running, just repaint
         dim(once=True)
 
 
@@ -38,8 +57,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--min-opacity", type=float, default=0.2)
     parser.add_argument("--max-opacity", type=float, default=1)
-    parser.add_argument("--step", type=float, default=0.02)
+    parser.add_argument("--step", type=float, default=0.1)
     parser.add_argument("--delay", type=float, default=10)
+    parser.add_argument("--font", default="DejaVu Sans")
     options = parser.parse_args()
 
     display = Gdk.Display.get_default()

@@ -98,6 +98,7 @@ icons = {
     "wired": icon(2, ""),
 }
 application_icons_nomatch = icon(2, "")
+application_icons_ignore = {"dimmer"}
 application_icons_alone = {application_icons[k] for k in {"vbeterm"}}
 exclusive_apps = {"Emacs", "Firefox"}
 intrusive_apps = {"Vbeterm"}
@@ -318,6 +319,8 @@ async def workspace_rename(i3, event):
             if window.sticky:
                 continue
             cls = (window.window_class or "").lower()
+            if cls in application_icons_ignore:
+                continue
             icon = application_icons.get(cls, application_icons.get(cls.split("-")[0]))
             icons.add(icon or application_icons_nomatch)
         if any([i not in application_icons_alone for i in icons]):

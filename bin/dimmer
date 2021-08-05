@@ -13,7 +13,13 @@ import cairo
 import argparse
 
 
-def draw(widget, event, options, elapsed):
+def realize_event(widget):
+    window = widget.get_window()
+    window.set_override_redirect(True)
+    window.set_keep_above(True)
+
+
+def draw_event(widget, event, options, elapsed):
     def dim(once=False):
         cr = Gdk.cairo_create(window)
 
@@ -70,19 +76,16 @@ if __name__ == "__main__":
         window = Gtk.Window()
         window.set_wmclass("dimmer", "Dimmer")
         window.set_app_paintable(True)
-        window.set_skip_pager_hint(True)
-        window.set_skip_taskbar_hint(True)
-        window.set_resizable(False)
-        window.set_decorated(False)
-        window.set_accept_focus(False)
         window.set_type_hint(Gdk.WindowTypeHint.SPLASHSCREEN)
-        window.set_default_size(geom.width, geom.height)
         window.set_visual(window.get_screen().get_rgba_visual())
 
-        window.connect("draw", draw, options, [])
+        window.set_default_size(geom.width, geom.height)
+        window.move(geom.x, geom.y)
+
+        window.connect("draw", draw_event, options, [])
         window.connect("delete-event", Gtk.main_quit)
+        window.connect("realize", realize_event)
 
         window.show_all()
-        window.move(geom.x, geom.y)
 
     Gtk.main()

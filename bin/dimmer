@@ -13,15 +13,9 @@ import cairo
 import argparse
 
 
-def visibility_event(widget, event):
-    if event.state == Gdk.VisibilityState.FULLY_OBSCURED:
-        gtk.main_quit()
-
-
 def realize_event(widget):
     window = widget.get_window()
     window.set_override_redirect(True)
-    window.set_events(window.get_events() | Gdk.EventMask.VISIBILITY_NOTIFY_MASK)
 
 
 def draw_event(widget, event, options, elapsed):
@@ -88,9 +82,8 @@ if __name__ == "__main__":
         window.move(geom.x, geom.y)
 
         window.connect("draw", draw_event, options, [])
-        window.connect("realize", realize_event)
-        window.connect("visibility-notify-event", visibility_event)
         window.connect("delete-event", Gtk.main_quit)
+        window.connect("realize", realize_event)
 
         window.show_all()
 

@@ -16,7 +16,6 @@ import argparse
 def realize_event(widget):
     window = widget.get_window()
     window.set_override_redirect(True)
-    window.set_keep_above(True)
 
 
 def draw_event(widget, event, options, elapsed):

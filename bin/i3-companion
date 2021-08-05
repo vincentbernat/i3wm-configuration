@@ -130,8 +130,7 @@ def static(**kwargs):
     """Define static variables for the event handler."""
 
     def decorator(fn):
-        for k, v in kwargs.items():
-            setattr(fn, k, v)
+        fn.__dict__.update(kwargs)
         return fn
 
     return decorator

@@ -8,17 +8,23 @@
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, Gdk, GLib
+gi.require_version("Wnck", "3.0")
+from gi.repository import Gtk, Gdk, GLib, Wnck
 import cairo
 import argparse
 
 
-def realize_event(widget):
+def on_window_opened(screen, window, options):
+    if window.get_class_group_name() == options.quit_when:
+        Gtk.main_quit()
+
+
+def on_realize(widget):
     window = widget.get_window()
     window.set_override_redirect(True)
 
 
-def draw_event(widget, event, options, elapsed):
+def on_draw(widget, event, options, elapsed):
     def dim(once=False):
         cr = Gdk.cairo_create(window)
 
@@ -65,9 +71,11 @@ if __name__ == "__main__":
     parser.add_argument("--step", type=float, default=0.1)
     parser.add_argument("--delay", type=float, default=10)
     parser.add_argument("--font", default="DejaVu Sans")
+    parser.add_argument("--quit-when", default="i3lock")
     options = parser.parse_args()
 
     display = Gdk.Display.get_default()
+    screen = Wnck.Screen.get_default();
     for i in range(display.get_n_monitors()):
         geom = display.get_monitor(i).get_geometry()
         once = []
@@ -81,9 +89,10 @@ if __name__ == "__main__":
         window.set_default_size(geom.width, geom.height)
         window.move(geom.x, geom.y)
 
-        window.connect("draw", draw_event, options, [])
+        window.connect("draw", on_draw, options, [])
         window.connect("delete-event", Gtk.main_quit)
-        window.connect("realize", realize_event)
+        window.connect("realize", on_realize)
+        screen.connect("window-opened", on_window_opened, options)
 
         window.show_all()
 

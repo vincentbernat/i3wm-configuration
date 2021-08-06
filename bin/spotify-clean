@@ -2,6 +2,5 @@
 
 pactl list short clients \
     | awk '($3 == "spotify") {print $1}' \
-    | sort -n \
     | head -n-1 \
     | xargs -rn1 pw-cli destroy

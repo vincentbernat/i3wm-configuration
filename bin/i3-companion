@@ -342,7 +342,7 @@ async def previous_workspace(i3, event):
         output, num = data["output"], data["num"]
         if history[output][-1:] != [num]:
             history[output].append(num)
-            history[output] = history[output][-2:]
+            history[output] = history[output][-5:]
             logger.debug("on %s, history is %s", output, history[output])
     elif event == "previous-workspace":
         workspaces = await i3.get_workspaces()

@@ -21,11 +21,8 @@ from Xlib.error import BadWindow
 from Xlib.protocol.event import MapNotify
 
 
-def watch_for_locker(locker):
-    xdisplay = display.Display()
-    root = xdisplay.screen().root
-    root.change_attributes(event_mask=X.SubstructureNotifyMask)
-    while True:
+def on_xevent(source, condition, xdisplay, locker):
+    while xdisplay.pending_events():
         event = xdisplay.next_event()
         if event.type != X.MapNotify:
             continue
@@ -34,8 +31,9 @@ def watch_for_locker(locker):
         except error.BadWindow:
             continue
         if wmclass and wmclass[1] == locker:
-            GLib.idle_add(Gtk.main_quit)
-            return
+            Gtk.main_quit()
+            return False
+    return True
 
 
 def on_realize(widget):
@@ -94,6 +92,7 @@ if __name__ == "__main__":
     add("--locker", default="i3lock", help="quit if window class detected")
     options = parser.parse_args()
 
+    # Setup dimmer windows on each monitor
     gdisplay = Gdk.Display.get_default()
     for i in range(gdisplay.get_n_monitors()):
         geom = gdisplay.get_monitor(i).get_geometry()
@@ -114,8 +113,22 @@ if __name__ == "__main__":
 
         window.show_all()
 
-    watcher = threading.Thread(
-        target=watch_for_locker, args=(options.locker,), daemon=True
+    # Watch for locker window
+    xdisplay = display.Display()
+    root = xdisplay.screen().root
+    root.change_attributes(event_mask=X.SubstructureNotifyMask)
+    channel = GLib.IOChannel.unix_new(xdisplay.fileno())
+    channel.set_encoding(None)
+    channel.set_buffered(False)
+    GLib.io_add_watch(
+        channel,
+        GLib.PRIORITY_DEFAULT,
+        GLib.IOCondition.IN,
+        on_xevent,
+        xdisplay,
+        options.locker,
     )
-    watcher.start()
+    xdisplay.pending_events()  # otherwise, socket is inactive
+
+    # Main loop
     Gtk.main()

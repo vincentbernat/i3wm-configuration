@@ -99,7 +99,6 @@ if __name__ == "__main__":
         once = []
 
         window = Gtk.Window()
-        window.set_wmclass("dimmer", "Dimmer")
         window.set_app_paintable(True)
         window.set_type_hint(Gdk.WindowTypeHint.SPLASHSCREEN)
         window.set_visual(window.get_screen().get_rgba_visual())

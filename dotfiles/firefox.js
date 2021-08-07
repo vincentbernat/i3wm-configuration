@@ -75,3 +75,7 @@ user_pref("image.avif.enabled", true);
 
 // Disable DoH for now
 user_pref("network.trr.mode", 5);
+
+// HTTPS first
+user_pref("dom.security.https_first", true);
+user_pref("dom.security.https_first_pbm", true);

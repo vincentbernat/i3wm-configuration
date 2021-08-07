@@ -1,7 +1,11 @@
 #!/usr/bin/env -S python3 -W ignore::DeprecationWarning
 # -*- python -*-
 
-"""Simple dimmer for xss-lock."""
+"""Simple dimmer for xss-lock.
+
+It dim the screen using a provided delay and display a countdown. It
+will stop itself when the locker window is mapped.
+"""
 
 # It assumes we are using a compositor.
 
@@ -11,6 +15,27 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gdk, GLib
 import cairo
 import argparse
+import threading
+from Xlib import display, X
+from Xlib.error import BadWindow
+from Xlib.protocol.event import MapNotify
+
+
+def watch_for_locker(locker):
+    xdisplay = display.Display()
+    root = xdisplay.screen().root
+    root.change_attributes(event_mask=X.SubstructureNotifyMask)
+    while True:
+        event = xdisplay.next_event()
+        if event.type != X.MapNotify:
+            continue
+        try:
+            wmclass = event.window.get_wm_class()
+        except error.BadWindow:
+            continue
+        if wmclass and wmclass[1] == locker:
+            GLib.idle_add(Gtk.main_quit)
+            return
 
 
 def on_realize(widget):
@@ -23,9 +48,9 @@ def on_draw(widget, event, options, elapsed):
         cr = Gdk.cairo_create(window)
 
         # Background
-        delta = options.max_opacity - options.min_opacity
+        delta = options.end_opacity - options.start_opacity
         current = elapsed[0] / options.delay
-        opacity = delta * current + options.min_opacity
+        opacity = delta * current + options.start_opacity
         cr.set_source_rgba(0, 0, 0, opacity)
         cr.set_operator(cairo.OPERATOR_SOURCE)
         cr.paint()
@@ -60,17 +85,18 @@ def on_draw(widget, event, options, elapsed):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--min-opacity", type=float, default=0.2)
-    parser.add_argument("--max-opacity", type=float, default=1)
-    parser.add_argument("--step", type=float, default=0.1)
-    parser.add_argument("--delay", type=float, default=10)
-    parser.add_argument("--font", default="DejaVu Sans")
-    parser.add_argument("--quit-when", default="i3lock")
+    add = parser.add_argument
+    add("--start-opacity", type=float, default=0.2, help="initial opacity")
+    add("--end-opacity", type=float, default=1, help="final opacity")
+    add("--step", type=float, default=0.1, help="step for changing opacity")
+    add("--delay", type=float, default=10, help="delay from start to end")
+    add("--font", default="DejaVu Sans", help="font for countdown")
+    add("--locker", default="i3lock", help="quit if window class detected")
     options = parser.parse_args()
 
-    display = Gdk.Display.get_default()
-    for i in range(display.get_n_monitors()):
-        geom = display.get_monitor(i).get_geometry()
+    gdisplay = Gdk.Display.get_default()
+    for i in range(gdisplay.get_n_monitors()):
+        geom = gdisplay.get_monitor(i).get_geometry()
         once = []
 
         window = Gtk.Window()
@@ -88,4 +114,8 @@ if __name__ == "__main__":
 
         window.show_all()
 
+    watcher = threading.Thread(
+        target=watch_for_locker, args=(options.locker,), daemon=True
+    )
+    watcher.start()
     Gtk.main()

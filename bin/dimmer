@@ -27,7 +27,7 @@ def on_xevent(source, condition, xdisplay, locker):
             continue
         try:
             wmclass = event.window.get_wm_class()
-        except error.BadWindow:
+        except BadWindow:
             continue
         if wmclass and wmclass[1] == locker:
             Gtk.main_quit()

@@ -1,4 +1,4 @@
-#!/usr/bin/env -S python3
+#!/usr/bin/env -S python3 -W ignore::DeprecationWarning
 # -*- python -*-
 
 """Simple dimmer for xss-lock.
@@ -42,34 +42,28 @@ def on_realize(widget):
 
 
 def on_draw(widget, event, options, elapsed):
-    def dim(once=False, context=None):
-        if context is None:
-            dctx = window.begin_draw_frame(cairo.Region())
-            cctx = dctx.get_cairo_context()
-        else:
-            cctx = context
+    def dim(once=False):
+        cr = Gdk.cairo_create(window)
 
         # Background
         delta = options.end_opacity - options.start_opacity
         current = elapsed[0] / options.delay
         opacity = delta * current + options.start_opacity
-        cctx.set_source_rgba(0, 0, 0, opacity)
-        cctx.set_operator(cairo.OPERATOR_SOURCE)
-        cctx.paint()
+        cr.set_source_rgba(0, 0, 0, opacity)
+        cr.set_operator(cairo.OPERATOR_SOURCE)
+        cr.paint()
 
         # Remaining time
         remaining = str(round(options.delay - elapsed[0]))
         wwidth, wheight = widget.get_default_size()
-        cctx.set_source_rgba(1, 1, 1, opacity)
-        cctx.select_font_face(
+        cr.set_source_rgba(1, 1, 1, opacity)
+        cr.select_font_face(
             options.font, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD
         )
-        cctx.set_font_size(wheight // 4)
-        _, _, twidth, theight, _, _ = cctx.text_extents(remaining)
-        cctx.move_to(wwidth // 2 - twidth // 2, wheight // 2 + theight // 2)
-        cctx.show_text(remaining)
-        if context is None:
-            window.end_draw_frame(dctx)
+        cr.set_font_size(wheight // 4)
+        _, _, twidth, theight, _, _ = cr.text_extents(remaining)
+        cr.move_to(wwidth // 2 - twidth // 2, wheight // 2 + theight // 2)
+        cr.show_text(remaining)
 
         # Rearm timer
         if not once:
@@ -81,10 +75,10 @@ def on_draw(widget, event, options, elapsed):
     if not elapsed:
         # First time we are called.
         elapsed.append(0)
-        dim(context=event)
+        dim()
     else:
         # Timers already running, just repaint
-        dim(once=True, context=event)
+        dim(once=True)
 
 
 if __name__ == "__main__":

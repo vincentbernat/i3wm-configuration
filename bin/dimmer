@@ -1,4 +1,4 @@
-#!/usr/bin/env -S python3 -W ignore::DeprecationWarning
+#!/usr/bin/env -S python3
 # -*- python -*-
 
 """Simple dimmer for xss-lock.
@@ -42,43 +42,48 @@ def on_realize(widget):
 
 
 def on_draw(widget, event, options, elapsed):
-    def dim(once=False):
-        cr = Gdk.cairo_create(window)
+    def _dim():
+        r = cairo.Region(cairo.RectangleInt(0, 0, *widget.get_default_size()))
+        dctx = window.begin_draw_frame(r)
+        cctx = dctx.get_cairo_context()
+        dim(cctx)
+        window.end_draw_frame(dctx)
 
+    def dim(cctx, once=False):
         # Background
         delta = options.end_opacity - options.start_opacity
         current = elapsed[0] / options.delay
         opacity = delta * current + options.start_opacity
-        cr.set_source_rgba(0, 0, 0, opacity)
-        cr.set_operator(cairo.OPERATOR_SOURCE)
-        cr.paint()
+        cctx.set_source_rgba(0, 0, 0, opacity)
+        cctx.set_operator(cairo.OPERATOR_SOURCE)
+        cctx.paint()
 
         # Remaining time
         remaining = str(round(options.delay - elapsed[0]))
         wwidth, wheight = widget.get_default_size()
-        cr.set_source_rgba(1, 1, 1, opacity)
-        cr.select_font_face(
+        cctx.set_source_rgba(1, 1, 1, opacity)
+        cctx.select_font_face(
             options.font, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD
         )
-        cr.set_font_size(wheight // 4)
-        _, _, twidth, theight, _, _ = cr.text_extents(remaining)
-        cr.move_to(wwidth // 2 - twidth // 2, wheight // 2 + theight // 2)
-        cr.show_text(remaining)
+        cctx.set_font_size(wheight // 4)
+        _, _, twidth, theight, _, _ = cctx.text_extents(remaining)
+        cctx.move_to(wwidth // 2 - twidth // 2, wheight // 2 + theight // 2)
+        cctx.show_text(remaining)
 
         # Rearm timer
         if not once:
             elapsed[0] += options.step
             if elapsed[0] <= options.delay:
-                GLib.timeout_add(options.step * 1000, dim)
+                GLib.timeout_add(options.step * 1000, _dim)
 
     window = widget.get_window()
     if not elapsed:
         # First time we are called.
         elapsed.append(0)
-        dim()
+        dim(event)
     else:
         # Timers already running, just repaint
-        dim(once=True)
+        dim(event, once=True)
 
 
 if __name__ == "__main__":

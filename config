@@ -138,8 +138,8 @@ bindsym $mod+Shift+r restart
 # Lock screen and print screen
 bindsym XF86ScreenSaver exec --no-startup-id exec xset s activate
 bindsym $mod+Delete exec --no-startup-id exec xset s activate
-bindsym Print exec --no-startup-id "maim -u -s -b 5 -l -c 0.3,0.4,0.6,0.4 | xclip -selection clipboard -t image/png"
-bindsym $mod+Print exec --no-startup-id "maim -u -m 8 ~/.config/i3/screenshots/$(date -Iseconds).jpg"
+bindsym Print exec --no-startup-id exec ~/.config/i3/bin/screenshot window
+bindsym $mod+Print exec --no-startup-id exec ~/.config/i3/bin/screenshot desktop
 
 # Quake window
 bindsym $mod+grave nop "quake-console:$term:QuakeConsoleNeedsUniqueName:0.3"

@@ -2,7 +2,7 @@
 
 This is my [i3](https://i3wm) configuration. It does not exactly
 feature the same keybindings as the default configuration. I don't
-recommend using it by you can pick anything you need in it.
+recommend using it as-is by you can pick anything you need in it.
 
 Here some of the things you may be interested in:
 
@@ -49,3 +49,4 @@ However, I am recompiling some stuff to get more recent versions:
 
  - [/r/unixporn on reddit](https://www.reddit.com/r/unixporn/search?q=i3&restrict_sr=1)
  - [Hacking i3: Automatic Layout](https://aduros.com/blog/hacking-i3-automatic-layout/)
+ - [__luccy desktop](https://www.reddit.com/r/unixporn/comments/odlf79/i3gaps_simple_minimal_round/)

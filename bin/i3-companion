@@ -51,6 +51,7 @@ application_icons = {
     "gitg": icon(2, ""),
     "gnome-boxes": icon(2, ""),
     "google-chrome": icon(3, ""),
+    "grisbi": icon(2, ""),
     "inkscape": icon(2, ""),
     "libreoffice": icon(2, "📄"),
     "mpv": icon(2, ""),

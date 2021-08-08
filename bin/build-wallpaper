@@ -66,7 +66,7 @@ screens.sort(key=lambda screen: -screen[0] * screen[1])
 images = []
 for base, _, files in os.walk(os.path.join(options.directory)):
     for i in files:
-        if os.path.splitext(i)[1].lower() in (".jpg", ".jpeg", ".png"):
+        if os.path.splitext(i)[1].lower() in (".jpg", ".jpeg", ".png", ".webp"):
             images.append(os.path.join(base, i))
 images = random.sample(images, len(screens))
 images = [Image.open(image) for image in images]

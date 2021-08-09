@@ -460,6 +460,7 @@ async def workspace_exclusive(i3, event):
         if w.id != ow.id and (w.window_class or object()) == ow.window_class
     }
     candidate_workspaces -= exclusive_workspaces
+    candidate_workspaces -= {-1} # scratchpad
 
     if candidate_workspaces:
         # Use one of the candidates

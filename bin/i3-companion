@@ -42,6 +42,7 @@ application_icons = {
     "calibre": icon(2, "📚"),
     "chromium": icon(3, ""),
     "d-feet": icon(2, ""),
+    "darktable": icon(2, ""),
     "discord": icon(3, ""),
     "easyeffects": icon(2, ""),
     "emacs": icon(2, ""),

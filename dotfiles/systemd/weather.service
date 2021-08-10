@@ -1,5 +1,5 @@
 [Unit]
-Description=Build and display wallpaper
+Description=Update weather for Polybar
 PartOf=graphical-session.target
 After=polybar.service
 

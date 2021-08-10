@@ -152,11 +152,17 @@ if __name__ == "__main__":
         logger.info(f"current weather: {description}")
 
         # Format output
-        output = "{} {} {}".format(
+        forecasts = [
             format_weather(forecast_weather["list"][0]),
             format_weather(forecast_weather["list"][1]),
             format_weather(forecast_weather["list"][2]),
-        )
+        ]
+        while len(forecasts) >= 2:
+            if forecasts[-1] == forecasts[-2]:
+                forecasts.pop()
+            else:
+                break
+        output = " ".join(forecasts)
         output = output.replace("%{Tx}", "%%{T%d}" % options.font)
         logger.debug("output: %s", output)
 

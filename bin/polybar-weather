@@ -45,6 +45,7 @@ def get_weather(apikey, latitude, longitude, endpoint):
 
 def format_weather(data):
     """Translate OWM icon to WeatherIcons."""
+    # https://erikflowers.github.io/weather-icons/
     icon = data["weather"][0]["icon"]
     temperature = data["main"]["temp"]
     if icon == "01d" and temperature > 32:

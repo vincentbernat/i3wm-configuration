@@ -1,5 +1,0 @@
-[Unit]
-Description=Screen dimmer
-
-[Service]
-ExecStart=%h/.config/i3/bin/dimmer --delay=%i --font "Monkey Island 1991"

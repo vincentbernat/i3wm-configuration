@@ -24,22 +24,22 @@ def get_location():
     return (data["lat"], data["lon"])
 
 
-def get_weather(apikey, latitude, longitude, endpoint):
-    """Return current weather data from openweathermap."""
+def get_weather(apikey, latitude, longitude, forecasts):
+    """Return forecasts data from openweathermap."""
     logger.debug("query openweathermap for %s, %s", latitude, longitude)
     r = requests.get(
-        f"https://api.openweathermap.org/data/2.5/{endpoint}",
+        "https://api.openweathermap.org/data/2.5/forecast",
         params={
             "appid": apikey,
             "lat": latitude,
             "lon": longitude,
             "units": "metric",
-            "cnt": 3,
+            "cnt": forecasts,
         },
     )
     r.raise_for_status()
     data = r.json()
-    logger.debug("%s data: %s", endpoint, data)
+    logger.debug("forecast data: %s", data)
     return data
 
 
@@ -108,14 +108,19 @@ if __name__ == "__main__":
         default=os.environ.get("OWM_API_KEY"),
         help="OpenWeatherMap API key",
     )
-    parser.add_argument("--font", default=4, type=int, help="Weather Icons 1-index")
+    parser.add_argument(
+        "--forecasts", default=3, type=int, help="Number of forecasts to fetch"
+    )
+    parser.add_argument(
+        "--font-index", default=4, type=int, help="Weather Icons 1-index"
+    )
     parser.add_argument(
         "--output",
         default=f"{os.environ['XDG_RUNTIME_DIR']}/i3/weather.txt",
         help="Output destination",
     )
     parser.add_argument(
-        "--timeout",
+        "--online-timeout",
         default=30,
         type=int,
         help="Wait up to TIMEOUT minutes to be online",
@@ -141,7 +146,7 @@ if __name__ == "__main__":
             update_status("", options.output)
             if (
                 subprocess.run(
-                    ["nm-online", "-s", "-q", "-t", str(options.timeout * 60)]
+                    ["nm-online", "-s", "-q", "-t", str(options.online_timeout * 60)]
                 ).returncode
                 != 0
             ):
@@ -151,23 +156,21 @@ if __name__ == "__main__":
         # Grab information. We only use forecast weather, otherwise,
         # we may get something "late".
         location = get_location()
-        forecast_weather = get_weather(options.owm_api_key, *location, "forecast")
+        forecast_weather = get_weather(
+            options.owm_api_key, *location, options.forecasts
+        )
         description = forecast_weather["list"][0]["weather"][0]["description"]
         logger.info(f"current weather: {description}")
 
         # Format output
-        forecasts = [
-            format_weather(forecast_weather["list"][0]),
-            format_weather(forecast_weather["list"][1]),
-            format_weather(forecast_weather["list"][2]),
-        ]
+        forecasts = [format_weather(data) for data in forecast_weather["list"]]
         while len(forecasts) >= 2:
             if forecasts[-1] == forecasts[-2]:
                 forecasts.pop()
             else:
                 break
         output = " ".join(forecasts)
-        output = output.replace("%{Tx}", "%%{T%d}" % options.font)
+        output = output.replace("%{Tx}", "%%{T%d}" % options.font_index)
         logger.debug("output: %s", output)
 
         update_status(output, options.output)

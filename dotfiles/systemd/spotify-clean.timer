@@ -1,5 +1,5 @@
 [Unit]
-Description=Clean spotify extra PulseAudio streams
+Description=Timer for cleaning spotify extra PA streams
 After=pipewire-pulse.socket
 
 [Timer]

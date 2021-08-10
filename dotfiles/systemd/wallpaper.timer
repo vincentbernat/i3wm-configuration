@@ -1,5 +1,5 @@
 [Unit]
-Description=Wallpaper rotation
+Description=Timer for wallpaper rotation
 PartOf=graphical-session.target
 
 [Timer]

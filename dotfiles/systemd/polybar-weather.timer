@@ -1,5 +1,5 @@
 [Unit]
-Description=Weather update
+Description=Timer for weather update
 PartOf=graphical-session.target
 
 [Timer]

@@ -20,7 +20,7 @@ def get_location():
     r.raise_for_status()
     data = r.json()
     logger.debug("current location data: %s", data)
-    logger.info(f'current location is {data["city"]}, {data["country"]}')
+    logger.info(f'current location: {data["city"]}, {data["country"]}')
     return (data["lat"], data["lon"])
 
 
@@ -139,28 +139,29 @@ if __name__ == "__main__":
         root.addHandler(journal.JournalHandler(SYSLOG_IDENTIFIER=logger.name))
 
     try:
-        # Wait to be online
-        logger.debug("check if we are online")
-        if subprocess.run(["nm-online", "-s", "-q", "-t", "5"]).returncode != 0:
+        # Get location
+        try:
+            location = get_location()
+        except requests.exceptions.ConnectionError:
+            # Wait to be online
+            time.sleep(2)
             logger.info("not online, waiting")
             update_status("", options.output)
-            if (
-                subprocess.run(
-                    ["nm-online", "-s", "-q", "-t", str(options.online_timeout * 60)]
-                ).returncode
-                != 0
-            ):
+            process = subprocess.run(
+                ["nm-online", "-s", "-q", "-t", str(options.online_timeout * 60)]
+            )
+            if process.returncode != 0:
                 logger.warning("not online, exiting")
                 sys.exit(1)
+            location = get_location()
 
-        # Grab information. We only use forecast weather, otherwise,
+        # Grab forecast. We only use forecast weather, otherwise,
         # we may get something "late".
-        location = get_location()
         forecast_weather = get_weather(
             options.owm_api_key, *location, options.forecasts
         )
         description = forecast_weather["list"][0]["weather"][0]["description"]
-        city = forecast_weather['city']['name']
+        city = forecast_weather["city"]["name"]
         logger.info(f"current weather at {city}: {description}")
 
         # Format output

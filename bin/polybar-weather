@@ -47,26 +47,29 @@ def format_weather(data):
     """Translate OWM icon to WeatherIcons."""
     icon = data["weather"][0]["icon"]
     temperature = data["main"]["temp"]
-    icon = {
-        "01d": "\uf00d",  # Clear sky - day
-        "01n": "\uf02e",  # Clear sky - night
-        "02d": "\uf002",  # Few clouds (11-25%) - day
-        "02n": "\uf086",  # Few clouds (11-25%) - night
-        "03d": "\uf041",  # Scattered clouds (25-50%) - day/night
-        "03n": "\uf041",  # Scattered clouds (25-50%) - day/night
-        "04d": "\uf013",  # Broken / Overcast clouds (51-84% / 85-100%) - day/night
-        "04n": "\uf013",  # Broken / Overcast clouds (51-84% / 85-100%) - day/night
-        "09d": "\uf018",  # Shower rain - day
-        "09n": "\uf018",  # Shower rain - night
-        "10d": "\uf008",  # Moderate / heavy rain - day
-        "10n": "\uf036",  # Moderate / heavy rain - night
-        "11d": "\uf005",  # Thunderstorm - day
-        "11n": "\uf025",  # Thunderstorm - night
-        "13d": "\uf00a",  # Snow - day
-        "13n": "\uf02a",  # Snow - night
-        "50d": "\uf003",  # Fog - day
-        "50n": "\uf04a",  # Fog - night
-    }.get(icon, "\uf075")
+    if icon == "01d" and temperature > 32:
+        icon = "\uf072"
+    else:
+        icon = {
+            "01d": "\uf00d",  # Clear sky - day
+            "01n": "\uf02e",  # Clear sky - night
+            "02d": "\uf002",  # Few clouds (11-25%) - day
+            "02n": "\uf083",  # Few clouds (11-25%) - night
+            "03d": "\uf041",  # Scattered clouds (25-50%) - day/night
+            "03n": "\uf086",  # Scattered clouds (25-50%) - day/night
+            "04d": "\uf013",  # Broken / Overcast clouds (51-84% / 85-100%) - day/night
+            "04n": "\uf013",  # Broken / Overcast clouds (51-84% / 85-100%) - day/night
+            "09d": "\uf009",  # Shower rain - day
+            "09n": "\uf037",  # Shower rain - night
+            "10d": "\uf008",  # Moderate / heavy rain - day
+            "10n": "\uf036",  # Moderate / heavy rain - night
+            "11d": "\uf005",  # Thunderstorm - day
+            "11n": "\uf025",  # Thunderstorm - night
+            "13d": "\uf00a",  # Snow - day
+            "13n": "\uf02a",  # Snow - night
+            "50d": "\uf003",  # Fog - day
+            "50n": "\uf04a",  # Fog - night
+        }.get(icon, "\uf075")
     return "".join(
         [
             "%{Tx}",

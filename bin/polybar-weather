@@ -160,7 +160,8 @@ if __name__ == "__main__":
             options.owm_api_key, *location, options.forecasts
         )
         description = forecast_weather["list"][0]["weather"][0]["description"]
-        logger.info(f"current weather: {description}")
+        city = forecast_weather['city']['name']
+        logger.info(f"current weather at {city}: {description}")
 
         # Format output
         forecasts = [format_weather(data) for data in forecast_weather["list"]]
@@ -169,8 +170,7 @@ if __name__ == "__main__":
                 forecasts.pop()
             else:
                 break
-        output = " ".join(forecasts)
-        output = output.replace("%{Tx}", "%%{T%d}" % options.font_index)
+        output = " ".join(forecasts).replace("%{Tx}", "%%{T%d}" % options.font_index)
         logger.debug("output: %s", output)
 
         update_status(output, options.output)

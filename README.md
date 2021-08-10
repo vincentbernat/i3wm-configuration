@@ -6,7 +6,7 @@ recommend using it as-is by you can pick anything you need in it.
 
 Here some of the things you may be interested in:
 
- - I use a Python script `bin/build-wallpaper` to build the wallpaper
+ - I use a Python script `bin/wallpaper` to build the wallpaper
    to be displayed. There is a random selection and it works with
    multihead setup. It seems that classic tools are now able to change
    the wallpaper per screen and therefore, the script may seem a bit

@@ -1,0 +1,7 @@
+[Unit]
+Description=Weather update
+PartOf=graphical-session.target
+
+[Timer]
+OnUnitActiveSec=1h
+OnClockChange=true

@@ -1,0 +1,11 @@
+[Unit]
+Description=Build and display wallpaper
+PartOf=graphical-session.target
+After=polybar.service
+
+[Service]
+Environment=OWM_API_KEY=81687c78e0376836871a6cb9fc347249
+ExecStart=/usr/bin/mkdir -p %h/.cache/i3
+ExecStart=%h/.config/i3/bin/polybar-weather
+Type=oneshot
+RemainAfterExit=false

@@ -10,3 +10,5 @@ ExecStart=/usr/bin/mkdir -p %h/.cache/i3
 ExecStart=%h/.config/i3/bin/polybar-weather
 Type=oneshot
 RemainAfterExit=false
+Restart=on-failure
+RestartSec=3s

@@ -4,6 +4,7 @@ Xft/Hinting 1
 Xft/HintStyle "hintslight"
 Net/ThemeName "Adwaita-dark"
 Net/IconThemeName "Adwaita"
+Net/EnableEventSounds 0
 Gtk/CursorThemeName "Adwaita"
 Gtk/CursorThemeSize 0
 Gtk/FontName "DejaVu Sans 10"

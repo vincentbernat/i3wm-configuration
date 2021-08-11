@@ -53,7 +53,7 @@
     icon_position = left
     min_icon_size = 32
     max_icon_size = 32
-    icon_path = /usr/share/icons/Adwaita:/usr/share/icons/hicolor:/usr/share/icons/gnome
+    icon_path = /usr/share/icons/Papirus-Dark:/usr/share/icons/Papirus:/usr/share/icons/hicolor:/usr/share/icons/gnome
 
     # History
     sticky_history = yes

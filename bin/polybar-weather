@@ -50,28 +50,28 @@ def format_weather(data):
     icon = data["weather"][0]["icon"]
     temperature = data["main"]["temp"]
     if icon == "01d" and temperature > 32:
-        icon = "\uf072"
+        icon = ""
     else:
         icon = {
-            "01d": "\uf00d",  # Clear sky - day
-            "01n": "\uf02e",  # Clear sky - night
-            "02d": "\uf002",  # Few clouds (11-25%) - day
-            "02n": "\uf083",  # Few clouds (11-25%) - night
-            "03d": "\uf041",  # Scattered clouds (25-50%) - day/night
-            "03n": "\uf086",  # Scattered clouds (25-50%) - day/night
-            "04d": "\uf013",  # Broken / Overcast clouds (51-84% / 85-100%) - day/night
-            "04n": "\uf013",  # Broken / Overcast clouds (51-84% / 85-100%) - day/night
-            "09d": "\uf009",  # Shower rain - day
-            "09n": "\uf037",  # Shower rain - night
-            "10d": "\uf008",  # Moderate / heavy rain - day
-            "10n": "\uf036",  # Moderate / heavy rain - night
-            "11d": "\uf005",  # Thunderstorm - day
-            "11n": "\uf025",  # Thunderstorm - night
-            "13d": "\uf00a",  # Snow - day
-            "13n": "\uf02a",  # Snow - night
-            "50d": "\uf003",  # Fog - day
-            "50n": "\uf04a",  # Fog - night
-        }.get(icon, "\uf075")
+            "01d": "",  # Clear sky - day
+            "01n": "⏾",  # Clear sky - night
+            "02d": "🌤",  # Few clouds (11-25%) - day
+            "02n": "",  # Few clouds (11-25%) - night
+            "03d": "⛅",  # Scattered clouds (25-50%) - day/night
+            "03n": "",  # Scattered clouds (25-50%) - day/night
+            "04d": "",  # Broken / Overcast clouds (51-84% / 85-100%) - day/night
+            "04n": "",  # Broken / Overcast clouds (51-84% / 85-100%) - day/night
+            "09d": "🌦",  # Shower rain - day
+            "09n": "",  # Shower rain - night
+            "10d": "",  # Moderate / heavy rain - day
+            "10n": "",  # Moderate / heavy rain - night
+            "11d": "",  # Thunderstorm - day
+            "11n": "",  # Thunderstorm - night
+            "13d": "",  # Snow - day
+            "13n": "❄",  # Snow - night
+            "50d": "",  # Fog - day
+            "50n": "🌫",  # Fog - night
+        }.get(icon, "")
     return "".join(
         [
             "%{Tx}",
@@ -113,7 +113,7 @@ if __name__ == "__main__":
         "--forecasts", default=2, type=int, help="Number of forecasts to fetch"
     )
     parser.add_argument(
-        "--font-index", default=4, type=int, help="Weather Icons 1-index"
+        "--font-index", default=3, type=int, help="Font Awesome 1-index"
     )
     parser.add_argument(
         "--output",
@@ -160,9 +160,9 @@ if __name__ == "__main__":
         current_weather = get_weather(options.owm_api_key, *location, "weather")
         if options.forecasts:
             forecast_weather = get_weather(
-                options.owm_api_key, *location, "forecast", count=options.forecasts+1
+                options.owm_api_key, *location, "forecast", count=options.forecasts + 1
             )["list"]
-            if forecast_weather[0]['dt'] - time.time() < 7200:
+            if forecast_weather[0]["dt"] - time.time() < 7200:
                 logger.debug("discard first forecast, too soon")
                 forecast_weather = forecast_weather[1:]
             else:
@@ -183,6 +183,7 @@ if __name__ == "__main__":
                 conditions.pop()
             else:
                 break
+        conditions.insert(0, f"%{{F#888}}%{{Tx}}%{{T-}} {city}%{{F-}}")
         output = " ".join(conditions).replace("%{Tx}", "%%{T%d}" % options.font_index)
         logger.debug("output: %s", output)
 

@@ -25,22 +25,22 @@ def get_location():
     return (data["lat"], data["lon"])
 
 
-def get_weather(apikey, latitude, longitude, forecasts):
+def get_weather(apikey, latitude, longitude, endpoint, count=1):
     """Return forecasts data from openweathermap."""
     logger.debug("query openweathermap for %s, %s", latitude, longitude)
     r = requests.get(
-        "https://api.openweathermap.org/data/2.5/forecast",
+        f"https://api.openweathermap.org/data/2.5/{endpoint}",
         params={
             "appid": apikey,
             "lat": latitude,
             "lon": longitude,
             "units": "metric",
-            "cnt": forecasts,
+            "cnt": count,
         },
     )
     r.raise_for_status()
     data = r.json()
-    logger.debug("forecast data: %s", data)
+    logger.debug("%s data: %s", endpoint, data)
     return data
 
 
@@ -110,7 +110,7 @@ if __name__ == "__main__":
         help="OpenWeatherMap API key",
     )
     parser.add_argument(
-        "--forecasts", default=3, type=int, help="Number of forecasts to fetch"
+        "--forecasts", default=2, type=int, help="Number of forecasts to fetch"
     )
     parser.add_argument(
         "--font-index", default=4, type=int, help="Weather Icons 1-index"
@@ -156,23 +156,24 @@ if __name__ == "__main__":
                 sys.exit(1)
             location = get_location()
 
-        # Grab forecast. We only use forecast weather, otherwise,
-        # we may get something "late".
+        # Grab current weather and forecast
+        current_weather = get_weather(options.owm_api_key, *location, "weather")
         forecast_weather = get_weather(
-            options.owm_api_key, *location, options.forecasts
+            options.owm_api_key, *location, "forecast", count=options.forecasts
         )
-        description = forecast_weather["list"][0]["weather"][0]["description"]
-        city = forecast_weather["city"]["name"]
+        description = current_weather["weather"][0]["description"]
+        city = current_weather["name"]
         logger.info(f"current weather at {city}: {description}")
 
         # Format output
-        forecasts = [format_weather(data) for data in forecast_weather["list"]]
-        while len(forecasts) >= 2:
-            if forecasts[-1] == forecasts[-2]:
-                forecasts.pop()
+        conditions = [format_weather(data)
+                      for data in [current_weather] + forecast_weather["list"]]
+        while len(conditions) >= 2:
+            if conditions[-1] == conditions[-2]:
+                conditions.pop()
             else:
                 break
-        output = " ".join(forecasts).replace("%{Tx}", "%%{T%d}" % options.font_index)
+        output = " ".join(conditions).replace("%{Tx}", "%%{T%d}" % options.font_index)
         logger.debug("output: %s", output)
 
         update_status(output, options.output)

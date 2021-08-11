@@ -145,8 +145,8 @@ if __name__ == "__main__":
             location = get_location()
         except requests.exceptions.ConnectionError:
             # Wait to be online
-            time.sleep(2)
             logger.info("not online, waiting")
+            time.sleep(5)
             update_status("", options.output)
             process = subprocess.run(
                 ["nm-online", "-s", "-q", "-t", str(options.online_timeout * 60)]

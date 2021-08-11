@@ -3,7 +3,7 @@ Xft/Antialias 1
 Xft/Hinting 1
 Xft/HintStyle "hintslight"
 Net/ThemeName "Adwaita-dark"
-Net/IconThemeName "Papirus-Dark"
+Net/IconThemeName "Adwaita"
 Net/EnableEventSounds 0
 Gtk/CursorThemeName "Adwaita"
 Gtk/CursorThemeSize 0

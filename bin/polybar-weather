@@ -158,16 +158,21 @@ if __name__ == "__main__":
 
         # Grab current weather and forecast
         current_weather = get_weather(options.owm_api_key, *location, "weather")
-        forecast_weather = get_weather(
-            options.owm_api_key, *location, "forecast", count=options.forecasts
-        )
+        if options.forecasts:
+            forecast_weather = get_weather(
+                options.owm_api_key, *location, "forecast", count=options.forecasts
+            )["list"]
+            logger.info(f"first forecast: {forecast_weather[0]['dt_txt']} UTC")
+        else:
+            forecast_weather = []
         description = current_weather["weather"][0]["description"]
         city = current_weather["name"]
         logger.info(f"current weather at {city}: {description}")
 
         # Format output
-        conditions = [format_weather(data)
-                      for data in [current_weather] + forecast_weather["list"]]
+        conditions = [
+            format_weather(data) for data in [current_weather] + forecast_weather
+        ]
         while len(conditions) >= 2:
             if conditions[-1] == conditions[-2]:
                 conditions.pop()

@@ -146,10 +146,10 @@ if __name__ == "__main__":
         except requests.exceptions.ConnectionError:
             # Wait to be online
             logger.info("not online, waiting")
-            time.sleep(5)
             update_status("", options.output)
+            time.sleep(2)
             process = subprocess.run(
-                ["nm-online", "-s", "-q", "-t", str(options.online_timeout * 60)]
+                ["nm-online", "-q", "-t", str(options.online_timeout * 60)]
             )
             if process.returncode != 0:
                 logger.warning("not online, exiting")

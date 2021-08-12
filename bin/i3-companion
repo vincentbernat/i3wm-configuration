@@ -420,7 +420,10 @@ async def workspace_exclusive(i3, event):
     w = event.container
 
     # Can the current window intrude the workspace?
-    if w.floating in {"auto_on", "user_on"} or w.window_class.lower() in intrusive_apps:
+    if (
+        w.floating in {"auto_on", "user_on"}
+        or (w.window_class or "").lower() in intrusive_apps
+    ):
         logger.debug("window %s can intrude", w.window_class)
         return
 
@@ -444,7 +447,7 @@ async def workspace_exclusive(i3, event):
         for ow in tree.leaves()
         if w.id != ow.id
         and (w.window_class or object()) != ow.window_class
-        and ow.window_class.lower() in exclusive_apps
+        and (ow.window_class or "").lower() in exclusive_apps
         and not ow.sticky
     }
 
@@ -460,7 +463,7 @@ async def workspace_exclusive(i3, event):
         if w.id != ow.id and (w.window_class or object()) == ow.window_class
     }
     candidate_workspaces -= exclusive_workspaces
-    candidate_workspaces -= {-1} # scratchpad
+    candidate_workspaces -= {-1}  # scratchpad
 
     if candidate_workspaces:
         # Use one of the candidates

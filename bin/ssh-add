@@ -1,8 +1,7 @@
 #!/bin/sh
 
-cd ~
 ssh-add -l > /dev/null || ssh-add $(
-    sed -n 's/^ *IdentityFile ~\/\([^ ]*\).*/\1/p' ~/.ssh/config \
+    sed -n 's/^ *IdentityFile ~\/\([^ ]*\).*/\1/p' ~/.ssh/config ~/.ssh/*/config \
         | sort \
         | uniq
     )

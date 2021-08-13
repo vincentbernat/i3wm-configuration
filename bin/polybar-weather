@@ -25,8 +25,8 @@ def get_location():
     return (data["lat"], data["lon"])
 
 
-def get_weather(apikey, latitude, longitude, endpoint, count=1):
-    """Return forecasts data from openweathermap."""
+def get_weather(apikey, latitude, longitude, endpoint):
+    """Return data from openweathermap."""
     logger.debug("query openweathermap for %s, %s", latitude, longitude)
     r = requests.get(
         f"https://api.openweathermap.org/data/2.5/{endpoint}",
@@ -35,7 +35,7 @@ def get_weather(apikey, latitude, longitude, endpoint, count=1):
             "lat": latitude,
             "lon": longitude,
             "units": "metric",
-            "cnt": count,
+            "cnt": 1,
         },
     )
     r.raise_for_status()
@@ -44,11 +44,11 @@ def get_weather(apikey, latitude, longitude, endpoint, count=1):
     return data
 
 
-def format_weather(data):
+def format_weather(data, show_temperature=True):
     """Translate OWM icon to WeatherIcons."""
     # https://erikflowers.github.io/weather-icons/
     icon = data["weather"][0]["icon"]
-    temperature = data["main"]["temp"]
+    temperature = data["main"]["temp"] if show_temperature else 0
     if icon == "01d" and temperature > 32:
         icon = ""
     else:
@@ -72,15 +72,10 @@ def format_weather(data):
             "50d": "",  # Fog - day
             "50n": "🌫",  # Fog - night
         }.get(icon, "")
-    return "".join(
-        [
-            "%{Tx}",
-            icon,
-            "%{T-} ",
-            str(int(round(temperature))),
-            "°C",
-        ]
-    )
+    output = ["%{Tx}", icon, "%{T-}"]
+    if show_temperature:
+        output += [" ", str(int(round(temperature))), "°C"]
+    return "".join(output)
 
 
 def update_status(status, output):
@@ -108,9 +103,6 @@ if __name__ == "__main__":
         "--owm-api-key",
         default=os.environ.get("OWM_API_KEY"),
         help="OpenWeatherMap API key",
-    )
-    parser.add_argument(
-        "--forecasts", default=2, type=int, help="Number of forecasts to fetch"
     )
     parser.add_argument(
         "--font-index", default=3, type=int, help="Font Awesome 1-index"
@@ -156,33 +148,26 @@ if __name__ == "__main__":
                 sys.exit(1)
             location = get_location()
 
-        # Grab current weather and forecast
+        # Grab current weather and daily forecast
         current_weather = get_weather(options.owm_api_key, *location, "weather")
-        if options.forecasts:
-            forecast_weather = get_weather(
-                options.owm_api_key, *location, "forecast", count=options.forecasts + 1
-            )["list"]
-            if forecast_weather[0]["dt"] - time.time() < 7200:
-                logger.debug("discard first forecast, too soon")
-                forecast_weather = forecast_weather[1:]
-            else:
-                forecast_weather.pop()
-            logger.info(f"next forecast: {forecast_weather[0]['dt_txt']} UTC")
-        else:
-            forecast_weather = []
+        daily_weather = get_weather(options.owm_api_key, *location, "forecast/daily")
+        daily_weather = daily_weather["list"][0]
+        daily_weather_ts = time.strftime(
+            "%Y-%m-%d %H:%M %Z", time.gmtime(daily_weather["dt"])
+        )
         description = current_weather["weather"][0]["description"]
         city = current_weather["name"]
         logger.info(f"current weather at {city}: {description}")
+        logger.info(f"daily forecast: {daily_weather_ts}")
 
         # Format output
-        conditions = [
-            format_weather(data) for data in [current_weather] + forecast_weather
+        conditions = [format_weather(current_weather)]
+        conditions += [
+            format_weather(daily_weather, False),
+            "{}—{}°C".format(
+                round(daily_weather["temp"]["min"]), round(daily_weather["temp"]["max"])
+            ),
         ]
-        while len(conditions) >= 2:
-            if conditions[-1] == conditions[-2]:
-                conditions.pop()
-            else:
-                break
         conditions.insert(0, f"%{{F#888}}%{{Tx}}%{{T-}} {city}%{{F-}}")
         output = " ".join(conditions).replace("%{Tx}", "%%{T%d}" % options.font_index)
         logger.debug("output: %s", output)

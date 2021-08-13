@@ -24,10 +24,6 @@ set +x
 case "$event,$use,$(uname -n),$name" in
     *,XISlaveKeyboard,guybrush,"Topre Corporation Realforce 87")
         xkb default
-        for i in $(seq 1 3); do
-            sleep 1
-            autorandr --load blade && break
-        done
         ;;
     *,XISlaveKeyboard,chocobo,"AT Translated Set 2 keyboard")
         xkb x1gen2

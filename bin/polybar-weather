@@ -133,20 +133,21 @@ if __name__ == "__main__":
 
     try:
         # Get location
-        try:
-            location, city = get_location()
-        except requests.exceptions.ConnectionError:
-            # Wait to be online
-            logger.info("not online, waiting")
-            update_status("", options.output)
-            time.sleep(5)
-            process = subprocess.run(
-                ["nm-online", "-q", "-t", str(options.online_timeout * 60)]
-            )
-            if process.returncode != 0:
-                logger.warning("not online, exiting")
-                sys.exit(1)
-            location, city = get_location()
+        while True:
+            try:
+                location, city = get_location()
+                break
+            except requests.exceptions.ConnectionError:
+                # Wait to be online
+                logger.info("not online, waiting")
+                update_status("", options.output)
+                time.sleep(5)
+                process = subprocess.run(
+                    ["nm-online", "-q", "-t", str(options.online_timeout * 60)]
+                )
+                if process.returncode != 0:
+                    logger.warning("not online, exiting")
+                    sys.exit(1)
 
         # Grab current weather and daily forecast
         weather = get_weather(options.owm_api_key, *location)

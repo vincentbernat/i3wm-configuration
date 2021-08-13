@@ -22,25 +22,25 @@ def get_location():
     data = r.json()
     logger.debug("current location data: %s", data)
     logger.info(f'current location: {data["city"]}, {data["country"]}')
-    return (data["lat"], data["lon"])
+    return ((data["lat"], data["lon"]), data["city"])
 
 
-def get_weather(apikey, latitude, longitude, endpoint):
+def get_weather(apikey, latitude, longitude):
     """Return data from openweathermap."""
     logger.debug("query openweathermap for %s, %s", latitude, longitude)
     r = requests.get(
-        f"https://api.openweathermap.org/data/2.5/{endpoint}",
+        f"https://api.openweathermap.org/data/2.5/onecall",
         params={
             "appid": apikey,
             "lat": latitude,
             "lon": longitude,
             "units": "metric",
-            "cnt": 1,
+            "exclude": "minutely,hourly",
         },
     )
     r.raise_for_status()
     data = r.json()
-    logger.debug("%s data: %s", endpoint, data)
+    logger.debug("weather data: %s", data)
     return data
 
 
@@ -48,7 +48,7 @@ def format_weather(data, show_temperature=True):
     """Translate OWM icon to WeatherIcons."""
     # https://erikflowers.github.io/weather-icons/
     icon = data["weather"][0]["icon"]
-    temperature = data["main"]["temp"] if show_temperature else 0
+    temperature = data["temp"] if show_temperature else 0
     if icon == "01d" and temperature > 32:
         icon = ""
     else:
@@ -134,7 +134,7 @@ if __name__ == "__main__":
     try:
         # Get location
         try:
-            location = get_location()
+            location, city = get_location()
         except requests.exceptions.ConnectionError:
             # Wait to be online
             logger.info("not online, waiting")
@@ -146,26 +146,24 @@ if __name__ == "__main__":
             if process.returncode != 0:
                 logger.warning("not online, exiting")
                 sys.exit(1)
-            location = get_location()
+            location, city = get_location()
 
         # Grab current weather and daily forecast
-        current_weather = get_weather(options.owm_api_key, *location, "weather")
-        daily_weather = get_weather(options.owm_api_key, *location, "forecast/daily")
-        daily_weather = daily_weather["list"][0]
+        weather = get_weather(options.owm_api_key, *location)
         daily_weather_ts = time.strftime(
-            "%Y-%m-%d %H:%M %Z", time.gmtime(daily_weather["dt"])
+            "%Y-%m-%d %H:%M %Z", time.gmtime(weather["daily"][0]["dt"])
         )
-        description = current_weather["weather"][0]["description"]
-        city = current_weather["name"]
+        description = weather["current"]["weather"][0]["description"]
         logger.info(f"current weather at {city}: {description}")
         logger.info(f"daily forecast: {daily_weather_ts}")
 
         # Format output
-        conditions = [format_weather(current_weather)]
+        conditions = [format_weather(weather["current"])]
         conditions += [
-            format_weather(daily_weather, False),
+            format_weather(weather["daily"][0], False),
             "{}—{}°C".format(
-                round(daily_weather["temp"]["min"]), round(daily_weather["temp"]["max"])
+                round(weather["daily"][0]["temp"]["min"]),
+                round(weather["daily"][0]["temp"]["max"]),
             ),
         ]
         conditions.insert(0, f"%{{F#888}}%{{Tx}}%{{T-}} {city}%{{F-}}")

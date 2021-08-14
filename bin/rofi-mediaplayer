@@ -12,8 +12,7 @@ if [ -z "${ROFI_OUTSIDE}" ]; then
               -kb-select-4 Super+v \
               -kb-select-5 Super+b \
               -kb-select-6 Super+m \
-              -kb-select-7 Super+e \
-              -kb-select-8 Super+s
+              -kb-select-7 Super+s
 fi
 
 case $ROFI_RETV in
@@ -35,7 +34,6 @@ media-playback-pause      Pause
 media-playback-stop       Stop
 go-next                   Next track
 multimedia-volume-control Open mixer panel
-easyeffects               Open effects panel
 com.spotify.Client        Open ${Mediaplayer}
 EOF
 
@@ -58,7 +56,6 @@ EOF
             4) playerctl -p $mediaplayer stop ;;
             5) playerctl -p $mediaplayer next ;;
             6) i3-msg '[class="Pavucontrol"] focus' || i3-msg exec exec pavucontrol ;;
-            7) i3-msg '[class="easyeffects"] focus' || i3-msg exec exec easyeffects ;;
             8) i3-msg '[class="'${Mediaplayer}'"] focus' || i3-msg exec exec spotify ;;
         esac >&2
         ;;

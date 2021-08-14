@@ -4,3 +4,4 @@ PartOf=graphical-session.target
 
 [Timer]
 OnUnitInactiveSec=1h
+OnClockChange=true

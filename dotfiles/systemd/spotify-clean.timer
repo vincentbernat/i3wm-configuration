@@ -1,6 +1,6 @@
 [Unit]
 Description=Timer for cleaning spotify extra PA streams
-After=pulseaudio.socket
+After=pipewire-pulse.socket
 
 [Timer]
 OnUnitActiveSec=1h

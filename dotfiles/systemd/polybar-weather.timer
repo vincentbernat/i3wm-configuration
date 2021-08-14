@@ -3,5 +3,5 @@ Description=Timer for weather update
 PartOf=graphical-session.target
 
 [Timer]
-OnUnitInactiveSec=1h
-OnClockChange=true
+OnCalendar=hourly
+Persistent=true

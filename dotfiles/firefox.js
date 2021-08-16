@@ -4,7 +4,7 @@
 // Theme
 user_pref("extensions.activeThemeID", "firefox-compact-dark@mozilla.org");
 user_pref("devtools.theme", "dark");
-user_pref("ui.systemUsesDarkTheme", 0)
+user_pref("ui.systemUsesDarkTheme", 0);
 
 // Ensure context menus stay open after left-click (useful when scale
 // == 1.5)

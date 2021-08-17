@@ -2,10 +2,10 @@
     "layout": "splith",
     "percent": 1,
     "nodes": [
-        {"swallows": [{"class": "^Emacs$"}], "percent": 0.5},
+        {"swallows": [{"class": "^Emacs$"}], "percent": 0.55},
         {
             "layout": "splitv",
-            "percent": 0.5,
+            "percent": 0.45,
             "nodes": [
                 {"swallows": [{"class": "^Vbeterm$"}]},
                 {"swallows": [{"class": "^Vbeterm$"}]}

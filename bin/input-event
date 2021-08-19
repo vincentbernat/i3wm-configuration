@@ -31,7 +31,9 @@ case "$event,$use,$(uname -n),$name" in
     *,XISlaveKeyboard,*,"ThinkPad Extra Buttons")
         xkb thinkpad-extra
         ;;
-    *,XISlaveKeyboard,*,"Yubico "*)
+    *,XISlaveKeyboard,*,"Yubico YubiKey OTP+FIDO+CCID")
+        ssh-add -e /usr/lib/x86_64-linux-gnu/libykcs11.so 2> /dev/null
+        ssh-add -s /usr/lib/x86_64-linux-gnu/libykcs11.so
         ;;
     *,XISlaveKeyboard,*)
         xkb default

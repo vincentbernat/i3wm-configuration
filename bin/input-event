@@ -31,6 +31,8 @@ case "$event,$use,$(uname -n),$name" in
     *,XISlaveKeyboard,*,"ThinkPad Extra Buttons")
         xkb thinkpad-extra
         ;;
+    *,XISlaveKeyboard,*,"Yubico "*)
+        ;;
     *,XISlaveKeyboard,*)
         xkb default
         ;;

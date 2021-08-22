@@ -56,7 +56,7 @@ EOF
             4) playerctl -p $mediaplayer stop ;;
             5) playerctl -p $mediaplayer next ;;
             6) i3-msg '[class="Pavucontrol"] focus' || i3-msg exec exec pavucontrol ;;
-            8) i3-msg '[class="'${Mediaplayer}'"] focus' || i3-msg exec exec spotify ;;
+            7) i3-msg '[class="'${Mediaplayer}'"] focus' || i3-msg exec exec spotify ;;
         esac >&2
         ;;
 esac

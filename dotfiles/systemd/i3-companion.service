@@ -3,5 +3,6 @@ Description=i3 companion
 PartOf=graphical-session.target
 
 [Service]
+Type=notify
 ExecStart=%h/.config/i3/bin/i3-companion
 Restart=on-failure

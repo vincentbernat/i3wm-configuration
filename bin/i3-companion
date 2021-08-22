@@ -20,7 +20,7 @@ import types
 
 import i3ipc
 from i3ipc.aio import Connection
-from systemd import journal
+from systemd import journal, daemon
 import ravel
 import dbussy
 import xcffib
@@ -1040,6 +1040,7 @@ async def main(options):
             if event is StartEvent:
                 start_tasks.append(asyncio.create_task(fn(i3, event)))
 
+    daemon.notify("READY=1")
     await i3.main()
 
 

@@ -3,7 +3,9 @@ Description=Status bar for i3
 PartOf=graphical-session.target
 
 [Service]
-Type=forking
+Type=notify
+NotifyAccess=all
+WatchdogSignal=SIGTERM
 ExecStart=%h/.config/i3/bin/polybar
 ExecStop=%h/.local/bin/polybar-msg cmd quit
 Restart=on-failure

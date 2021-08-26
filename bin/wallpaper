@@ -111,7 +111,12 @@ def get_best_parts(groups, images):
     best_association = None
     best_score = 0
     for group in groups:
-        for association in (zip(group, p) for p in itertools.permutations(images)):
+        associations = [tuple(zip(group, p)) for p in itertools.permutations(images)]
+        seen = []
+        for association in associations:
+            if association in seen:
+                continue
+            seen.append(association)
             score = 0
             association = [WallpaperPart(rectangle=assoc[0], image=assoc[1]) for assoc in association]
             for assoc in association:

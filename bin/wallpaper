@@ -1,169 +1,230 @@
 #!/usr/bin/env python3
 
-# Build a multi screen wallpaper
-
-# First argument is the directory where the wallpapers can be
-# found. We use xinerama to know the dimension of each screen.
+"""Build a multi screen wallpaper."""
 
 import os
+import sys
 import random
 import argparse
 import tempfile
 import collections
 import itertools
+import logging
+import logging.handlers
 
 from Xlib import display
 from Xlib.ext import randr
-
 from PIL import Image
+from systemd import journal
 
-parser = argparse.ArgumentParser()
-parser.add_argument(
-    "-d",
-    "--directory",
-    default=".",
-    help="search for images in DIRECTORY",
-)
-parser.add_argument(
-    "-t",
-    "--target",
-    default="background.png",
-    help="write background to FILE",
-)
-parser.add_argument(
-    "--extra-images",
-    default=3,
-    metavar="N",
-    help="consider N additional images to choose the best combination",
-)
-parser.add_argument(
-    "--compression", default=0, type=int, help="compression level when saving"
-)
-options = parser.parse_args()
-background = None
 
-# Get display size
-d = display.Display()
-screen = d.screen()
-window = screen.root.create_window(0, 0, 1, 1, 1, screen.root_depth)
-background = Image.new("RGB", (screen.width_in_pixels, screen.height_in_pixels))
+logger = logging.getLogger("wallpaper")
+Rectangle = collections.namedtuple("Rectangle", ["x", "y", "width", "height"])
+WallpaperPart = collections.namedtuple("WallpaperPart", ["rectangle", "image"])
 
-# Query randr extension
-Output = collections.namedtuple("Output", ["x", "y", "width", "height"])
-outputs = []
-screen_resources = randr.get_screen_resources_current(window)
-for output in screen_resources.outputs:
-    output_info = randr.get_output_info(window, output, screen_resources.timestamp)
-    if output_info.crtc == 0:
-        continue
-    crtc_info = randr.get_crtc_info(window, output_info.crtc, output_info.timestamp)
-    outputs.append(Output(crtc_info.x, crtc_info.y, crtc_info.width, crtc_info.height))
-if not outputs:
-    outputs.append(Output(0, 0, (background.width, background.height)))
+def get_outputs():
+    """Get physical outputs."""
+    # Get display size
+    d = display.Display()
+    screen = d.screen()
+    window = screen.root.create_window(0, 0, 1, 1, 1, screen.root_depth)
+    background = Image.new("RGB", (screen.width_in_pixels, screen.height_in_pixels))
 
-# Get all possible rectangles from outputs
-candidates = []
-for output in outputs:
-    candidates.append(output)
-    for ooutput in outputs:
-        if ooutput == output:
+    # Query randr extension
+    outputs = []
+    screen_resources = randr.get_screen_resources_current(window)
+    for output in screen_resources.outputs:
+        output_info = randr.get_output_info(window, output, screen_resources.timestamp)
+        if output_info.crtc == 0:
             continue
-        if output.x > ooutput.x or output.y > ooutput.y:
-            continue
-        candidates.append(
-            Output(
-                output.x,
-                output.y,
-                ooutput.x - output.x + ooutput.width,
-                ooutput.y - output.y + ooutput.height,
+        crtc_info = randr.get_crtc_info(window, output_info.crtc, output_info.timestamp)
+        outputs.append(Rectangle(crtc_info.x, crtc_info.y, crtc_info.width, crtc_info.height))
+
+    for o in outputs:
+        logger.debug("output: %s", o)
+    return outputs, background
+
+
+def get_covering_rectangles(outputs):
+    """Compute all possible groups of covering boxes for the provided
+    outputs. For each group, an output is included in exactly one box.
+
+    >>> get_covering_rectangles([Rectangle(0, 0, 100, 100)])
+    {(Rectangle(x=0, y=0, width=100, height=100),)}
+    >>> get_covering_rectangles([Rectangle(0, 0, 100, 100), Rectangle(100, 0, 100, 100)])
+    {(Rectangle(x=0, y=0, width=100, height=100), Rectangle(x=100, y=0, width=100, height=100)), (Rectangle(x=0, y=0, width=200, height=100),)}
+    >>> get_covering_rectangles([Rectangle(0, 0, 100, 100), Rectangle(100, 0, 100, 100), Rectangle(0, 100, 100, 100)])
+    {(Rectangle(x=100, y=0, width=100, height=100), Rectangle(x=0, y=100, width=100, height=100), Rectangle(x=0, y=0, width=100, height=100)), (Rectangle(x=100, y=0, width=100, height=100), Rectangle(x=0, y=0, width=100, height=200)), (Rectangle(x=0, y=0, width=200, height=100), Rectangle(x=0, y=100, width=100, height=100))}
+    """
+
+    candidates = set()
+    for output in outputs:
+        candidates.add(output)
+        for ooutput in outputs:
+            if ooutput == output:
+                continue
+            if output.x > ooutput.x or output.y > ooutput.y:
+                continue
+            candidates.add(
+                Rectangle(
+                    output.x,
+                    output.y,
+                    ooutput.x - output.x + ooutput.width,
+                    ooutput.y - output.y + ooutput.height,
+                )
+            )
+
+    # Get all rectangle combinations to cover outputs without overlapping
+    groups = set()
+    for r in range(len(candidates)):
+        for candidate in itertools.combinations(candidates, r + 1):
+            for output in outputs:
+                nb = 0
+                for c in candidate:
+                    if c.x <= output.x < c.x + c.width and c.y <= output.y < c.y + c.height:
+                        nb += 1
+                if nb != 1:  # output not contained in a single rectangle
+                    break
+            else:
+                groups.add(candidate)
+
+    for g in groups:
+        logger.debug("group: %s", g)
+    return groups
+
+def get_random_images(directory, number):
+    """Get random images from a directory."""
+    images = []
+    for base, _, files in os.walk(os.path.join(directory)):
+        for i in files:
+            if os.path.splitext(i)[1].lower() in (".jpg", ".jpeg", ".png", ".webp"):
+                images.append(os.path.join(base, i))
+    images = random.sample(images, number)
+    images = [Image.open(image) for image in images]
+
+    for image in images:
+        logger.debug("image: %s %s×%s", image.filename[(len(directory) + 1) :], *image.size)
+    return images
+
+def get_best_parts(groups, images):
+    """Find optimal association for images for the groups of covering rectangles."""
+    best_association = None
+    best_score = 0
+    for group in groups:
+        for association in (zip(group, p) for p in itertools.permutations(images)):
+            score = 0
+            association = [WallpaperPart(rectangle=assoc[0], image=assoc[1]) for assoc in association]
+            for assoc in association:
+                # Similar ratio
+                oratio = assoc.rectangle.width * 100 // assoc.rectangle.height
+                iratio = assoc.image.width * 100 // assoc.image.height
+                r = iratio / oratio
+                if r > 1:
+                    r = 1 / r
+                score += r * 100
+                # Similar scale (when cropped)
+                opixels = assoc.rectangle.width * assoc.rectangle.height
+                ipixels = assoc.image.width * assoc.image.height * r
+                r = ipixels / opixels
+                if r >= 1:
+                    r = 1
+                score += r * 50
+            score /= len(group)
+            logger.debug("association: %s, score %.2f", association, score)
+            if score > best_score or best_association is None:
+                best_association = association
+                best_score = score
+
+    return best_association
+
+
+def build(background, wallpaper_parts):
+    """Stitch wallpaper into provided background."""
+    for part in wallpaper_parts:
+        rectangle = part.rectangle
+        image = part.image
+
+        imx, imy = rectangle.width, image.height * rectangle.width // image.width
+        if imy < rectangle.height:
+            imx, imy = image.width * rectangle.height // image.height, rectangle.height
+        if image.size != (imx, imy):
+            image = image.resize((imx, imy), Image.LANCZOS)
+        image = image.crop(
+            (
+                (imx - rectangle.width) / 2,
+                (imy - rectangle.height) / 2,
+                imx - (imx - rectangle.width) / 2,
+                imy - (imy - rectangle.height) / 2,
             )
         )
+        background.paste(image, (rectangle.x, rectangle.y))
 
-# Get all rectangle combinations to cover outputs without overlapping
-groups = []
-for r in range(len(candidates)):
-    for candidate in itertools.combinations(candidates, r + 1):
-        for output in outputs:
-            nb = 0
-            for c in candidate:
-                if c.x <= output.x < c.x + c.width and c.y <= output.y < c.y + c.height:
-                    nb += 1
-            if nb != 1:  # output not contained in a single rectangle
-                break
-        else:
-            groups.append(candidate)
 
-# Get random images
-images = []
-for base, _, files in os.walk(os.path.join(options.directory)):
-    for i in files:
-        if os.path.splitext(i)[1].lower() in (".jpg", ".jpeg", ".png", ".webp"):
-            images.append(os.path.join(base, i))
-images = random.sample(images, len(outputs) * options.extra_images)
-images = [Image.open(image) for image in images]
+def save(wallpaper, target, compression):
+    """Save wallpaper to target."""
+    with tempfile.NamedTemporaryFile(
+        delete=False, dir=os.path.dirname(os.path.realpath(target))
+    ) as tmp:
+        background.save(tmp, "png", compress_level=compression)
+        os.rename(tmp.name, target)
 
-# Find optimal combination for images
-best_association = None
-best_score = 0
-for group in groups:
-    for association in (zip(group, p) for p in itertools.permutations(images)):
-        score = 0
-        association = list(association)
-        for output, image in association:
-            # Similar ratio
-            oratio = output.width * 100 // output.height
-            iratio = image.width * 100 // image.height
-            r = iratio / oratio
-            if r > 1:
-                r = 1 / r
-            score += r * 100
-            # Similar scale (when cropped)
-            opixels = output.width * output.height
-            ipixels = image.width * image.height * r
-            r = ipixels / opixels
-            if r >= 1:
-                r = 1
-            score += r * 50
-        score /= len(group)
-        if score > best_score or best_association is None:
-            best_association = association
-            best_score = score
-
-print(
-    "wallpaper: {}".format(
-        " + ".join(
-            "`{}` ({}×{})".format(
-                image.filename[(len(options.directory) + 1) :], *image.size
-            )
-            for image in [couple[1] for couple in best_association]
-        )
+if __name__ == "__main__":
+    # Parse
+    description = sys.modules[__name__].__doc__
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        default=False,
+        help="enable debugging",
     )
-)
-
-for couple in best_association:
-    output = couple[0]
-    image = couple[1]
-
-    # Find the right size for the screen
-    imx, imy = output.width, image.height * output.width // image.width
-    if imy < output.height:
-        imx, imy = image.width * output.height // image.height, output.height
-    if image.size != (imx, imy):
-        image = image.resize((imx, imy), Image.LANCZOS)
-    image = image.crop(
-        (
-            (imx - output.width) / 2,
-            (imy - output.height) / 2,
-            imx - (imx - output.width) / 2,
-            imy - (imy - output.height) / 2,
-        )
+    parser.add_argument(
+        "-d",
+        "--directory",
+        default=".",
+        help="search for images in DIRECTORY",
     )
-    background.paste(image, (output.x, output.y))
+    parser.add_argument(
+        "-t",
+        "--target",
+        default="background.png",
+        help="write background to FILE",
+    )
+    parser.add_argument(
+        "--extra-images",
+        default=3,
+        metavar="N",
+        help="consider N additional images to choose the best combination",
+    )
+    parser.add_argument(
+        "--compression", default=0, type=int, help="compression level when saving"
+    )
+    options = parser.parse_args()
 
-# Save
-assert background, "Don't know the size of the display area"
-with tempfile.NamedTemporaryFile(
-    delete=False, dir=os.path.dirname(os.path.realpath(options.target))
-) as tmp:
-    background.save(tmp, "png", compress_level=options.compression)
-    os.rename(tmp.name, options.target)
+    # Logging
+    root = logging.getLogger("")
+    root.setLevel(logging.WARNING)
+    logger.setLevel(options.debug and logging.DEBUG or logging.INFO)
+    if sys.stderr.isatty():
+        ch = logging.StreamHandler()
+        ch.setFormatter(logging.Formatter("%(levelname)s: %(message)s"))
+        root.addHandler(ch)
+    else:
+        root.addHandler(journal.JournalHandler(SYSLOG_IDENTIFIER=logger.name))
+
+    try:
+        outputs, background = get_outputs()
+        candidates = get_covering_rectangles(outputs)
+        images = get_random_images(options.directory, len(outputs) + options.extra_images)
+        wallpaper_parts = get_best_parts(candidates, images)
+        for part in wallpaper_parts:
+            logger.info("wallpaper: {} ({}×{})".format(
+                part.image.filename[(len(options.directory) + 1) :],
+                *part.image.size
+            ))
+        build(background, wallpaper_parts)
+        save(background, options.target, options.compression)
+    except Exception as e:
+        logger.exception("%s", e)
+        sys.exit(1)
+    sys.exit(0)

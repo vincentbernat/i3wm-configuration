@@ -3,6 +3,10 @@
 export DPI=$(xrdb -query | sed -nE 's/^Xft\.dpi:\s*//p')
 export HEIGHT=$((18 * DPI / 96))
 
+# Example of setup:
+# xrandr --setmonitor '*'DisplayPort-3-left  1920/444x1440/334+0+0     DisplayPort-3
+# xrandr --setmonitor    DisplayPort-3-right 1520/352x1440/334+1920+0  none
+
 MONITORS=$(xrandr --current --listactivemonitors | sed -nE 's/ *([0-9]+): [+*]*([^ ]*).*/\2/p' | tr '\n' ' ')
 PRIMARY=$(xrandr --current --listactivemonitors | sed -nE 's/ *([0-9]+): [+]?[*]([^ ]*).*/\2/p')
 NMONITORS=$(echo $MONITORS | wc -w)

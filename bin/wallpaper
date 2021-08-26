@@ -113,7 +113,7 @@ else:
         if (options.crop and imy < y) or (not options.crop and imy > y):
             imx, imy = image.size[0] * y // image.size[1], y
         if image.size != (imx, imy):
-            image = image.resize((imx, imy), Image.CUBIC)
+            image = image.resize((imx, imy), Image.LANCZOS)
         if options.crop:
             image = image.crop(
                 ((imx - x) / 2, (imy - y) / 2, imx - (imx - x) / 2, imy - (imy - y) / 2)

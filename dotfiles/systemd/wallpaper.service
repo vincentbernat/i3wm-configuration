@@ -6,8 +6,7 @@ PartOf=graphical-session.target
 Environment=WALLPAPER_DIRECTORY=%h/.config/i3/wallpapers
 Environment=WALLPAPER_OUTPUT=%h/.cache/i3/current-wallpaper.png
 ExecStart=/usr/bin/mkdir -p %h/.cache/i3
-ExecStart=%h/.config/i3/bin/wallpaper --crop \
-                                      --directory $WALLPAPER_DIRECTORY \
+ExecStart=%h/.config/i3/bin/wallpaper --directory $WALLPAPER_DIRECTORY \
                                       --target $WALLPAPER_OUTPUT
 ExecStart=/usr/bin/hsetroot -center $WALLPAPER_OUTPUT
 Type=oneshot

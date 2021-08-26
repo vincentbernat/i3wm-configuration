@@ -9,6 +9,8 @@ import os
 import random
 import argparse
 import tempfile
+import collections
+import itertools
 
 from Xlib import display
 from Xlib.ext import randr
@@ -21,21 +23,18 @@ parser.add_argument(
     "--directory",
     default=".",
     help="search for images in DIRECTORY",
-    metavar="DIRECTORY",
 )
 parser.add_argument(
     "-t",
     "--target",
     default="background.png",
     help="write background to FILE",
-    metavar="FILE",
 )
 parser.add_argument(
-    "-c",
-    "--crop",
-    dest="crop",
-    action="store_true",
-    help="crop image instead of centering them",
+    "--extra-images",
+    default=3,
+    metavar="N",
+    help="consider N additional images to choose the best combination",
 )
 parser.add_argument(
     "--compression", default=0, type=int, help="compression level when saving"
@@ -50,39 +49,85 @@ window = screen.root.create_window(0, 0, 1, 1, 1, screen.root_depth)
 background = Image.new("RGB", (screen.width_in_pixels, screen.height_in_pixels))
 
 # Query randr extension
-screens = []
+Output = collections.namedtuple("Output", ["x", "y", "width", "height"])
+outputs = []
 screen_resources = randr.get_screen_resources_current(window)
 for output in screen_resources.outputs:
     output_info = randr.get_output_info(window, output, screen_resources.timestamp)
     if output_info.crtc == 0:
         continue
     crtc_info = randr.get_crtc_info(window, output_info.crtc, output_info.timestamp)
-    screens.append((crtc_info.width, crtc_info.height, crtc_info.x, crtc_info.y))
-if not screens:
-    screens = [(background.size[0], background.size[1], 0, 0)]
-screens.sort(key=lambda screen: -screen[0] * screen[1])
+    outputs.append(Output(crtc_info.x, crtc_info.y, crtc_info.width, crtc_info.height))
+if not outputs:
+    outputs.append(Output(0, 0, (background.width, background.height)))
 
-# Get as many random image as we have screens
+# Get all possible rectangles from outputs
+candidates = []
+for output in outputs:
+    candidates.append(output)
+    for ooutput in outputs:
+        if ooutput == output:
+            continue
+        if output.x > ooutput.x or output.y > ooutput.y:
+            continue
+        candidates.append(
+            Output(
+                output.x,
+                output.y,
+                ooutput.x - output.x + ooutput.width,
+                ooutput.y - output.y + ooutput.height,
+            )
+        )
+
+# Get all rectangle combinations to cover outputs without overlapping
+groups = []
+for r in range(len(candidates)):
+    for candidate in itertools.combinations(candidates, r + 1):
+        for output in outputs:
+            nb = 0
+            for c in candidate:
+                if c.x <= output.x < c.x + c.width and c.y <= output.y < c.y + c.height:
+                    nb += 1
+            if nb != 1:  # output not contained in a single rectangle
+                break
+        else:
+            groups.append(candidate)
+
+# Get random images
 images = []
 for base, _, files in os.walk(os.path.join(options.directory)):
     for i in files:
         if os.path.splitext(i)[1].lower() in (".jpg", ".jpeg", ".png", ".webp"):
             images.append(os.path.join(base, i))
-images = random.sample(images, len(screens))
+images = random.sample(images, len(outputs) * options.extra_images)
 images = [Image.open(image) for image in images]
-images.sort(key=lambda im: -im.size[0] * im.size[1])
-images = images[: len(screens)]
 
-# If more than one screen and one image has the right aspect ratio,
-# use it.
-if len(screens) > 1:
-    target = screen.width_in_pixels * 100 // screen.height_in_pixels
-    ratios = [image.size[0] * 100 // image.size[1] for image in images]
-    try:
-        index = ratios.index(target)
-        images = [images[index]]
-    except ValueError:
-        pass
+# Find optimal combination for images
+best_association = None
+best_score = 0
+for group in groups:
+    for association in (zip(group, p) for p in itertools.permutations(images)):
+        score = 0
+        association = list(association)
+        for output, image in association:
+            # Similar ratio
+            oratio = output.width * 100 // output.height
+            iratio = image.width * 100 // image.height
+            r = iratio / oratio
+            if r > 1:
+                r = 1 / r
+            score += r * 100
+            # Similar scale (when cropped)
+            opixels = output.width * output.height
+            ipixels = image.width * image.height * r
+            r = ipixels / opixels
+            if r >= 1:
+                r = 1
+            score += r * 50
+        score /= len(group)
+        if score > best_score or best_association is None:
+            best_association = association
+            best_score = score
 
 print(
     "wallpaper: {}".format(
@@ -90,37 +135,30 @@ print(
             "`{}` ({}×{})".format(
                 image.filename[(len(options.directory) + 1) :], *image.size
             )
-            for image in images
+            for image in [couple[1] for couple in best_association]
         )
     )
 )
 
-if len(screens) > 1 and len(images) == 1:
-    # Wide wallpaper
-    image = images[0]
-    if image.size != (screen.width_in_pixels, screen.height_in_pixels):
-        image = image.resize(
-            (screen.width_in_pixels, screen.height_in_pixels), Image.LANCZOS
-        )
-    background.paste(image, (0, 0))
-else:
-    for index in range(len(screens)):
-        x, y, offsetx, offsety = screens[index]
-        image = images[index]
+for couple in best_association:
+    output = couple[0]
+    image = couple[1]
 
-        # Find the right size for the screen
-        imx, imy = x, image.size[1] * x // image.size[0]
-        if (options.crop and imy < y) or (not options.crop and imy > y):
-            imx, imy = image.size[0] * y // image.size[1], y
-        if image.size != (imx, imy):
-            image = image.resize((imx, imy), Image.LANCZOS)
-        if options.crop:
-            image = image.crop(
-                ((imx - x) / 2, (imy - y) / 2, imx - (imx - x) / 2, imy - (imy - y) / 2)
-            )
-            background.paste(image, (offsetx, offsety))
-        else:
-            background.paste(image, ((x - imx) / 2 + offsetx, (y - imy) / 2 + offsety))
+    # Find the right size for the screen
+    imx, imy = output.width, image.height * output.width // image.width
+    if imy < output.height:
+        imx, imy = image.width * output.height // image.height, output.height
+    if image.size != (imx, imy):
+        image = image.resize((imx, imy), Image.LANCZOS)
+    image = image.crop(
+        (
+            (imx - output.width) / 2,
+            (imy - output.height) / 2,
+            imx - (imx - output.width) / 2,
+            imy - (imy - output.height) / 2,
+        )
+    )
+    background.paste(image, (output.x, output.y))
 
 # Save
 assert background, "Don't know the size of the display area"

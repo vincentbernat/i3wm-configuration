@@ -4,3 +4,4 @@ After=pulseaudio.socket
 
 [Timer]
 OnUnitActiveSec=1h
+OnStartupSec=1h

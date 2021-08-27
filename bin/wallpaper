@@ -22,6 +22,7 @@ logger = logging.getLogger("wallpaper")
 Rectangle = collections.namedtuple("Rectangle", ["x", "y", "width", "height"])
 WallpaperPart = collections.namedtuple("WallpaperPart", ["rectangle", "image"])
 
+
 def get_outputs():
     """Get physical outputs."""
     # Get display size
@@ -38,7 +39,9 @@ def get_outputs():
         if output_info.crtc == 0:
             continue
         crtc_info = randr.get_crtc_info(window, output_info.crtc, output_info.timestamp)
-        outputs.append(Rectangle(crtc_info.x, crtc_info.y, crtc_info.width, crtc_info.height))
+        outputs.append(
+            Rectangle(crtc_info.x, crtc_info.y, crtc_info.width, crtc_info.height)
+        )
 
     for o in outputs:
         logger.debug("output: %s", o)
@@ -49,12 +52,24 @@ def get_covering_rectangles(outputs):
     """Compute all possible groups of covering boxes for the provided
     outputs. For each group, an output is included in exactly one box.
 
-    >>> get_covering_rectangles([Rectangle(0, 0, 100, 100)])
+    >>> gcr = get_covering_rectangles
+    >>> gcr([Rectangle(0, 0, 100, 100)])
     {(Rectangle(x=0, y=0, width=100, height=100),)}
-    >>> get_covering_rectangles([Rectangle(0, 0, 100, 100), Rectangle(100, 0, 100, 100)])
-    {(Rectangle(x=0, y=0, width=100, height=100), Rectangle(x=100, y=0, width=100, height=100)), (Rectangle(x=0, y=0, width=200, height=100),)}
-    >>> get_covering_rectangles([Rectangle(0, 0, 100, 100), Rectangle(100, 0, 100, 100), Rectangle(0, 100, 100, 100)])
-    {(Rectangle(x=100, y=0, width=100, height=100), Rectangle(x=0, y=100, width=100, height=100), Rectangle(x=0, y=0, width=100, height=100)), (Rectangle(x=100, y=0, width=100, height=100), Rectangle(x=0, y=0, width=100, height=200)), (Rectangle(x=0, y=0, width=200, height=100), Rectangle(x=0, y=100, width=100, height=100))}
+    >>> gcr([Rectangle(0, 0, 100, 100),
+    ...      Rectangle(100, 0, 100, 100)]) # doctest: +NORMALIZE_WHITESPACE
+    {(Rectangle(x=0, y=0, width=100, height=100),
+      Rectangle(x=100, y=0, width=100, height=100)),
+     (Rectangle(x=0, y=0, width=200, height=100),)}
+    >>> gcr([Rectangle(0, 0, 100, 100),
+    ...      Rectangle(100, 0, 100, 100),
+    ...      Rectangle(0, 100, 100, 100)]) # doctest: +NORMALIZE_WHITESPACE
+    {(Rectangle(x=100, y=0, width=100, height=100),
+      Rectangle(x=0, y=100, width=100, height=100),
+      Rectangle(x=0, y=0, width=100, height=100)),
+     (Rectangle(x=100, y=0, width=100, height=100),
+      Rectangle(x=0, y=0, width=100, height=200)),
+     (Rectangle(x=0, y=0, width=200, height=100),
+      Rectangle(x=0, y=100, width=100, height=100))}
     """
 
     candidates = set()
@@ -81,7 +96,10 @@ def get_covering_rectangles(outputs):
             for output in outputs:
                 nb = 0
                 for c in candidate:
-                    if c.x <= output.x < c.x + c.width and c.y <= output.y < c.y + c.height:
+                    if (
+                        c.x <= output.x < c.x + c.width
+                        and c.y <= output.y < c.y + c.height
+                    ):
                         nb += 1
                 if nb != 1:  # output not contained in a single rectangle
                     break
@@ -91,6 +109,7 @@ def get_covering_rectangles(outputs):
     for g in groups:
         logger.debug("group: %s", g)
     return groups
+
 
 def get_random_images(directory, number):
     """Get random images from a directory."""
@@ -103,11 +122,55 @@ def get_random_images(directory, number):
     images = [Image.open(image) for image in images]
 
     for image in images:
-        logger.debug("image: %s %s×%s", image.filename[(len(directory) + 1) :], *image.size)
+        directory_len = len(directory) + 1
+        logger.debug("image: %s %s×%s", image.filename[directory_len:], *image.size)
     return images
 
+
 def get_best_parts(groups, images):
-    """Find optimal association for images for the groups of covering rectangles."""
+    """Find optimal association for images for the groups of covering rectangles.
+
+    >>> gbp = get_best_parts
+    >>> gbp([[Rectangle(0, 0, 100, 100)]],
+    ...     [Image.new("RGB", (100, 100))]) # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
+    [WallpaperPart(rectangle=Rectangle(x=0, y=0, width=100, height=100),
+                   image=<PIL.Image.Image image mode=RGB size=100x100 at ...>)]
+    >>> gbp([[Rectangle(0, 0, 100, 100)]],
+    ...     [Image.new("RGB", (100, 100)),
+    ...      Image.new("RGB", (100, 200))]) # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
+    [WallpaperPart(rectangle=Rectangle(x=0, y=0, width=100, height=100),
+                   image=<PIL.Image.Image image mode=RGB size=100x100 at ...>)]
+    >>> gbp([[Rectangle(0, 0, 100, 100)]],
+    ...     [Image.new("RGB", (50, 50)),
+    ...      Image.new("RGB", (100, 200))]) # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
+    [WallpaperPart(rectangle=Rectangle(x=0, y=0, width=100, height=100),
+                   image=<PIL.Image.Image image mode=RGB size=50x50 at ...>)]
+    >>> gbp([[Rectangle(0, 0, 100, 100)]],
+    ...     [Image.new("RGB", (10, 10)),
+    ...      Image.new("RGB", (100, 200))]) # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
+    [WallpaperPart(rectangle=Rectangle(x=0, y=0, width=100, height=100),
+                   image=<PIL.Image.Image image mode=RGB size=100x200 at ...>)]
+    >>> gbp([[Rectangle(0, 0, 100, 100), Rectangle(0, 100, 100, 100)],
+    ...      [Rectangle(0, 0, 200, 100)]],
+    ...     [Image.new("RGB", (100, 100)),
+    ...      Image.new("RGB", (200, 100))]) # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
+    [WallpaperPart(rectangle=Rectangle(x=0, y=0, width=200, height=100),
+                   image=<PIL.Image.Image image mode=RGB size=200x100 at ...>)]
+    >>> gbp([[Rectangle(0, 0, 100, 100), Rectangle(100, 0, 100, 100)],
+    ...      [Rectangle(0, 0, 200, 100)]],
+    ...     [Image.new("RGB", (100, 100)),
+    ...      Image.new("RGB", (100, 100))]) # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
+    [WallpaperPart(rectangle=Rectangle(x=0, y=0, width=100, height=100),
+                   image=<PIL.Image.Image image mode=RGB size=100x100 at ...>),
+     WallpaperPart(rectangle=Rectangle(x=100, y=0, width=100, height=100),
+                   image=<PIL.Image.Image image mode=RGB size=100x100 at ...>)]
+    >>> gbp([[Rectangle(0, 0, 1920, 1080), Rectangle(1920, 0, 1920, 1080)],
+    ...      [Rectangle(0, 0, 3840, 1080)]],
+    ...     [Image.new("RGB", (2560, 1440)),
+    ...      Image.new("RGB", (3840, 1440))]) # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
+    [WallpaperPart(rectangle=Rectangle(x=0, y=0, width=3840, height=1080),
+                   image=<PIL.Image.Image image mode=RGB size=3840x1440 at ...>)]
+    """
     best_association = None
     best_score = 0
     for group in groups:
@@ -118,7 +181,10 @@ def get_best_parts(groups, images):
                 continue
             seen.append(association)
             score = 0
-            association = [WallpaperPart(rectangle=assoc[0], image=assoc[1]) for assoc in association]
+            association = [
+                WallpaperPart(rectangle=assoc[0], image=assoc[1])
+                for assoc in association
+            ]
             for assoc in association:
                 # Similar ratio
                 oratio = assoc.rectangle.width * 100 // assoc.rectangle.height
@@ -133,8 +199,8 @@ def get_best_parts(groups, images):
                 r = ipixels / opixels
                 if r >= 1:
                     r = 1
-                score += r * 50
-            score /= len(group)
+                score += r * 60
+            score /= len(group) * len(group)
             logger.debug("association: %s, score %.2f", association, score)
             if score > best_score or best_association is None:
                 best_association = association
@@ -172,6 +238,7 @@ def save(wallpaper, target, compression):
     ) as tmp:
         background.save(tmp, "png", compress_level=compression)
         os.rename(tmp.name, target)
+
 
 if __name__ == "__main__":
     # Parse
@@ -220,13 +287,17 @@ if __name__ == "__main__":
     try:
         outputs, background = get_outputs()
         candidates = get_covering_rectangles(outputs)
-        images = get_random_images(options.directory, len(outputs) + options.extra_images)
+        images = get_random_images(
+            options.directory, len(outputs) + options.extra_images
+        )
         wallpaper_parts = get_best_parts(candidates, images)
         for part in wallpaper_parts:
-            logger.info("wallpaper: {} ({}×{})".format(
-                part.image.filename[(len(options.directory) + 1) :],
-                *part.image.size
-            ))
+            logger.info(
+                "wallpaper: {} ({}×{})".format(
+                    part.image.filename[(len(options.directory) + 1) :],
+                    *part.image.size
+                )
+            )
         build(background, wallpaper_parts)
         save(background, options.target, options.compression)
     except Exception as e:

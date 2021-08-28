@@ -842,7 +842,7 @@ async def network_manager_notifications(i3, event, path, state, reason):
         return
     kind = await nmca.Type
     id = await nmca.Id
-    if kind == "vpn":
+    if kind == "vpn" or kind == "wireguard":
         await notify(i3, app_icon="network-vpn", summary=f"{id}", body="VPN connected!")
     elif kind == "802-3-ethernet":
         await notify(
@@ -933,7 +933,8 @@ async def network_manager_status(i3, event, *args):
     for connection in connections:
         nma = await conn[connection].get_async_interface(f"{ofnm}.Connection.Active")
         vpn = await nma.Vpn
-        if vpn:
+        kind = await nma.Type
+        if vpn or kind == "wireguard":
             state = await nma.State
             if state == NM_ACTIVE_CONNECTION_STATE_ACTIVATED:
                 status.append(icons["vpn"])

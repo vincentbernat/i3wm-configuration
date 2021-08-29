@@ -8,6 +8,6 @@ Environment=WALLPAPER_OUTPUT=%h/.cache/i3/current-wallpaper.png
 ExecStart=/usr/bin/mkdir -p %h/.cache/i3
 ExecStart=%h/.config/i3/bin/wallpaper --directory $WALLPAPER_DIRECTORY \
                                       --target $WALLPAPER_OUTPUT
-ExecStart=/usr/bin/hsetroot -center $WALLPAPER_OUTPUT
+ExecStart=/usr/bin/hsetroot -root -center $WALLPAPER_OUTPUT
 Type=oneshot
 RemainAfterExit=false

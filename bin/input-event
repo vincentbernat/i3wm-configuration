@@ -22,20 +22,15 @@ printf "input-event: $use: [%3d] $event $name\n" $device
 
 set +x
 case "$event,$use,$(uname -n),$name" in
-    *,XISlaveKeyboard,guybrush,"Topre Corporation Realforce 87")
-        xkb default
-        ;;
     *,XISlaveKeyboard,chocobo,"AT Translated Set 2 keyboard")
         xkb x1gen2
-        ;;
-    *,XISlaveKeyboard,*,"ThinkPad Extra Buttons")
-        :
         ;;
     *,XISlaveKeyboard,*,"Yubico YubiKey OTP+FIDO+CCID")
         ssh-add -e /usr/lib/x86_64-linux-gnu/libykcs11.so 2> /dev/null
         ssh-add -s /usr/lib/x86_64-linux-gnu/libykcs11.so
         ;;
     *,XISlaveKeyboard,*)
+        # Todo: detect the fact it is a "classic" keyboard
         xkb default
         ;;
     *,XISlavePointer,*,"Logitech USB Receiver Mouse")

@@ -2,6 +2,15 @@
 
 """Build a multi screen wallpaper."""
 
+# Alternative:
+# curl -s https://bzamayo.com/extras/apple-tv-screensavers.json \
+#   | jq -r '.data[].screensavers[].videoURL' \
+#   | shuf \
+#   | xargs nix run nixpkgs.xwinwrap -c \
+#        xwinwrap -b -s -fs -st -sp -nf -ov -- \
+#        mpv -wid WID -really-quiet -framedrop=vo --no-audio --panscan=1.0 \
+#                     -loop-playlist=inf
+
 import os
 import sys
 import random

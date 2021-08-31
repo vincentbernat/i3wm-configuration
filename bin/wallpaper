@@ -11,6 +11,9 @@
 #        mpv -wid WID -really-quiet -framedrop=vo --no-audio --panscan=1.0 \
 #                     -loop-playlist=inf
 
+# Alternative:
+# https://moewalls.com/category/pixel-art/
+
 import os
 import sys
 import random

@@ -16,6 +16,7 @@ xkb_keymap {
         xkb_compat    { include "complete" };
         xkb_symbols   { include "pc+us+inet(evdev)"
                         include "compose(ralt)+ctrl(nocaps)"
+                        include "vbe(keypad)"
                         include "vbe(x1gen2)" };
         xkb_geometry  { include "pc(pc105)" };
 };

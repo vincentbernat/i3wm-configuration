@@ -5,7 +5,7 @@ set -euf -o pipefail
 case $1 in
     desktop)
         target=~/.config/i3/screenshots/$(date -Iseconds).jpg
-        maim -u -m 8 $target
+        maim -u -m 9 $target
         notify-send -i camera-photo "Desktop screenshot" "Saved in ${target##*/}"
         echo -n $target | xclip -selection clipboard
         ;;

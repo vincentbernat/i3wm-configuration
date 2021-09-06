@@ -11,7 +11,7 @@ will stop itself when the locker window is mapped.
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, Gdk, GLib
+from gi.repository import Gtk, Gdk, GLib, GdkPixbuf
 import cairo
 import argparse
 import threading
@@ -40,26 +40,33 @@ def on_realize(widget):
     window.set_override_redirect(True)
 
 
-def on_draw(widget, event, options, elapsed):
+def on_draw(widget, event, options, background, elapsed):
     def _dim():
-        r = cairo.Region(cairo.RectangleInt(0, 0, *widget.get_default_size()))
+        r = cairo.Region(cairo.RectangleInt(0, 0, *widget.get_size()))
         dctx = window.begin_draw_frame(r)
         cctx = dctx.get_cairo_context()
         dim(cctx)
         window.end_draw_frame(dctx)
 
     def dim(cctx, once=False):
-        # Background
+        x, y = widget.get_position()
+        wwidth, wheight = widget.get_size()
         delta = options.end_opacity - options.start_opacity
         current = elapsed[0] / options.delay
         opacity = delta * current + options.start_opacity
-        cctx.set_source_rgba(0, 0, 0, opacity)
-        cctx.set_operator(cairo.OPERATOR_SOURCE)
-        cctx.paint()
+
+        # Background
+        if not background:
+            cctx.set_source_rgba(0, 0, 0, opacity)
+            cctx.set_operator(cairo.OPERATOR_SOURCE)
+            cctx.paint()
+        else:
+            bg = background.new_subpixbuf(x, y, wwidth, wheight)
+            Gdk.cairo_set_source_pixbuf(cctx, bg, 0, 0)
+            cctx.paint_with_alpha(opacity)
 
         # Remaining time
         remaining = str(round(options.delay - elapsed[0]))
-        wwidth, wheight = widget.get_default_size()
         cctx.set_source_rgba(1, 1, 1, opacity)
         cctx.select_font_face(
             options.font, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD
@@ -68,7 +75,7 @@ def on_draw(widget, event, options, elapsed):
         _, _, twidth, theight, _, _ = cctx.text_extents(remaining)
         cctx.move_to(wwidth // 2 - twidth // 2, wheight // 2 + theight // 2)
         cctx.show_text(remaining)
-        cctx.set_source_rgba(0, 0, 0, opacity*2)
+        cctx.set_source_rgba(0, 0, 0, opacity * 2)
         cctx.move_to(wwidth // 2 - twidth // 2, wheight // 2 + theight // 2)
         cctx.text_path(remaining)
         cctx.set_line_width(4)
@@ -99,7 +106,15 @@ if __name__ == "__main__":
     add("--delay", type=float, default=10, help="delay from start to end")
     add("--font", default="DejaVu Sans", help="font for countdown")
     add("--locker", default="i3lock", help="quit if window class detected")
+    add("--background", help="use a background instead of black")
     options = parser.parse_args()
+
+    background = None
+    if options.background:
+        try:
+            background = GdkPixbuf.Pixbuf.new_from_file(options.background)
+        except Exception as e:
+            pass
 
     # Setup dimmer windows on each monitor
     gdisplay = Gdk.Display.get_default()
@@ -115,7 +130,7 @@ if __name__ == "__main__":
         window.set_default_size(geom.width, geom.height)
         window.move(geom.x, geom.y)
 
-        window.connect("draw", on_draw, options, [])
+        window.connect("draw", on_draw, options, background, [])
         window.connect("delete-event", Gtk.main_quit)
         window.connect("realize", on_realize)
 

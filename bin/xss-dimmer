@@ -56,14 +56,18 @@ def on_draw(widget, event, options, background, elapsed):
         opacity = delta * current + options.start_opacity
 
         # Background
+        cctx.set_operator(cairo.OPERATOR_SOURCE)
         if not background:
             cctx.set_source_rgba(0, 0, 0, opacity)
-            cctx.set_operator(cairo.OPERATOR_SOURCE)
             cctx.paint()
         else:
-            bg = background.new_subpixbuf(x, y, wwidth, wheight)
+            scale = widget.get_scale_factor()
+            bg = background.new_subpixbuf(x, y, wwidth*scale, wheight*scale)
+            cctx.save()
+            cctx.scale(1/scale, 1/scale)
             Gdk.cairo_set_source_pixbuf(cctx, bg, 0, 0)
             cctx.paint_with_alpha(opacity)
+            cctx.restore()
 
         # Remaining time
         remaining = str(round(options.delay - elapsed[0]))
@@ -113,7 +117,7 @@ if __name__ == "__main__":
     if options.background:
         try:
             background = GdkPixbuf.Pixbuf.new_from_file(options.background)
-        except Exception as e:
+        except Exception:
             pass
 
     # Setup dimmer windows on each monitor

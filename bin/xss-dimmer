@@ -100,8 +100,8 @@ def on_draw(widget, event, options, background, elapsed):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     add = parser.add_argument
-    add("--start-opacity", type=float, default=0.1, help="initial opacity")
-    add("--end-opacity", type=float, default=0.9, help="final opacity")
+    add("--start-opacity", type=float, default=0, help="initial opacity")
+    add("--end-opacity", type=float, default=1, help="final opacity")
     add("--step", type=float, default=0.1, help="step for changing opacity")
     add("--delay", type=float, default=10, help="delay from start to end")
     add("--font", default="DejaVu Sans", help="font for countdown")

@@ -57,8 +57,6 @@ user_pref("media.autoplay.default", 1);
 // Remove some annoying animations (notably when going full screen)
 user_pref("toolkit.cosmeticAnimations.enabled", false);
 
-// Force enable WebRender
-user_pref("gfx.webrender.all", true);
 // And VAAPI decoding with ffmpeg
 user_pref("gfx.x11-egl.force-enabled", true);
 user_pref("media.ffmpeg.vaapi.enabled", true);

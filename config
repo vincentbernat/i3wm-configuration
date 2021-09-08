@@ -157,6 +157,7 @@ for_window [class="Nm-connection-editor"] floating enable
 for_window [class="Shadow"] fullscreen enable
 for_window [window_role="PictureInPicture"] floating enable
 for_window [title="Firefox — Sharing Indicator"] border pixel 1, sticky enable, move position 20 ppt -5 px
+for_window [class="Pavucontrol"] floating enable
 no_focus [title="Firefox — Sharing Indicator"]
 
 # Start stuff

@@ -35,15 +35,18 @@ sources on [GitHub](https://github.com/vincentbernat/vbeterm).
 ## Requirements
 
 Required Debian packages to make everything work can be found in my
-[Puppet configuration][].
+[Puppet configuration][]. Packages are basically pulled from Debian
+unstable.
 
 [Puppet configuration]: https://github.com/vincentbernat/puppet-workstation/blob/master/local-modules/desktop/manifests/i3.pp
 
 However, I am recompiling some stuff to get more recent versions:
 
  - `dunst` (check `vbe/master` branch)
- - `polybar` (git HEAD)
+ - `polybar` (check `vbe/master` branch)
  - `rofi` (1.6.1)
+
+The binaries are put in `~/.local/bin`.
 
 ## Interesting links
 

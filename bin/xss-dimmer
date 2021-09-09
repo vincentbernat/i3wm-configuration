@@ -129,7 +129,6 @@ if __name__ == "__main__":
     gdisplay = Gdk.Display.get_default()
     for i in range(gdisplay.get_n_monitors()):
         geom = gdisplay.get_monitor(i).get_geometry()
-        once = []
 
         window = Gtk.Window()
         window.set_app_paintable(True)

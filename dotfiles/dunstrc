@@ -16,7 +16,7 @@
     frame_width = 2
     frame_color = "#4c7899"
     transparency = 5
-    font = DejaVu Sans 10
+    font = Cantarell 10
     line_height = 0
 
     # Put urgent notifications on top

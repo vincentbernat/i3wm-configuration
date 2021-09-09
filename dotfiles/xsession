@@ -31,6 +31,7 @@ dunstrc      .config/dunst/dunstrc
 picom.conf   .config/picom.conf
 polybar.conf .config/polybar/config
 rofi.conf    .config/rofi/config.rasi
+fonts.conf   .config/fontconfig/fonts.conf
 EOF
 rm -f ~/.config/gtk-3.0/settings.ini
 dconf load / < ~/.config/i3/dotfiles/dconf.ini

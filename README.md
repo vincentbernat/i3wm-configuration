@@ -4,6 +4,10 @@ This is my [i3](https://i3wm) configuration. It does not exactly
 feature the same keybindings as the default configuration. I don't
 recommend using it as-is by you can pick anything you need in it.
 
+![Screenshot](https://d1g3mdmxf8zbo9.cloudfront.net/images/i3/desktop@1x.jpg)
+
+More details in this [blog post](https://vincent.bernat.ch/en/blog/2021-i3-window-manager).
+
 Here some of the things you may be interested in:
 
  - I use a Python script `bin/wallpaper` to build the wallpaper

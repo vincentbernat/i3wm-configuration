@@ -27,8 +27,10 @@ import inspect
 
 from Xlib import display
 from Xlib.ext import randr
-from PIL import Image
 from systemd import journal
+from PIL import Image
+from PIL.ImageFile import ImageFile
+from typing import Optional
 
 
 logger = logging.getLogger("wallpaper")
@@ -36,7 +38,7 @@ Rectangle = collections.namedtuple("Rectangle", ["x", "y", "width", "height"])
 WallpaperPart = collections.namedtuple("WallpaperPart", ["rectangle", "image"])
 
 
-def get_outputs():
+def get_outputs() -> tuple[list[Rectangle], Image]:
     """Get physical outputs."""
     # Get display size
     d = display.Display()
@@ -61,7 +63,7 @@ def get_outputs():
     return outputs, background
 
 
-def get_covering_rectangles(outputs):
+def get_covering_rectangles(outputs: list[Rectangle]) -> set[tuple[Rectangle, ...]]:
     """Compute all possible groups of covering boxes for the provided
     outputs. For each group, an output is included in exactly one box.
 
@@ -124,15 +126,14 @@ def get_covering_rectangles(outputs):
     return groups
 
 
-def get_random_images(directory, number):
+def get_random_images(directory: str, number: int) -> list[ImageFile]:
     """Get random images from a directory."""
-    images = []
+    image_files = []
     for base, _, files in os.walk(os.path.join(directory)):
         for i in files:
             if os.path.splitext(i)[1].lower() in (".jpg", ".jpeg", ".png", ".webp"):
-                images.append(os.path.join(base, i))
-    images = random.sample(images, number)
-    images = [Image.open(image) for image in images]
+                image_files.append(os.path.join(base, i))
+    images = [Image.open(image) for image in random.sample(image_files, number)]
 
     for image in images:
         directory_len = len(directory) + 1
@@ -140,7 +141,13 @@ def get_random_images(directory, number):
     return images
 
 
-def get_best_parts(groups, images, ratio_score=100, scale_score=60, wallpaper_score=2):
+def get_best_parts(
+    groups: set[tuple[Rectangle, ...]],
+    images: list[ImageFile],
+    ratio_score: int = 100,
+    scale_score: int = 60,
+    wallpaper_score: int = 2,
+) -> Optional[list[WallpaperPart]]:
     """Find optimal association for images for the groups of covering rectangles.
 
     >>> gbp = get_best_parts
@@ -194,11 +201,11 @@ def get_best_parts(groups, images, ratio_score=100, scale_score=60, wallpaper_sc
                 continue
             seen.append(association)
             score = 0
-            association = [
+            association_ = [
                 WallpaperPart(rectangle=assoc[0], image=assoc[1])
                 for assoc in association
             ]
-            for assoc in association:
+            for assoc in association_:
                 # Similar ratio
                 oratio = assoc.rectangle.width * 100 // assoc.rectangle.height
                 iratio = assoc.image.width * 100 // assoc.image.height
@@ -214,15 +221,15 @@ def get_best_parts(groups, images, ratio_score=100, scale_score=60, wallpaper_sc
                     r = 1
                 score += r * scale_score
             score /= pow(len(group), wallpaper_score)
-            logger.debug("association: %s, score %.2f", association, score)
+            logger.debug("association: %s, score %.2f", association_, score)
             if score > best_score or best_association is None:
-                best_association = association
+                best_association = association_
                 best_score = score
 
     return best_association
 
 
-def build(background, wallpaper_parts):
+def build(background: Image, wallpaper_parts: list[WallpaperPart]) -> None:
     """Stitch wallpaper into provided background."""
     for part in wallpaper_parts:
         rectangle = part.rectangle
@@ -244,12 +251,12 @@ def build(background, wallpaper_parts):
         background.paste(image, (rectangle.x, rectangle.y))
 
 
-def save(wallpaper, target, compression):
+def save(wallpaper: Image, target: str, compression: int) -> None:
     """Save wallpaper to target."""
     with tempfile.NamedTemporaryFile(
         delete=False, dir=os.path.dirname(os.path.realpath(target))
     ) as tmp:
-        background.save(tmp, "png", compress_level=compression)
+        wallpaper.save(tmp, "png", compress_level=compression)
         os.rename(tmp.name, target)
 
 
@@ -328,6 +335,7 @@ if __name__ == "__main__":
             scale_score=options.scale_score,
             wallpaper_score=options.wallpaper_score,
         )
+        assert wallpaper_parts is not None
         for part in wallpaper_parts:
             logger.info(
                 "wallpaper: {} ({}×{})".format(

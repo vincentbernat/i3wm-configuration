@@ -2,6 +2,7 @@
 Description=Update weather for Polybar
 PartOf=graphical-session.target
 After=polybar.service
+Requisite=polybar.service
 
 [Service]
 # Get one from https://openweathermap.org/, it's free

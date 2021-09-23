@@ -64,6 +64,7 @@ application_icons = {
     "scummvm": icon(2, ""),
     "signal": icon(2, ""),
     "snes9x": icon(2, ""),
+    "spot": icon(3, ""),
     "spotify": icon(3, ""),
     "steam": icon(3, ""),
     "sxiv": icon(2, ""),

@@ -2,7 +2,7 @@
 
 me="$(readlink -f "$0")"
 timeout=300
-notify=$((timeout/20))
+notify=$((timeout/10))
 
 configure() {
     xset s $((timeout - notify)) $notify

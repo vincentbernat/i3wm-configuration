@@ -1,26 +1,42 @@
 #!/bin/sh
 
-# Compute DPI of each screens
-dpis=$(xrandr --current \
-    | sed -En 's/^([^ ]+)* connected.* ([0-9]+)x.* ([0-9]+)mm x .*/\1 \2 \3/p' \
-    | while read output pixels mm; do
+showdpi() {
+    output=$1
+    pixels=$2
+    mm=$3
 
     # Compute DPI
     dpi=$((pixels * 254 / 10 / mm))
 
-    # For laptop screens, we need to apply a correction factor
+    # For laptop screens, we need to apply a correction factor as the
+    # screen is nearer
     case $output in
-        eDP-1|eDP1) corrected=$(($dpi * 96/144)) ;;
+        eDP-1|eDP1) corrected=$((dpi * 96/144)) ;;
         *) corrected=$dpi ;;
     esac
 
-    # Authorized factors: 1, 1.5, 2, 3, 4, ...
-    rounded=$(((corrected + 24) / 48 * 48))
-    [ $rounded -gt 192 ] && rounded=$(((corrected + 48) / 96 * 96))
+    # Authorized factors: 1, 1.25, 1.5, 2, 3, 4, ...
+    rounded=$(((corrected + 12) / 24 * 24))
+    [ $rounded -gt 168 ] && rounded=$(((corrected + 48) / 96 * 96))
     [ $rounded -lt 96 ] && rounded=96
 
     echo "$output: ${dpi}dpi (corrected to ${corrected}dpi, rounded to ${rounded}dpi)" >&2
     echo "$rounded"
+}
+
+# Examples:
+# showdpi HDMI-A-0 3840 527
+# HDMI-A-0: 185dpi (corrected to 185dpi, rounded to 192dpi)
+# showdpi DisplayPort-3 3840 880
+# DisplayPort-3: 110dpi (corrected to 110dpi, rounded to 120dpi)
+# showdpi eDP-1 2560 310
+# eDP-1: 209dpi (corrected to 139dpi, rounded to 144dpi)
+
+# Compute DPI of each screens
+dpis=$(xrandr --current \
+    | sed -En 's/^([^ ]+)* connected.* ([0-9]+)x.* ([0-9]+)mm x .*/\1 \2 \3/p' \
+    | while read output pixels mm; do
+    showdpi $output $pixels $mm
  done \
     | tr '\n' ' ')
 

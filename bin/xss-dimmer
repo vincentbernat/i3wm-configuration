@@ -109,13 +109,13 @@ def on_draw(widget, event, options, background, start):
 # See: https://easings.net/
 easing_functions = {
     "none": lambda x: x,
-    "ease-out-circ": lambda x: math.sqrt(1 - pow(x - 1, 2)),
-    "ease-out-sine": lambda x: math.sin(x * math.pi / 2),
-    "ease-out-cubic": lambda x: 1 - pow(1 - x, 3),
-    "ease-out-quint": lambda x: 1 - pow(1 - x, 5),
-    "ease-out-expo": lambda x: 1 - pow(2, -10 * x),
-    "ease-out-quad": lambda x: 1 - (1 - x) * (1 - x),
-    "ease-out-bounce": (
+    "out-circ": lambda x: math.sqrt(1 - pow(x - 1, 2)),
+    "out-sine": lambda x: math.sin(x * math.pi / 2),
+    "out-cubic": lambda x: 1 - pow(1 - x, 3),
+    "out-quint": lambda x: 1 - pow(1 - x, 5),
+    "out-expo": lambda x: 1 - pow(2, -10 * x),
+    "out-quad": lambda x: 1 - (1 - x) * (1 - x),
+    "out-bounce": (
         lambda n1, d1: lambda x: n1 * x * x
         if x < 1 / d1
         else n1 * pow(x - 1.5 / d1, 2) + 0.75
@@ -124,20 +124,20 @@ easing_functions = {
         if (x < 2.5 / d1)
         else n1 * pow(x - 2.625 / d1, 2) + 0.984375
     )(7.5625, 2.75),
-    "ease-out-elastic": (
+    "out-elastic": (
         lambda x: pow(2, -10 * x) * math.sin((x * 10 - 0.75) * (2 * math.pi) / 3) + 1
     ),
-    "ease-inout-quad": lambda x: 2 * x * x if x < 0.5 else 1 - pow(-2 * x + 2, 2) / 2,
-    "ease-inout-quart": (
+    "inout-quad": lambda x: 2 * x * x if x < 0.5 else 1 - pow(-2 * x + 2, 2) / 2,
+    "inout-quart": (
         lambda x: 8 * x * x * x * x if x < 0.5 else 1 - pow(-2 * x + 2, 4) / 2
     ),
-    "ease-inout-expo": (
+    "inout-expo": (
         lambda x: pow(2, 20 * x - 10) / 2 if x < 0.5 else (2 - pow(2, -20 * x + 10)) / 2
     ),
-    "ease-inout-bounce": (
-        lambda x: (1 - easing_functions["ease-out-bounce"](1 - 2 * x)) / 2
+    "inout-bounce": (
+        lambda x: (1 - easing_functions["out-bounce"](1 - 2 * x)) / 2
         if x < 0.5
-        else (1 + easing_functions["ease-out-bounce"](2 * x - 1)) / 2
+        else (1 + easing_functions["out-bounce"](2 * x - 1)) / 2
     ),
 }
 
@@ -154,7 +154,7 @@ if __name__ == "__main__":
     add("--background", help="use a background instead of black")
     add(
         "--easing-function",
-        default="ease-out-bounce",
+        default="out-bounce",
         choices=easing_functions.keys(),
         help="easing function for opacity",
     )

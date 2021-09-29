@@ -16,13 +16,21 @@ logger = logging.getLogger("polybar-weather")
 
 def get_location():
     """Return current location as latitude/longitude tuple."""
-    logger.debug("query ip-api.com for location")
-    r = requests.get("http://ip-api.com/json")
+    logger.debug("query MaxMind for location")
+    r = requests.get(
+        "https://www.maxmind.com/geoip/v2.1/city/me",
+        headers={"referer": "https://www.maxmind.com/en/locate-my-ip-address"},
+    )
     r.raise_for_status()
     data = r.json()
     logger.debug("current location data: %s", data)
-    logger.info(f'current location: {data["city"]}, {data["country"]}')
-    return ((data["lat"], data["lon"]), data["city"])
+    logger.info(
+        f'current location: {data["city"]["names"]["en"]}, {data["country"]["names"]["en"]}'
+    )
+    return (
+        (data["location"]["latitude"], data["location"]["longitude"]),
+        data["city"]["names"]["en"],
+    )
 
 
 def get_weather(apikey, latitude, longitude):

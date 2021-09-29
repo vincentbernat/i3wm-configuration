@@ -16,6 +16,7 @@ import cairo
 import argparse
 import threading
 import time
+import math
 from Xlib import display, X
 from Xlib.error import BadWindow
 from Xlib.protocol.event import MapNotify
@@ -54,7 +55,7 @@ def on_draw(widget, event, options, background, start):
         wwidth, wheight = widget.get_size()
         delta = options.end_opacity - options.start_opacity
         elapsed = time.monotonic() - start
-        current = elapsed / options.delay
+        current = easing_functions[options.easing_function](elapsed / options.delay)
         opacity = delta * current + options.start_opacity
 
         # Background
@@ -105,6 +106,20 @@ def on_draw(widget, event, options, background, start):
         dim(event, once=True)
 
 
+# See: https://easings.net/
+easing_functions = {
+    "none": lambda x: x,
+    "ease-out-circ": lambda x: math.sqrt(1 - pow(x - 1, 2)),
+    "ease-out-sine": lambda x: math.sin(x * math.pi / 2),
+    "ease-out-cubic": lambda x: 1 - pow(1 - x, 3),
+    "ease-out-quint": lambda x: 1 - pow(1 - x, 5),
+    "ease-out-expo": lambda x: 1 - pow(2, -10 * x),
+    "ease-out-quad": lambda x: 1 - (1 - x) * (1 - x),
+    "ease-out-elastic": (
+        lambda x: pow(2, -10 * x) * math.sin((x * 10 - 0.75) * (2 * math.pi) / 3) + 1
+    ),
+}
+
 if __name__ == "__main__":
     now = time.monotonic()
     parser = argparse.ArgumentParser()
@@ -116,6 +131,12 @@ if __name__ == "__main__":
     add("--font", default="DejaVu Sans", help="font for countdown")
     add("--locker", default="i3lock", help="quit if window class detected")
     add("--background", help="use a background instead of black")
+    add(
+        "--easing-function",
+        default="ease-out-circ",
+        choices=easing_functions.keys(),
+        help="easing function for opacity",
+    )
     options = parser.parse_args()
 
     background = None

@@ -58,6 +58,7 @@ application_icons = {
     "libreoffice": icon(2, "📄"),
     "mpv": icon(2, ""),
     "nestopia": icon(2, ""),
+    "org.gnome.maps": icon(2, ""),
     "pavucontrol": icon(2, ""),
     "qalculate": icon(2, ""),
     "qemu": icon(2, ""),

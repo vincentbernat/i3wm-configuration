@@ -65,8 +65,5 @@ user_pref("media.ffmpeg.vaapi.enabled", true);
 user_pref("privacy.webrtc.legacyGlobalIndicator", false);
 user_pref("privacy.webrtc.globalMuteToggles", true);
 
-// Enable AVIF
-user_pref("image.avif.enabled", true);
-
 // Disable DoH for now
 user_pref("network.trr.mode", 5);

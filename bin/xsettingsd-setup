@@ -45,10 +45,14 @@ dpi=${dpis%% *}
 dpi=${dpi:-96}
 
 echo "using ${dpi}dpi" >&2
+
+# Xrdb update
 {
     echo Xft.dpi: $dpi
     echo Xft.rgba: $( [ $dpi -gt 144 ] && echo none || echo rgb )
 } | xrdb -merge
+
+# X server update
 xrandr --dpi $dpi
 
 # Build xsettingsd

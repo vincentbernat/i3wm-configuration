@@ -48,6 +48,7 @@ application_icons = {
     "emacs": icon(2, ""),
     "file-roller": icon(2, ""),
     "firefox": icon(3, ""),
+    "gaupol": icon(2, ""),
     "gimp": icon(2, ""),
     "gitg": icon(2, ""),
     "gnome-boxes": icon(2, ""),

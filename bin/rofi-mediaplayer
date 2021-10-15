@@ -51,7 +51,7 @@ EOF
     1)
         case $ROFI_INFO in
             1) playerctl -p $mediaplayer previous ;;
-            2) playerctl -p $mediaplayer play-pause ;;
+            2) playerctl -p $mediaplayer play ;;
             3) playerctl -p $mediaplayer pause ;;
             4) playerctl -p $mediaplayer stop ;;
             5) playerctl -p $mediaplayer next ;;

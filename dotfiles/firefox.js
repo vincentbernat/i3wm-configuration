@@ -61,6 +61,10 @@ user_pref("toolkit.cosmeticAnimations.enabled", false);
 // And VAAPI decoding with ffmpeg
 user_pref("gfx.x11-egl.force-enabled", true);
 user_pref("media.ffmpeg.vaapi.enabled", true);
+user_pref("media.ffvpx.enabled", false);
+user_pref("media.rdd-ffvpx.enabled", false);
+user_pref("media.rdd-vpx.enabled", false);
+user_pref("media.navigator.mediadatadecoder_vpx_enabled", true);
 
 // Legacy indicator is buggy (no content)
 user_pref("privacy.webrtc.legacyGlobalIndicator", false);

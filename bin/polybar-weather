@@ -29,9 +29,7 @@ def get_location():
     )
     return (
         (data["location"]["latitude"], data["location"]["longitude"]),
-        data["city"]["names"]["en"]
-        if "city" in data
-        else data["country"]["names"]["en"],
+        (data.get("city") or data["country"])["names"]["en"],
     )
 
 

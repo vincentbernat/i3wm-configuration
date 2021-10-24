@@ -121,10 +121,6 @@ bindsym $mod+Shift+0 move container to workspace number 10
 bindsym $mod+Shift+o move workspace to output right
 bindsym $mod+Shift+n nop "move-to-new-workspace"
 
-# reload/restart
-bindsym $mod+Shift+c exec --no-startup-id exec systemctl --user reload --no-block i3.service
-bindsym $mod+Shift+r restart
-
 # lock screen
 bindsym XF86ScreenSaver exec --no-startup-id exec xset s activate
 bindsym $mod+Delete exec --no-startup-id exec xset s activate

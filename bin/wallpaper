@@ -85,6 +85,10 @@ def get_covering_rectangles(outputs: list[Rectangle]) -> set[tuple[Rectangle, ..
       Rectangle(x=0, y=0, width=100, height=200)),
      (Rectangle(x=0, y=0, width=200, height=100),
       Rectangle(x=0, y=100, width=100, height=100))}
+    >>> gcr([Rectangle(0, 0, 2560, 1440),
+    ...      Rectangle(2560, 0, 1920, 1080)]) # doctest: +NORMALIZE_WHITESPACE
+    {(Rectangle(x=2560, y=0, width=1920, height=1080),
+      Rectangle(x=0, y=0, width=2560, height=1440))}
     """
 
     candidates = set()
@@ -114,12 +118,28 @@ def get_covering_rectangles(outputs: list[Rectangle]) -> set[tuple[Rectangle, ..
                     if (
                         c.x <= output.x < c.x + c.width
                         and c.y <= output.y < c.y + c.height
+                        and output.x + output.width <= c.x + c.width
+                        and output.y + output.height <= c.y + c.height
                     ):
                         nb += 1
                 if nb != 1:  # output not contained in a single rectangle
                     break
             else:
-                groups.add(candidate)
+                # Test for overlap
+                overlap = False
+                for c1 in candidate:
+                    for c2 in candidate:
+                        if c1 == c2:
+                            continue
+                        if not (
+                            c1.x >= c2.x + c2.width
+                            or c1.x + c1.width <= c2.x
+                            or c1.y >= c2.y + c2.height
+                            or c1.y + c1.height <= c2.y
+                        ):
+                            overlap = True
+                if not overlap:
+                    groups.add(candidate)
 
     for g in groups:
         logger.debug("group: %s", g)

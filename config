@@ -68,7 +68,7 @@ bindsym $mod+Shift+$left  move left
 bindsym $mod+Shift+$down  move down
 bindsym $mod+Shift+$up    move up
 bindsym $mod+Shift+$right move right
-bindsym $mod+o            move container to output right
+bindsym $mod+o            move container to output next
 
 # resize focused window
 bindsym $mod+Ctrl+$left  resize shrink width 10 px or 4 ppt
@@ -108,7 +108,7 @@ bindsym $mod+8 workspace number 8
 bindsym $mod+9 workspace number 9
 bindsym $mod+0 workspace number 10
 bindsym $mod+Tab nop "previous-workspace"
-bindsym $mod+Ctrl+o focus output right
+bindsym $mod+Ctrl+o focus output next
 bindsym $mod+n nop "new-workspace"
 focus_wrapping no
 
@@ -123,7 +123,7 @@ bindsym $mod+Shift+7 move container to workspace number 7
 bindsym $mod+Shift+8 move container to workspace number 8
 bindsym $mod+Shift+9 move container to workspace number 9
 bindsym $mod+Shift+0 move container to workspace number 10
-bindsym $mod+Shift+o move workspace to output right
+bindsym $mod+Shift+o move workspace to output next
 bindsym $mod+Shift+n nop "move-to-new-workspace"
 
 # lock screen

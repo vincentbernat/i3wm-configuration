@@ -21,6 +21,10 @@ client.urgent           #2f343a #d00000 #ffffff #d00000   #d00000
 client.placeholder      #000000 #0c0c0c #ffffff #000000   #0c0c0c
 client.background       #ffffff
 
+# gaps
+gaps inner 10
+smart_gaps on
+
 # audio
 bindsym XF86AudioRaiseVolume exec --no-startup-id exec pactl set-sink-volume @DEFAULT_SINK@ +5%
 bindsym XF86AudioLowerVolume exec --no-startup-id exec pactl set-sink-volume @DEFAULT_SINK@ -5%

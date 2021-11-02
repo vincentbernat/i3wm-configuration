@@ -1,7 +1,7 @@
 #!/bin/sh
 
 export DPI=$(xrdb -query | sed -nE 's/^Xft\.dpi:\s*//p')
-export HEIGHT=$((18 * DPI / 96))
+export HEIGHT=$((20 * DPI / 96))
 
 # Example of setup:
 # xrandr --setmonitor '*'DisplayPort-3-left  1920/444x1440/334+0+0     DisplayPort-3

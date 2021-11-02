@@ -1,0 +1,13 @@
+#!/bin/sh -e
+
+DPI=$(xrdb -query | sed -nE 's/^Xft\.dpi:\s*//p')
+POLYBAR_HEIGHT=$((20 * DPI / 96))
+
+# Configure picom
+cat ~/.config/i3/dotfiles/picom.conf \
+    | sed -e "s/@POLYBAR_HEIGHT@/$POLYBAR_HEIGHT/" \
+          > $XDG_RUNTIME_DIR/i3/picom.conf.new
+
+# Put new configuration file in place
+cmp $XDG_RUNTIME_DIR/i3/picom.conf.new $XDG_RUNTIME_DIR/i3/picom.conf 2> /dev/null || \
+    mv $XDG_RUNTIME_DIR/i3/picom.conf.new $XDG_RUNTIME_DIR/i3/picom.conf

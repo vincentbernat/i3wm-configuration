@@ -1,11 +1,14 @@
 #!/bin/sh -e
 
-DPI=$(xrdb -query | sed -nE 's/^Xft\.dpi:\s*//p')
-POLYBAR_HEIGHT=$((20 * DPI / 96))
+dpi=$(xrdb -query | sed -nE 's/^Xft\.dpi:\s*//p')
+
+POLYBAR_HEIGHT=$((20 * dpi / 96))
+SHADOW_RADIUS=$((12 * dpi / 96))
 
 # Configure picom
 cat ~/.config/i3/dotfiles/picom.conf \
     | sed -e "s/@POLYBAR_HEIGHT@/$POLYBAR_HEIGHT/" \
+    | sed -e "s/@SHADOW_RADIUS@/$SHADOW_RADIUS/" \
           > $XDG_RUNTIME_DIR/i3/picom.conf.new
 
 # Put new configuration file in place

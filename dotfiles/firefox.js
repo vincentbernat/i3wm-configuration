@@ -59,7 +59,6 @@ user_pref("media.autoplay.default", 1);
 user_pref("toolkit.cosmeticAnimations.enabled", false);
 
 // And VAAPI decoding with ffmpeg
-user_pref("gfx.x11-egl.force-enabled", true);
 user_pref("media.ffmpeg.vaapi.enabled", true);
 user_pref("media.ffvpx.enabled", false);
 user_pref("media.rdd-ffvpx.enabled", false);

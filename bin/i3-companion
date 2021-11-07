@@ -57,6 +57,7 @@ application_icons = {
     "inkscape": icon(2, ""),
     "jitsi meet": icon(2, ""),
     "libreoffice": icon(2, "📄"),
+    "mednafen": icon(2, ""),
     "mpv": icon(2, ""),
     "nestopia": icon(2, ""),
     "org.gnome.maps": icon(2, ""),

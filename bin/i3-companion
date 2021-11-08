@@ -64,6 +64,7 @@ application_icons = {
     "pavucontrol": icon(2, ""),
     "qalculate": icon(2, ""),
     "qemu": icon(2, ""),
+    "retroarch": icon(2, ""),
     "scummvm": icon(2, ""),
     "signal": icon(2, ""),
     "snes9x": icon(2, ""),

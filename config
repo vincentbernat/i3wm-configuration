@@ -136,7 +136,7 @@ bindsym $mod+Print exec --no-startup-id exec ~/.config/i3/bin/screenshot desktop
 bindsym $mod+XF86Display exec --no-startup-id exec ~/.config/i3/bin/screenshot desktop
 
 # Quake window
-bindsym $mod+grave nop "quake-console:$term:QuakeConsoleNeedsUniqueName:0.3"
+bindsym $mod+grave nop "quake-console:$term:QuakeConsole:0.3"
 
 # get info about container/workspace
 bindsym $mod+i nop "container-info"

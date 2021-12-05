@@ -151,6 +151,9 @@ for_window [window_role="PictureInPicture"] floating enable
 for_window [class="Pavucontrol"] floating enable
 for_window [title="Firefox — Sharing Indicator"] border pixel 1, sticky enable, move position 20 ppt -5 px
 no_focus [title="Firefox — Sharing Indicator"]
+for_window [class="zoom" instance="zoom" title="^Zoom"] floating disable
+for_window [class="zoom" instance="zoom" title="^zoom$"] floating enable
+no_focus [class="zoom" instance="zoom" title="^zoom$"]
 
 # start stuff
 exec_always --no-startup-id exec systemctl --user start --no-block i3-session.target

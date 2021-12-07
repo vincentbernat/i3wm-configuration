@@ -134,7 +134,7 @@ if __name__ == "__main__":
     add("--step", type=float, default=0.1, help="step for changing opacity")
     add("--delay", type=float, default=10, help="delay from start to end")
     add("--font", default="DejaVu Sans", help="font for countdown")
-    add("--locker", default="i3lock", help="quit if window class detected")
+    add("--locker", default="xsecurelock", help="quit if window class detected")
     add("--background", help="use a background instead of black")
     add(
         "--easing-function",

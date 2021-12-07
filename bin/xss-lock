@@ -34,11 +34,11 @@ case "$1" in
         playerctl -a pause
         dunstctl set-paused true
         # Then, lock screen
-        i3lock -n -e -i $XDG_RUNTIME_DIR/i3/current-wallpaper.png -t -f
-        # Alternative if we prefer videos:
-        # XSECURELOCK_SAVER=saver_mpv
-        # XSECURELOCK_LIST_VIDEOS_COMMAND="ls -1 ~/.config/i3/wallpapers/*.mp4"
-        # xsecurelock
+        env XSECURELOCK_SAVER=$HOME/.config/i3/bin/xsecurelock-saver \
+            XSECURELOCK_NO_XRANDR15=1 \
+            XSECURELOCK_BACKGROUND_IMAGE=$XDG_RUNTIME_DIR/i3/current-wallpaper.png \
+            XSECURELOCK_FONT="Iosevka" \
+            xsecurelock
         echo "lock: unlock screen"
         # After unlocking screen, stop dimmer, restore notifications
         dimmer stop

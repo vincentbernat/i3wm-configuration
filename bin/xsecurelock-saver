@@ -1,0 +1,71 @@
+#!/usr/bin/python3
+
+"""Saver module for xsecurelock.
+
+It displays a background image, clock and weather. Configuration is
+done through environment variables:
+
+ - XSECURELOCK_BACKGROUND_IMAGE: path to the background image to use
+
+"""
+
+import os
+import gi
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk, Gdk, GdkX11, GLib, GdkPixbuf
+import cairo
+
+
+def on_win_realize(widget, position):
+    """On realization, embed into XSCREENSAVER_WINDOW and remember parent position."""
+    parent_wid = int(os.getenv("XSCREENSAVER_WINDOW", 0))
+    if not parent_wid:
+        return
+    parent = GdkX11.X11Window.foreign_new_for_display(widget.get_display(), parent_wid)
+    x, y, w, h = parent.get_geometry()
+    window = widget.get_window()
+    window.resize(w, h)
+    window.reparent(parent, 0, 0)
+    [*position] = x, y
+
+
+def on_win_draw(widget, ctx, background, position):
+    """Draw background image."""
+    ctx.set_operator(cairo.OPERATOR_SOURCE)
+    if not background:
+        ctx.set_source_rgba(0, 0, 0, opacity)
+        ctx.paint()
+        return
+
+    x, y = position
+    wwidth, wheight = widget.get_size()
+    scale = widget.get_scale_factor()
+    bg = background.new_subpixbuf(x * scale, y * scale, wwidth * scale, wheight * scale)
+    ctx.scale(1 / scale, 1 / scale)
+    Gdk.cairo_set_source_pixbuf(ctx, bg, 0, 0)
+    ctx.paint()
+
+
+if __name__ == "__main__":
+    background_image = os.getenv("XSECURELOCK_BACKGROUND_IMAGE", None)
+
+    background = None
+    if background_image:
+        try:
+            background = GdkPixbuf.Pixbuf.new_from_file(background_image)
+        except Exception:
+            pass
+    position = [0, 0]
+
+    window = Gtk.Window()
+    window.set_app_paintable(True)
+    window.set_visual(window.get_screen().get_rgba_visual())
+    window.connect("realize", on_win_realize, position)
+    window.connect("draw", on_win_draw, background, position)
+    window.connect("delete-event", Gtk.main_quit)
+
+    window.show_all()
+
+    # Main loop
+    Gtk.main()

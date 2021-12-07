@@ -16,11 +16,11 @@ Here some of the things you may be interested in:
    the wallpaper per screen and therefore, the script may seem a bit
    useless but I keep it.
 
- - I am using `xss-lock` with `i3lock` as a screensaver. It relies on
-   standard X screensaver handling (and therefore is easy for
-   application to disable) and also supports systemd
-   inhibitors. Nothing fancy but I reuse the wallpaper built above. A
-   notification is sent 10 seconds before starting.
+ - I am using `xss-lock` with `xsecurelock` as a screensaver. It
+   relies on standard X screensaver handling (and therefore is easy
+   for application to disable) and also supports systemd inhibitors.
+   Nothing fancy but I reuse the wallpaper built above. A notification
+   is sent 10 seconds before starting.
 
  - There is an `i3-companion` (in `bin/`) which I use to implement
    whatever does not match what I want in i3. I prefer to not have

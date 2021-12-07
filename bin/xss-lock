@@ -34,7 +34,7 @@ case "$1" in
         playerctl -a pause
         dunstctl set-paused true
         # Then, lock screen
-        i3lock -n -e -i $HOME/.cache/i3/current-wallpaper.png -t -f
+        i3lock -n -e -i $XDG_RUNTIME_DIR/i3/current-wallpaper.png -t -f
         # Alternative if we prefer videos:
         # XSECURELOCK_SAVER=saver_mpv
         # XSECURELOCK_LIST_VIDEOS_COMMAND="ls -1 ~/.config/i3/wallpapers/*.mp4"

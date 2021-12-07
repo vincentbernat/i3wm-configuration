@@ -43,68 +43,52 @@ def on_realize(widget):
 
 
 def on_draw(widget, event, options, background, start):
-    def _dim():
-        r = cairo.Region(cairo.RectangleInt(0, 0, *widget.get_size()))
-        dctx = window.begin_draw_frame(r)
-        cctx = dctx.get_cairo_context()
-        dim(cctx)
-        window.end_draw_frame(dctx)
+    x, y = widget.get_position()
+    wwidth, wheight = widget.get_size()
+    delta = options.end_opacity - options.start_opacity
+    elapsed = time.monotonic() - start
+    current = easing_functions[options.easing_function](elapsed / options.delay)
+    opacity = delta * current + options.start_opacity
+    cctx = event
 
-    def dim(cctx, once=False):
-        x, y = widget.get_position()
-        wwidth, wheight = widget.get_size()
-        delta = options.end_opacity - options.start_opacity
-        elapsed = time.monotonic() - start
-        current = easing_functions[options.easing_function](elapsed / options.delay)
-        opacity = delta * current + options.start_opacity
-
-        # Background
-        cctx.set_operator(cairo.OPERATOR_SOURCE)
-        if not background:
-            cctx.set_source_rgba(0, 0, 0, opacity)
-            cctx.paint()
-        else:
-            scale = widget.get_scale_factor()
-            bg = background.new_subpixbuf(x, y, wwidth * scale, wheight * scale)
-            cctx.save()
-            cctx.scale(1 / scale, 1 / scale)
-            Gdk.cairo_set_source_pixbuf(cctx, bg, 0, 0)
-            cctx.paint_with_alpha(opacity)
-            cctx.restore()
-
-        # Remaining time
-        if elapsed >= options.delay:
-            return
-        remaining = str(round(options.delay - elapsed))
-        cctx.select_font_face(
-            options.font, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD
-        )
-        cctx.set_font_size(wheight // 4)
-        _, _, twidth, theight, _, _ = cctx.text_extents(remaining)
-        text_position = wwidth // 2 - twidth // 2, wheight // 2 + theight // 2
-        cctx.move_to(*text_position)
-        cctx.set_source_rgba(1, 1, 1, opacity)
-        cctx.show_text(remaining)
-        cctx.move_to(*text_position)
-        cctx.set_source_rgba(0, 0, 0, opacity * 2)
-        cctx.set_line_width(4)
-        cctx.text_path(remaining)
-        cctx.stroke()
-
-        # Rearm timer
-        if not once:
-            next_step = min(options.step, options.delay - elapsed)
-            on_draw.timer = GLib.timeout_add(next_step * 1000, _dim)
-
-    window = widget.get_window()
-    dim(event)
-    if not hasattr(on_draw, "timer"):
-        # First time we are called.
-        dim(event)
+    # Background
+    cctx.set_operator(cairo.OPERATOR_SOURCE)
+    if not background:
+        cctx.set_source_rgba(0, 0, 0, opacity)
+        cctx.paint()
     else:
-        # Timers already running, just repaint
-        dim(event, once=True)
+        scale = widget.get_scale_factor()
+        bg = background.new_subpixbuf(x, y, wwidth * scale, wheight * scale)
+        cctx.save()
+        cctx.scale(1 / scale, 1 / scale)
+        Gdk.cairo_set_source_pixbuf(cctx, bg, 0, 0)
+        cctx.paint_with_alpha(opacity)
+        cctx.restore()
 
+    # Remaining time
+    remaining = str(round(options.delay - elapsed))
+    cctx.select_font_face(
+        options.font, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD
+    )
+    cctx.set_font_size(wheight // 4)
+    _, _, twidth, theight, _, _ = cctx.text_extents(remaining)
+    text_position = wwidth // 2 - twidth // 2, wheight // 2 + theight // 2
+    cctx.move_to(*text_position)
+    cctx.set_source_rgba(1, 1, 1, opacity)
+    cctx.show_text(remaining)
+    cctx.move_to(*text_position)
+    cctx.set_source_rgba(0, 0, 0, opacity * 2)
+    cctx.set_line_width(4)
+    cctx.text_path(remaining)
+    cctx.stroke()
+
+
+def refresh(window, options, start):
+    window.queue_draw()
+    elapsed = time.monotonic() - start
+    if elapsed < options.delay:
+        next_step = min(options.step, options.delay - elapsed)
+        GLib.timeout_add(options.step * 1000, refresh, window, options, start)
 
 # See: https://easings.net/
 easing_functions = {
@@ -185,6 +169,9 @@ if __name__ == "__main__":
         window.connect("realize", on_realize)
 
         window.show_all()
+
+        # Schedule refresh with window.queue_draw()
+        refresh(window, options, now)
 
     # Watch for locker window
     xdisplay = display.Display()

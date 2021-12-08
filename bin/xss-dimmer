@@ -67,11 +67,9 @@ def on_draw(widget, event, options, background, start):
 
     # Remaining time
     remaining = str(round(options.delay - elapsed))
-    cctx.select_font_face(
-        options.font, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD
-    )
+    cctx.select_font_face(options.font, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
     cctx.set_font_size(wheight // 4)
-    _, _, twidth, theight, _, _ = cctx.text_extents("8"*len(remaining))
+    _, _, twidth, theight, _, _ = cctx.text_extents("8" * len(remaining))
     text_position = wwidth // 2 - twidth // 2, wheight // 2 + theight // 2
     cctx.move_to(*text_position)
     cctx.set_source_rgba(1, 1, 1, opacity)
@@ -89,6 +87,7 @@ def on_refresh(window, options, start):
     if elapsed < options.delay:
         next_step = min(options.step, options.delay - elapsed)
         GLib.timeout_add(options.step * 1000, on_refresh, window, options, start)
+
 
 # See: https://easings.net/
 easing_functions = {

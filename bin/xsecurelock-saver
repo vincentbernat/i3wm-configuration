@@ -66,7 +66,7 @@ def on_overlay_draw(widget, cctx, ctx):
     )
     cctx.set_font_size(ctx.font_size)
     _, _, twidth, theight, _, _ = cctx.text_extents("00:00")
-    text_position = wwidth // 2 - twidth // 2, wheight // 2 - theight // 2
+    text_position = wwidth // 2 - twidth // 2, wheight // 3 - theight // 2
     cctx.move_to(*text_position)
     cctx.set_source_rgba(1, 1, 1, 0.8)
     cctx.show_text(now)

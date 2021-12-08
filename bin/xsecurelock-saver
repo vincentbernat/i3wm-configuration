@@ -48,9 +48,11 @@ def on_win_draw(widget, cctx, ctx):
     bg = ctx.background.new_subpixbuf(
         x * scale, y * scale, wwidth * scale, wheight * scale
     )
+    cctx.save()
     cctx.scale(1 / scale, 1 / scale)
     Gdk.cairo_set_source_pixbuf(cctx, bg, 0, 0)
     cctx.paint()
+    cctx.restore()
 
 
 def on_overlay_draw(widget, cctx, ctx):

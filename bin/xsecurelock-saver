@@ -79,7 +79,6 @@ def on_overlay_draw(widget, cctx, ctx):
 
 def on_background_change(monitor, f1, f2, event, ctx):
     """Update background when changed."""
-    print(f1, f2, event, ctx)
     if event not in (
         Gio.FileMonitorEvent.CHANGES_DONE_HINT,
         Gio.FileMonitorEvent.RENAMED,

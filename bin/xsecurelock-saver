@@ -87,7 +87,7 @@ def on_background_change(monitor, f1, f2, event, ctx):
     try:
         new_background = GdkPixbuf.Pixbuf.new_from_file(ctx.background_image)
     except Exception:
-        pass
+        return
     ctx.background = new_background
     ctx.window.queue_draw()
 

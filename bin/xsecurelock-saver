@@ -106,11 +106,6 @@ if __name__ == "__main__":
     ctx.background = None
     ctx.position = [0, 0]
 
-    try:
-        ctx.background = GdkPixbuf.Pixbuf.new_from_file(ctx.background_image)
-    except Exception:
-        pass
-
     ctx.window = Gtk.Window()
     ctx.window.set_app_paintable(True)
     ctx.window.set_visual(ctx.window.get_screen().get_rgba_visual())
@@ -127,6 +122,7 @@ if __name__ == "__main__":
         gfile = Gio.File.new_for_path(ctx.background_image)
         monitor = gfile.monitor_file(Gio.FileMonitorFlags.WATCH_MOVES, None)
         monitor.connect("changed", on_background_change, ctx)
+        on_background_change(None, None, None, Gio.FileMonitorEvent.CHANGES_DONE_HINT, ctx)
 
     ctx.window.show_all()
 

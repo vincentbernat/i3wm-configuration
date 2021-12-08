@@ -36,7 +36,7 @@ case "$1" in
         # Then, lock screen
         env XSECURELOCK_SAVER=$HOME/.config/i3/bin/xsecurelock-saver \
             XSECURELOCK_NO_XRANDR15=1 \
-            XSECURELOCK_BACKGROUND_IMAGE=$XDG_RUNTIME_DIR/i3/current-wallpaper.png \
+            XSECURELOCK_SAVER_IMAGE=$XDG_RUNTIME_DIR/i3/current-wallpaper.png \
             XSECURELOCK_FONT="Iosevka" \
             xsecurelock
         echo "lock: unlock screen"

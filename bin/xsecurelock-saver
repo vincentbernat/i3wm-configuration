@@ -5,12 +5,15 @@
 It displays a background image, clock and weather. Configuration is
 done through environment variables:
 
- - XSECURELOCK_BACKGROUND_IMAGE: path to the background image to use
+ - XSECURELOCK_SAVER_IMAGE: path to the background image to use
+ - XSECURELOCK_SAVER_FONT: font family to use to display clock
+ - XSECURELOCK_SAVER_FONT_SIZE: font size to use to display clock
 
 """
 
 import os
 import types
+import datetime
 import gi
 
 gi.require_version("Gtk", "3.0")
@@ -35,7 +38,7 @@ def on_win_draw(widget, cctx, ctx):
     """Draw background image."""
     cctx.set_operator(cairo.OPERATOR_SOURCE)
     if not ctx.background:
-        cctx.set_source_rgba(0, 0, 0, opacity)
+        cctx.set_source_rgba(0, 0, 0, 1)
         cctx.paint()
         return
 
@@ -48,6 +51,28 @@ def on_win_draw(widget, cctx, ctx):
     cctx.scale(1 / scale, 1 / scale)
     Gdk.cairo_set_source_pixbuf(cctx, bg, 0, 0)
     cctx.paint()
+
+
+def on_overlay_draw(widget, cctx, ctx):
+    """Draw overlay."""
+    # Clock
+    cctx.set_operator(cairo.OPERATOR_SOURCE)
+    wwidth, wheight = widget.get_parent().get_size()
+    now = datetime.datetime.now().strftime("%H:%M")
+    cctx.select_font_face(
+        ctx.font_family, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD
+    )
+    cctx.set_font_size(ctx.font_size)
+    _, _, twidth, theight, _, _ = cctx.text_extents("00:00")
+    text_position = wwidth // 2 - twidth // 2, wheight // 2 - theight // 2
+    cctx.move_to(*text_position)
+    cctx.set_source_rgba(1, 1, 1, 0.8)
+    cctx.show_text(now)
+    cctx.move_to(*text_position)
+    cctx.set_source_rgb(0, 0, 0)
+    cctx.set_line_width(2)
+    cctx.text_path(now)
+    cctx.stroke()
 
 
 def on_background_change(monitor, f1, f2, event, ctx):
@@ -66,9 +91,17 @@ def on_background_change(monitor, f1, f2, event, ctx):
     ctx.window.queue_draw()
 
 
+def on_clock_change(ctx):
+    ctx.overlay.queue_draw()
+    now = datetime.datetime.now()
+    GLib.timeout_add((60 - now.second) * 1000, on_clock_change, ctx)
+
+
 if __name__ == "__main__":
     ctx = types.SimpleNamespace()
-    ctx.background_image = os.getenv("XSECURELOCK_BACKGROUND_IMAGE", None)
+    ctx.background_image = os.getenv("XSECURELOCK_SAVER_IMAGE", None)
+    ctx.font_size = int(os.getenv("XSECURELOCK_SAVER_FONT_SIZE", 120))
+    ctx.font_family = os.getenv("XSECURELOCK_SAVER_FONT", "Iosevka Aile")
     ctx.background = None
     ctx.position = [0, 0]
 
@@ -83,6 +116,11 @@ if __name__ == "__main__":
     ctx.window.connect("realize", on_win_realize, ctx)
     ctx.window.connect("draw", on_win_draw, ctx)
     ctx.window.connect("delete-event", Gtk.main_quit)
+
+    ctx.overlay = Gtk.DrawingArea()
+    ctx.overlay.connect("draw", on_overlay_draw, ctx)
+    ctx.window.add(ctx.overlay)
+    on_clock_change(ctx)
 
     if ctx.background_image:
         gfile = Gio.File.new_for_path(ctx.background_image)

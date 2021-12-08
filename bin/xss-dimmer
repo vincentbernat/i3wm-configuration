@@ -83,12 +83,12 @@ def on_draw(widget, event, options, background, start):
     cctx.stroke()
 
 
-def refresh(window, options, start):
+def on_refresh(window, options, start):
     window.queue_draw()
     elapsed = time.monotonic() - start
     if elapsed < options.delay:
         next_step = min(options.step, options.delay - elapsed)
-        GLib.timeout_add(options.step * 1000, refresh, window, options, start)
+        GLib.timeout_add(options.step * 1000, on_refresh, window, options, start)
 
 # See: https://easings.net/
 easing_functions = {
@@ -171,7 +171,7 @@ if __name__ == "__main__":
         window.show_all()
 
         # Schedule refresh with window.queue_draw()
-        refresh(window, options, now)
+        on_refresh(window, options, now)
 
     # Watch for locker window
     xdisplay = display.Display()

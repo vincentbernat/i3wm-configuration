@@ -6,14 +6,17 @@ It displays a background image, clock and weather. Configuration is
 done through environment variables:
 
  - XSECURELOCK_SAVER_IMAGE: path to the background image to use
- - XSECURELOCK_SAVER_FONT: font family to use to display clock
- - XSECURELOCK_SAVER_FONT_SIZE: font size to use to display clock
+ - XSECURELOCK_SAVER_WEATHER: path to weather text
+ - XSECURELOCK_SAVER_FONT: font family to use to display clock and weather
+ - XSECURELOCK_SAVER_CLOCK_FONT_SIZE: font size to use to display clock
+ - XSECURELOCK_SAVER_WEATHER_FONT_SIZE: font size to use to display weather
 
 """
 
 import os
 import types
 import datetime
+import re
 import gi
 
 gi.require_version("Gtk", "3.0")
@@ -64,7 +67,7 @@ def on_overlay_draw(widget, cctx, ctx):
     cctx.select_font_face(
         ctx.font_family, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD
     )
-    cctx.set_font_size(ctx.font_size)
+    cctx.set_font_size(ctx.clock_font_size)
     _, _, twidth, theight, _, _ = cctx.text_extents("00:00")
     text_position = wwidth // 2 - twidth // 2, wheight // 3 - theight // 2
     cctx.move_to(*text_position)
@@ -76,7 +79,40 @@ def on_overlay_draw(widget, cctx, ctx):
     cctx.text_path(now)
     cctx.stroke()
 
+    # Weather
+    try:
+        with open(ctx.weather_file) as wfile:
+            data = wfile.read()
+    except Exception:
+        return
+    # We can have polybar markups in it. We assume %{Tx} means to use
+    # Font Awesome 6 and we ignore font color change. The parsing is
+    # quite basic.
+    data = re.sub(r'%{F[#\d+-]+?}', '', data)
+    data = re.split(r'(%{T[1-9-]})', data)
+    font = ctx.font_family
+    cctx.move_to(20, wheight - 20)
+    for chunk in data:
+        if chunk == "%{T-}":
+            font = ctx.font_family
+            continue
+        elif chunk.startswith("%{T"):
+            font = "Font Awesome 6 Pro"
+            continue
+        elif not chunk:
+            continue
+        cctx.select_font_face(font, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
+        cctx.set_font_size(ctx.weather_font_size)
+        cur_position = cctx.get_current_point()
+        cctx.set_source_rgb(0, 0, 0)
+        cctx.set_line_width(1)
+        cctx.text_path(chunk)
+        cctx.stroke()
+        cctx.move_to(*cur_position)
+        cctx.set_source_rgba(1, 1, 1, 0.8)
+        cctx.show_text(chunk)
 
+        
 def on_background_change(monitor, f1, f2, event, ctx):
     """Update background when changed."""
     if event not in (
@@ -98,10 +134,21 @@ def on_clock_change(ctx):
     GLib.timeout_add((60 - now.second) * 1000, on_clock_change, ctx)
 
 
+def on_weather_change(monitor, f1, f2, event, ctx):
+    if event not in (
+        Gio.FileMonitorEvent.CHANGES_DONE_HINT,
+        Gio.FileMonitorEvent.RENAMED,
+    ):
+        return
+    ctx.overlay.queue_draw()
+
+
 if __name__ == "__main__":
     ctx = types.SimpleNamespace()
     ctx.background_image = os.getenv("XSECURELOCK_SAVER_IMAGE", None)
-    ctx.font_size = int(os.getenv("XSECURELOCK_SAVER_FONT_SIZE", 120))
+    ctx.clock_font_size = int(os.getenv("XSECURELOCK_SAVER_CLOCK_FONT_SIZE", 120))
+    ctx.weather_font_size = int(os.getenv("XSECURELOCK_SAVER_CLOCK_FONT_SIZE", 40))
+    ctx.weather_file = os.getenv("XSECURELOCK_SAVER_WEATHER", None)
     ctx.font_family = os.getenv("XSECURELOCK_SAVER_FONT", "Iosevka Aile")
     ctx.background = None
     ctx.position = [0, 0]
@@ -123,6 +170,10 @@ if __name__ == "__main__":
         monitor = gfile.monitor_file(Gio.FileMonitorFlags.WATCH_MOVES, None)
         monitor.connect("changed", on_background_change, ctx)
         on_background_change(None, None, None, Gio.FileMonitorEvent.CHANGES_DONE_HINT, ctx)
+    if ctx.weather_file:
+        gfile = Gio.File.new_for_path(ctx.weather_file)
+        monitor = gfile.monitor_file(Gio.FileMonitorFlags.WATCH_MOVES, None)
+        monitor.connect("changed", on_weather_change, ctx)
 
     ctx.window.show_all()
 

@@ -63,56 +63,55 @@ def on_overlay_draw(widget, cctx, ctx):
     # Clock
     cctx.set_operator(cairo.OPERATOR_SOURCE)
     wwidth, wheight = widget.get_parent().get_size()
-    now = datetime.datetime.now().strftime("%H:%M")
-    cctx.select_font_face(
-        ctx.font_family, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD
-    )
-    cctx.set_font_size(ctx.clock_font_size)
-    _, _, twidth, theight, _, _ = cctx.text_extents("00:00")
-    text_position = wwidth // 2 - twidth // 2, wheight // 3 - theight // 2
-    cctx.move_to(*text_position)
-    cctx.set_source_rgba(1, 1, 1, 0.8)
-    cctx.show_text(now)
-    cctx.move_to(*text_position)
-    cctx.set_source_rgb(0, 0, 0)
-    cctx.set_line_width(2)
-    cctx.text_path(now)
-    cctx.stroke()
+    if ctx.clock:
+        now = ctx.clock
+        cctx.select_font_face(
+            ctx.font_family, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD
+        )
+        cctx.set_font_size(ctx.clock_font_size)
+        _, _, twidth, theight, _, _ = cctx.text_extents(re.sub(r"\d", "8", now))
+        text_position = wwidth // 2 - twidth // 2, wheight // 3 - theight // 2
+        cctx.move_to(*text_position)
+        cctx.set_source_rgba(1, 1, 1, 0.8)
+        cctx.show_text(now)
+        cctx.move_to(*text_position)
+        cctx.set_source_rgb(0, 0, 0)
+        cctx.set_line_width(2)
+        cctx.text_path(now)
+        cctx.stroke()
 
     # Weather
-    try:
-        with open(ctx.weather_file) as wfile:
-            data = wfile.read()
-    except Exception:
-        return
     # We can have polybar markups in it. We assume %{Tx} means to use
     # Font Awesome 6 and we ignore font color change. The parsing is
     # quite basic.
-    data = re.sub(r'%{F[#\d+-]+?}', '', data)
-    data = re.split(r'(%{T[1-9-]})', data)
-    font = ctx.font_family
-    cctx.move_to(20, wheight - 20)
-    for chunk in data:
-        if chunk == "%{T-}":
-            font = ctx.font_family
-            continue
-        elif chunk.startswith("%{T"):
-            font = "Font Awesome 6 Pro"
-            continue
-        elif not chunk:
-            continue
-        cctx.select_font_face(font, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
-        cctx.set_font_size(ctx.weather_font_size)
-        cur_position = cctx.get_current_point()
-        cctx.set_source_rgb(0, 0, 0)
-        cctx.set_line_width(1)
-        cctx.text_path(chunk)
-        cctx.stroke()
-        cctx.move_to(*cur_position)
-        cctx.set_source_rgba(1, 1, 1, 0.8)
-        cctx.show_text(chunk)
+    if ctx.weather:
+        data = re.sub(r"%{F[#\d+-]+?}", "", ctx.weather)
+        data = re.split(r"(%{T[1-9-]})", data)
+        font = ctx.font_family
+        cctx.move_to(20, wheight - 20)
+        for chunk in data:
+            if chunk == "%{T-}":
+                font = ctx.font_family
+                continue
+            elif chunk.startswith("%{T"):
+                font = "Font Awesome 6 Pro"
+                continue
+            elif not chunk:
+                continue
+            cctx.select_font_face(
+                font, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL
+            )
+            cctx.set_font_size(ctx.weather_font_size)
+            cur_position = cctx.get_current_point()
+            cctx.set_source_rgb(0, 0, 0)
+            cctx.set_line_width(1)
+            cctx.text_path(chunk)
+            cctx.stroke()
+            cctx.move_to(*cur_position)
+            cctx.set_source_rgba(1, 1, 1, 0.8)
+            cctx.show_text(chunk)
 
-        
+
 def on_background_change(monitor, f1, f2, event, ctx):
     """Update background when changed."""
     if event not in (
@@ -129,8 +128,9 @@ def on_background_change(monitor, f1, f2, event, ctx):
 
 
 def on_clock_change(ctx):
-    ctx.overlay.queue_draw()
     now = datetime.datetime.now()
+    ctx.clock = now.strftime("%H:%M")
+    ctx.overlay.queue_draw()
     GLib.timeout_add((60 - now.second) * 1000, on_clock_change, ctx)
 
 
@@ -140,7 +140,12 @@ def on_weather_change(monitor, f1, f2, event, ctx):
         Gio.FileMonitorEvent.RENAMED,
     ):
         return
-    ctx.overlay.queue_draw()
+    try:
+        with open(ctx.weather_file) as wfile:
+            ctx.weather = wfile.read()
+        ctx.overlay.queue_draw()
+    except Exception:
+        pass
 
 
 if __name__ == "__main__":
@@ -151,6 +156,8 @@ if __name__ == "__main__":
     ctx.weather_file = os.getenv("XSECURELOCK_SAVER_WEATHER", None)
     ctx.font_family = os.getenv("XSECURELOCK_SAVER_FONT", "Iosevka Aile")
     ctx.background = None
+    ctx.weather = ""
+    ctx.clock = ""
     ctx.position = [0, 0]
 
     ctx.window = Gtk.Window()
@@ -163,17 +170,19 @@ if __name__ == "__main__":
     ctx.overlay = Gtk.DrawingArea()
     ctx.overlay.connect("draw", on_overlay_draw, ctx)
     ctx.window.add(ctx.overlay)
-    on_clock_change(ctx)
 
+    gio_event_args = (None, None, None, Gio.FileMonitorEvent.CHANGES_DONE_HINT)
     if ctx.background_image:
         gfile = Gio.File.new_for_path(ctx.background_image)
         monitor = gfile.monitor_file(Gio.FileMonitorFlags.WATCH_MOVES, None)
         monitor.connect("changed", on_background_change, ctx)
-        on_background_change(None, None, None, Gio.FileMonitorEvent.CHANGES_DONE_HINT, ctx)
+        on_background_change(*gio_event_args, ctx)
     if ctx.weather_file:
         gfile = Gio.File.new_for_path(ctx.weather_file)
         monitor = gfile.monitor_file(Gio.FileMonitorFlags.WATCH_MOVES, None)
         monitor.connect("changed", on_weather_change, ctx)
+        GLib.timeout_add(1000, on_weather_change, *gio_event_args, ctx)
+    GLib.timeout_add(1000, on_clock_change, ctx)
 
     ctx.window.show_all()
 

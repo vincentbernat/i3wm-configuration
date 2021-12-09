@@ -40,6 +40,7 @@ case "$1" in
             XSECURELOCK_SAVER_DELAY_MS=500 \
             XSECURELOCK_FONT="Iosevka" \
             XSECURELOCK_BLANK_TIMEOUT=-1 \
+            XSECURELOCK_AUTH_TIMEOUT=10 \
             xsecurelock
         echo "lock: unlock screen"
         # After unlocking screen, stop dimmer, restore notifications

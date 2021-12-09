@@ -72,13 +72,13 @@ def on_draw(widget, event, options, background, start):
     _, _, twidth, theight, _, _ = cctx.text_extents("8" * len(remaining))
     text_position = wwidth // 2 - twidth // 2, wheight // 2 + theight // 2
     cctx.move_to(*text_position)
-    cctx.set_source_rgba(1, 1, 1, opacity)
-    cctx.show_text(remaining)
-    cctx.move_to(*text_position)
     cctx.set_source_rgba(0, 0, 0, opacity * 2)
     cctx.set_line_width(4)
     cctx.text_path(remaining)
     cctx.stroke()
+    cctx.move_to(*text_position)
+    cctx.set_source_rgba(1, 1, 1, opacity)
+    cctx.show_text(remaining)
 
 
 def on_refresh(window, options, start):

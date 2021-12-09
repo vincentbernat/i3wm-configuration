@@ -50,7 +50,6 @@ However, I am recompiling some stuff to get more recent versions:
  - `dunst` (check `vbe/master` branch)
  - `polybar` (check `vbe/master` branch)
  - `picom` (`next` branch)
- - `rofi` (1.7.1)
 
 The binaries are put in `~/.local/bin`.
 

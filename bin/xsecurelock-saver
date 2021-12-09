@@ -129,9 +129,11 @@ def on_background_change(monitor, f1, f2, event, ctx):
 
 def on_clock_change(ctx):
     now = datetime.datetime.now()
-    ctx.clock = now.strftime("%H:%M")
-    ctx.overlay.queue_draw()
-    GLib.timeout_add((60 - now.second) * 1000, on_clock_change, ctx)
+    new_clock = now.strftime("%H:%M")
+    if new_clock != ctx.clock:
+        ctx.clock = new_clock
+        ctx.overlay.queue_draw()
+    GLib.timeout_add(min(60 - now.second, 3) * 1000, on_clock_change, ctx)
 
 
 def on_weather_change(monitor, f1, f2, event, ctx):

@@ -13,6 +13,10 @@ done through environment variables:
 
 """
 
+# In case I want to put a video instead of an image:
+# https://gist.github.com/NBonaparte/89fb1b645c99470bc0f6. Check
+# `bin/wallpaper' for some sources.
+
 import os
 import types
 import datetime

@@ -7,12 +7,13 @@ set $left j
 set $right semicolon
 set $term vbeterm
 set $mediaplayer spotify
+set $borderpx 3
 
 font pango:Iosevka Aile 9
 
 # style and colors
-default_border pixel 3
-default_floating_border pixel 3
+default_border pixel $borderpx
+default_floating_border pixel $borderpx
 # class                 border  backgr. text    indicator child_border
 client.focused          #ffaf00 #cc5c00 #ffffff #ffdf11   #cc5c00
 client.focused_inactive #333333 #5f676a #ffffff #484e50   #5f676a
@@ -144,14 +145,14 @@ bindsym $mod+Shift+i nop "workspace-info"
 
 # random rules
 no_focus   [window_type="splash"]
-for_window [tiling] border pixel 3
+for_window [tiling] border pixel $borderpx
 for_window [class="Nm-connection-editor"] floating enable
 for_window [class="Shadow"] fullscreen enable
 for_window [window_role="PictureInPicture"] floating enable
 for_window [class="Pavucontrol"] floating enable
 for_window [title="Firefox — Sharing Indicator"] border pixel 1, sticky enable, move position 20 ppt -5 px
 no_focus   [title="Firefox — Sharing Indicator"]
-for_window [class="zoom" instance="zoom" title="^Zoom"] floating disable, border pixel 3
+for_window [class="zoom" instance="zoom" title="^Zoom"] floating disable, border pixel $borderpx
 for_window [class="zoom" instance="zoom" title="^zoom$"] floating enable, border pixel 0
 no_focus   [class="zoom" instance="zoom" title="^zoom$"]
 

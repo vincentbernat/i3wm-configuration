@@ -76,7 +76,7 @@ def on_overlay_draw(widget, cctx, ctx):
         _, _, twidth, theight, _, _ = cctx.text_extents(re.sub(r"\d", "8", now))
         text_position = wwidth // 2 - twidth // 2, wheight // 3 - theight // 2
         cctx.move_to(*text_position)
-        cctx.set_source_rgba(1, 1, 1, 0.8)
+        cctx.set_source_rgb(1, 1, 1)
         cctx.show_text(now)
         cctx.move_to(*text_position)
         cctx.set_source_rgb(0, 0, 0)
@@ -112,7 +112,7 @@ def on_overlay_draw(widget, cctx, ctx):
             cctx.text_path(chunk)
             cctx.stroke()
             cctx.move_to(*cur_position)
-            cctx.set_source_rgba(1, 1, 1, 0.8)
+            cctx.set_source_rgb(1, 1, 1)
             cctx.show_text(chunk)
 
 

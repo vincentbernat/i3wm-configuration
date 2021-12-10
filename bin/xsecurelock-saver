@@ -63,7 +63,7 @@ def on_win_draw(widget, cctx, ctx):
 
 
 def on_overlay_draw(widget, cctx, ctx):
-    """Draw overlay."""
+    """Draw overlay (clock and weather)."""
     # Clock
     cctx.set_operator(cairo.OPERATOR_SOURCE)
     wwidth, wheight = widget.get_parent().get_size()
@@ -132,6 +132,14 @@ def on_background_change(monitor, f1, f2, event, ctx):
 
 
 def on_clock_change(ctx):
+    """Clock may have changed. Update it.
+
+    We are checking more often than once a minute because we want to
+    update the clock swiftly after suspend. An alternative would be to
+    listen to PrepareForSleep signal from org.freedesktop.login1, but
+    this is more complex.
+
+    """
     now = datetime.datetime.now()
     new_clock = now.strftime("%H:%M")
     if new_clock != ctx.clock:
@@ -141,6 +149,7 @@ def on_clock_change(ctx):
 
 
 def on_weather_change(monitor, f1, f2, event, ctx):
+    """Weather file has changed."""
     if event not in (
         Gio.FileMonitorEvent.CHANGES_DONE_HINT,
         Gio.FileMonitorEvent.RENAMED,

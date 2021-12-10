@@ -143,17 +143,17 @@ bindsym $mod+i nop "container-info"
 bindsym $mod+Shift+i nop "workspace-info"
 
 # random rules
-no_focus [window_type="splash"]
+no_focus   [window_type="splash"]
 for_window [tiling] border pixel 3
 for_window [class="Nm-connection-editor"] floating enable
 for_window [class="Shadow"] fullscreen enable
 for_window [window_role="PictureInPicture"] floating enable
 for_window [class="Pavucontrol"] floating enable
 for_window [title="Firefox — Sharing Indicator"] border pixel 1, sticky enable, move position 20 ppt -5 px
-no_focus [title="Firefox — Sharing Indicator"]
+no_focus   [title="Firefox — Sharing Indicator"]
 for_window [class="zoom" instance="zoom" title="^Zoom"] floating disable
 for_window [class="zoom" instance="zoom" title="^zoom$"] floating enable, border pixel 0
-no_focus [class="zoom" instance="zoom" title="^zoom$"]
+no_focus   [class="zoom" instance="zoom" title="^zoom$"]
 
 # start stuff
 exec_always --no-startup-id exec systemctl --user start --no-block i3-session.target

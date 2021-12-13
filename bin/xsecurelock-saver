@@ -68,21 +68,32 @@ def on_overlay_draw(widget, cctx, ctx):
     cctx.set_operator(cairo.OPERATOR_SOURCE)
     wwidth, wheight = widget.get_parent().get_size()
     if ctx.clock:
-        now = ctx.clock
+        time, date = ctx.clock
         cctx.select_font_face(
             ctx.font_family, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD
         )
+
+        def draw(what, outline):
+            cctx.move_to(*text_position)
+            cctx.set_source_rgb(0, 0, 0)
+            cctx.set_line_width(outline)
+            cctx.text_path(what)
+            cctx.stroke()
+            cctx.move_to(*text_position)
+            cctx.set_source_rgb(1, 1, 1)
+            cctx.show_text(what)
+
+        # Time
         cctx.set_font_size(ctx.clock_font_size)
-        _, _, twidth, theight, _, _ = cctx.text_extents(re.sub(r"\d", "8", now))
-        text_position = wwidth // 2 - twidth // 2, wheight // 3 - theight // 2
-        cctx.move_to(*text_position)
-        cctx.set_source_rgb(1, 1, 1)
-        cctx.show_text(now)
-        cctx.move_to(*text_position)
-        cctx.set_source_rgb(0, 0, 0)
-        cctx.set_line_width(2)
-        cctx.text_path(now)
-        cctx.stroke()
+        _, _, twidth, theight, _, _ = cctx.text_extents(re.sub(r"\d", "8", time))
+        text_position = wwidth // 2 - twidth // 2, wheight // 3
+        draw(time, 2)
+
+        # Date
+        cctx.set_font_size(ctx.clock_font_size // 3)
+        _, _, twidth, theight, _, _ = cctx.text_extents(date)
+        text_position = wwidth // 2 - twidth // 2, wheight // 3 + theight * 1.5
+        draw(date, 1)
 
     # Weather
     # We can have polybar markups in it. We assume %{Tx} means to use
@@ -143,7 +154,7 @@ def on_clock_change(ctx):
     now = datetime.datetime.now()
     new_clock = now.strftime("%H:%M")
     if new_clock != ctx.clock:
-        ctx.clock = new_clock
+        ctx.clock = (new_clock, now.strftime("%A %-d %B"))
         ctx.overlay.queue_draw()
     GLib.timeout_add(min(60 - now.second, 3) * 1000, on_clock_change, ctx)
 
@@ -171,8 +182,8 @@ if __name__ == "__main__":
     ctx.weather_file = os.getenv("XSECURELOCK_SAVER_WEATHER", None)
     ctx.font_family = os.getenv("XSECURELOCK_SAVER_FONT", "Iosevka Aile")
     ctx.background = None
-    ctx.weather = ""
-    ctx.clock = ""
+    ctx.weather = None
+    ctx.clock = None
     ctx.position = [0, 0]
 
     ctx.window = Gtk.Window()

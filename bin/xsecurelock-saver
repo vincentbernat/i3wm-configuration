@@ -68,16 +68,13 @@ def on_win_draw(widget, cctx, ctx):
 
 def on_overlay_draw(widget, cctx, ctx):
     """Draw overlay (clock and weather)."""
-    # Clock
-    cctx.set_operator(cairo.OPERATOR_SOURCE)
+    cctx.set_operator(cairo.OPERATOR_DIFFERENCE)
     wwidth, wheight = widget.get_parent().get_size()
+
+    # Clock
     if ctx.clock:
         time, date = ctx.clock
-
-        def draw(what, outline):
-            cctx.move_to(*text_position)
-            cctx.set_source_rgb(1, 1, 1)
-            cctx.show_text(what)
+        cctx.set_source_rgb(1, 1, 1)
 
         # Time
         cctx.select_font_face(
@@ -85,8 +82,8 @@ def on_overlay_draw(widget, cctx, ctx):
         )
         cctx.set_font_size(ctx.clock_font_size)
         _, _, twidth, theight, _, _ = cctx.text_extents(re.sub(r"\d", "8", time))
-        text_position = wwidth // 2 - twidth // 2, wheight // 3
-        draw(time, 2)
+        cctx.move_to(wwidth // 2 - twidth // 2, wheight // 3)
+        cctx.show_text(time)
 
         # Date
         cctx.select_font_face(
@@ -94,8 +91,8 @@ def on_overlay_draw(widget, cctx, ctx):
         )
         cctx.set_font_size(ctx.clock_font_size // 3)
         _, _, twidth, theight, _, _ = cctx.text_extents(date)
-        text_position = wwidth // 2 - twidth // 2, wheight // 3 + theight * 1.5
-        draw(date, 2)
+        cctx.move_to(wwidth // 2 - twidth // 2, wheight // 3 + theight * 1.5)
+        cctx.show_text(date)
 
     # Weather
     # We can have polybar markups in it. We assume %{Tx} means to use

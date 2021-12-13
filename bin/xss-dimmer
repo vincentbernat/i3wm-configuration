@@ -52,13 +52,15 @@ def on_draw(widget, event, options, background, start):
     cctx = event
 
     # Background
+    scale = widget.get_scale_factor()
+    bg = None
+    if background:
+        bg = background.new_subpixbuf(x, y, wwidth * scale, wheight * scale)
     cctx.set_operator(cairo.OPERATOR_SOURCE)
-    if not background:
+    if not bg:
         cctx.set_source_rgba(0, 0, 0, opacity)
         cctx.paint()
     else:
-        scale = widget.get_scale_factor()
-        bg = background.new_subpixbuf(x, y, wwidth * scale, wheight * scale)
         cctx.save()
         cctx.scale(1 / scale, 1 / scale)
         Gdk.cairo_set_source_pixbuf(cctx, bg, 0, 0)

@@ -75,11 +75,6 @@ def on_overlay_draw(widget, cctx, ctx):
 
         def draw(what, outline):
             cctx.move_to(*text_position)
-            cctx.set_source_rgb(0, 0, 0)
-            cctx.set_line_width(outline)
-            cctx.text_path(what)
-            cctx.stroke()
-            cctx.move_to(*text_position)
             cctx.set_source_rgb(1, 1, 1)
             cctx.show_text(what)
 
@@ -93,7 +88,7 @@ def on_overlay_draw(widget, cctx, ctx):
         cctx.set_font_size(ctx.clock_font_size // 3)
         _, _, twidth, theight, _, _ = cctx.text_extents(date)
         text_position = wwidth // 2 - twidth // 2, wheight // 3 + theight * 1.5
-        draw(date, 1)
+        draw(date, 2)
 
     # Weather
     # We can have polybar markups in it. We assume %{Tx} means to use
@@ -117,12 +112,6 @@ def on_overlay_draw(widget, cctx, ctx):
                 font, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL
             )
             cctx.set_font_size(ctx.weather_font_size)
-            cur_position = cctx.get_current_point()
-            cctx.set_source_rgb(0, 0, 0)
-            cctx.set_line_width(1)
-            cctx.text_path(chunk)
-            cctx.stroke()
-            cctx.move_to(*cur_position)
             cctx.set_source_rgb(1, 1, 1)
             cctx.show_text(chunk)
 

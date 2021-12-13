@@ -66,19 +66,20 @@ def on_draw(widget, event, options, background, start):
         cctx.restore()
 
     # Remaining time
+    cctx.set_operator(cairo.OPERATOR_OVER)
     remaining = str(round(options.delay - elapsed))
     cctx.select_font_face(options.font, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
     cctx.set_font_size(wheight // 4)
     _, _, twidth, theight, _, _ = cctx.text_extents("8" * len(remaining))
     text_position = wwidth // 2 - twidth // 2, wheight // 2 + theight // 2
     cctx.move_to(*text_position)
+    cctx.set_source_rgba(1, 1, 1, opacity)
+    cctx.show_text(remaining)
+    cctx.move_to(*text_position)
     cctx.set_source_rgba(0, 0, 0, opacity * 2)
     cctx.set_line_width(4)
     cctx.text_path(remaining)
     cctx.stroke()
-    cctx.move_to(*text_position)
-    cctx.set_source_rgba(1, 1, 1, opacity)
-    cctx.show_text(remaining)
 
 
 def on_refresh(window, options, start):

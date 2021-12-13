@@ -69,9 +69,6 @@ def on_overlay_draw(widget, cctx, ctx):
     wwidth, wheight = widget.get_parent().get_size()
     if ctx.clock:
         time, date = ctx.clock
-        cctx.select_font_face(
-            ctx.font_family, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD
-        )
 
         def draw(what, outline):
             cctx.move_to(*text_position)
@@ -79,12 +76,18 @@ def on_overlay_draw(widget, cctx, ctx):
             cctx.show_text(what)
 
         # Time
+        cctx.select_font_face(
+            ctx.font_family, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD
+        )
         cctx.set_font_size(ctx.clock_font_size)
         _, _, twidth, theight, _, _ = cctx.text_extents(re.sub(r"\d", "8", time))
         text_position = wwidth // 2 - twidth // 2, wheight // 3
         draw(time, 2)
 
         # Date
+        cctx.select_font_face(
+            ctx.font_family, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL
+        )
         cctx.set_font_size(ctx.clock_font_size // 3)
         _, _, twidth, theight, _, _ = cctx.text_extents(date)
         text_position = wwidth // 2 - twidth // 2, wheight // 3 + theight * 1.5

@@ -71,10 +71,10 @@ def on_overlay_draw(widget, cctx, ctx):
     wwidth, wheight = widget.get_parent().get_size()
     cctx.set_source_rgb(1, 1, 1)
 
-    def draw(what):
+    def draw(what, outline=2):
         position = cctx.get_current_point()
         cctx.set_operator(cairo.OPERATOR_EXCLUSION)
-        cctx.set_line_width(1)
+        cctx.set_line_width(outline)
         cctx.text_path(what)
         cctx.stroke()
         cctx.move_to(*position)
@@ -92,7 +92,7 @@ def on_overlay_draw(widget, cctx, ctx):
         cctx.set_font_size(ctx.clock_font_size)
         _, _, twidth, theight, _, _ = cctx.text_extents(re.sub(r"\d", "8", time))
         cctx.move_to(wwidth // 2 - twidth // 2, wheight // 3)
-        draw(time)
+        draw(time, 4)
 
         # Date
         cctx.select_font_face(

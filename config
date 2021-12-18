@@ -15,11 +15,11 @@ font pango:Iosevka Aile 9
 default_border pixel $borderpx
 default_floating_border pixel $borderpx
 # class                 border  backgr. text    indicator child_border
-client.focused          #ffaf00 #cc5c00 #ffffff #ffdf11   #cc5c00
-client.focused_inactive #333333 #5f676a #ffffff #484e50   #5f676a
-client.unfocused        #333333 #222222 #888888 #292d2e   #222222
-client.urgent           #2f343a #d00000 #ffffff #d00000   #d00000
-client.placeholder      #000000 #0c0c0c #ffffff #000000   #0c0c0c
+client.focused          #cc5c00 #cc5c00 #ffffff #dd7c11   #cc5c00
+client.focused_inactive #5f676a #5f676a #ffffff #484e50   #5f676a
+client.unfocused        #222222 #222222 #888888 #292d2e   #222222
+client.urgent           #d00000 #d00000 #ffffff #d00000   #d00000
+client.placeholder      #0c0c0c #0c0c0c #ffffff #000000   #0c0c0c
 client.background       #ffffff
 
 # gaps

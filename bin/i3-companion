@@ -950,7 +950,7 @@ async def network_manager_status(i3, event, *args):
             state = await nma.State
             if state == NM_ACTIVE_CONNECTION_STATE_ACTIVATED:
                 status.append(icons["vpn"])
-                status.append(await nma.Id)
+                status.append((await nma.Id).replace("%", "%%"))
 
     # Final status line
     return " ".join(status)

@@ -177,6 +177,7 @@ if __name__ == "__main__":
                 round(weather["daily"][0]["temp"]["max"]),
             ),
         ]
+        city = city.replace('%', '%%')
         conditions.insert(0, f"%{{F#888}}%{{Tx}}%{{T-}} {city}%{{F-}}")
         output = " ".join(conditions).replace("%{Tx}", "%%{T%d}" % options.font_index)
         logger.debug("output: %s", output)

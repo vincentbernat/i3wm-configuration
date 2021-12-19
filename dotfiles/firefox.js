@@ -67,3 +67,17 @@ user_pref("privacy.webrtc.globalMuteToggles", true);
 
 // Disable DoH for now
 user_pref("network.trr.mode", 5);
+
+// Disable auto-update
+user_pref("app.update.auto", false);
+user_pref("beacon.enabled", false);
+
+// Disable annoying prompts
+user_pref("browser.aboutConfig.showWarning", false);
+user_pref("browser.disableResetPrompt", true);
+
+// Disable safebrowsing malware (sends hash of each file to Google)
+user_pref("browser.safebrowsing.malware.enabled", false);
+
+// Don't trim URLs
+user_pref("browser.urlbar.trimURLs", false);

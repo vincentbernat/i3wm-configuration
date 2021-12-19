@@ -39,8 +39,8 @@ case "$1" in
             XSECURELOCK_SAVER_IMAGE=$XDG_RUNTIME_DIR/i3/current-wallpaper.png \
             XSECURELOCK_SAVER_WEATHER=$XDG_RUNTIME_DIR/i3/weather.txt \
             XSECURELOCK_SAVER_DELAY_MS=500 \
+            XSECURELOCK_SAVER_STOP_ON_DPMS=0 \
             XSECURELOCK_FONT="Iosevka" \
-            XSECURELOCK_BLANK_TIMEOUT=-1 \
             XSECURELOCK_AUTH_TIMEOUT=10 \
             xsecurelock
         echo "lock: unlock screen"

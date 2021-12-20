@@ -31,3 +31,11 @@ entry, textview
 {
   -gtk-key-bindings: custom-text-entry;
 }
+
+/* Don't use shadows, border radius, etc */
+tooltip, menu {
+  margin: 0;
+  border-width: 0;
+  border-radius: 0;
+  box-shadow: none;
+}

@@ -140,7 +140,7 @@ if __name__ == "__main__":
     add("--background", help="use a background instead of black")
     add(
         "--easing-function",
-        default="out-circ",
+        default="none",
         choices=easing_functions.keys(),
         help="easing function for opacity",
     )

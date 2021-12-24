@@ -34,7 +34,7 @@ media-playback-pause      Pause
 media-playback-stop       Stop
 go-next                   Next track
 multimedia-volume-control Open mixer panel
-com.spotify.Client        Open ${Mediaplayer}
+media-tape                Open ${Mediaplayer}
 EOF
 
         # Player status

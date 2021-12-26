@@ -25,13 +25,9 @@ def get_location():
     r.raise_for_status()
     data = r.json()
     logger.debug("current location data: %s", data)
-    logger.info(
-        f'current location: {data["city"]["names"]["en"]}, {data["country"]["names"]["en"]}'
-    )
-    return (
-        (data["location"]["latitude"], data["location"]["longitude"]),
-        (data.get("city") or data["country"])["names"]["en"],
-    )
+    location = (data.get("city") or data["country"])["names"]["en"]
+    logger.info(f"current location: {location}")
+    return ((data["location"]["latitude"], data["location"]["longitude"]), location)
 
 
 def get_weather(apikey, latitude, longitude):

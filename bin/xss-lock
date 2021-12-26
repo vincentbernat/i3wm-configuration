@@ -35,12 +35,18 @@ case "$1" in
         dunstctl set-paused true
         # Then, lock screen
         env XSECURELOCK_SAVER=$HOME/.config/i3/bin/xsecurelock-saver \
+            `# Disable Randr 1.5 support to make screensaver spans accross the whole monitor` \
             XSECURELOCK_NO_XRANDR15=1 \
+            `# Delay mapping saver window by 500ms to give some time to saver to start` \
+            XSECURELOCK_SAVER_DELAY_MS=500 \
+            `# Do not stop saver on when DPMS kicks in` \
+            XSECURELOCK_SAVER_STOP_ON_DPMS=0 \
+            `# Image and text for saver` \
             XSECURELOCK_SAVER_IMAGE=$XDG_RUNTIME_DIR/i3/current-wallpaper.png \
             XSECURELOCK_SAVER_WEATHER=$XDG_RUNTIME_DIR/i3/weather.txt \
-            XSECURELOCK_SAVER_DELAY_MS=500 \
-            XSECURELOCK_SAVER_STOP_ON_DPMS=0 \
+            `# Font for authentication window` \
             XSECURELOCK_FONT="Iosevka" \
+            `# Timeout for authentication window` \
             XSECURELOCK_AUTH_TIMEOUT=10 \
             xsecurelock
         echo "lock: unlock screen"

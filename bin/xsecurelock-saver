@@ -199,7 +199,6 @@ if __name__ == "__main__":
 
     gio_event_args = (None, None, None, Gio.FileMonitorEvent.CHANGES_DONE_HINT)
     if ctx.background_image:
-        print(ctx.background_image)
         gfile = Gio.File.new_for_path(ctx.background_image)
         monitor1 = gfile.monitor_file(Gio.FileMonitorFlags.WATCH_MOVES, None)
         monitor1.connect("changed", on_background_change, ctx)

@@ -129,6 +129,7 @@ def on_overlay_draw(widget, cctx, ctx):
 
 def on_background_change(monitor, f1, f2, event, ctx):
     """Update background when changed."""
+    print(event, ctx)
     if event not in (
         Gio.FileMonitorEvent.CHANGES_DONE_HINT,
         Gio.FileMonitorEvent.RENAMED,
@@ -199,14 +200,15 @@ if __name__ == "__main__":
 
     gio_event_args = (None, None, None, Gio.FileMonitorEvent.CHANGES_DONE_HINT)
     if ctx.background_image:
+        print(ctx.background_image)
         gfile = Gio.File.new_for_path(ctx.background_image)
-        monitor = gfile.monitor_file(Gio.FileMonitorFlags.WATCH_MOVES, None)
-        monitor.connect("changed", on_background_change, ctx)
+        monitor1 = gfile.monitor_file(Gio.FileMonitorFlags.WATCH_MOVES, None)
+        monitor1.connect("changed", on_background_change, ctx)
         on_background_change(*gio_event_args, ctx)
     if ctx.weather_file:
         gfile = Gio.File.new_for_path(ctx.weather_file)
-        monitor = gfile.monitor_file(Gio.FileMonitorFlags.WATCH_MOVES, None)
-        monitor.connect("changed", on_weather_change, ctx)
+        monitor2 = gfile.monitor_file(Gio.FileMonitorFlags.WATCH_MOVES, None)
+        monitor2.connect("changed", on_weather_change, ctx)
         GLib.timeout_add(1000, on_weather_change, *gio_event_args, ctx)
     GLib.timeout_add(1000, on_clock_change, ctx)
 

@@ -1,14 +1,12 @@
 [Unit]
-Description=Update weather for Polybar
+Description=Update weather
 PartOf=graphical-session.target
-After=polybar.service
-Requisite=polybar.service
 
 [Service]
 # Get one from https://openweathermap.org/, it's free
 Environment=OWM_API_KEY=81687c78e0376836871a6cb9fc347249
 ExecStart=/usr/bin/mkdir -p %t/i3
-ExecStart=%h/.config/i3/bin/polybar-weather
+ExecStart=%h/.config/i3/bin/weather
 Type=oneshot
 RemainAfterExit=false
 Restart=on-failure

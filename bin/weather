@@ -11,7 +11,7 @@ import subprocess
 import time
 from systemd import journal
 
-logger = logging.getLogger("polybar-weather")
+logger = logging.getLogger("weather")
 
 
 def get_location():
@@ -95,7 +95,7 @@ def update_status(status, output):
         f.write(status)
 
     # Send it to polybar
-    subprocess.run(["polybar-msg", "action", f"#weather.send.{status}"], check=True)
+    subprocess.run(["polybar-msg", "action", f"#weather.send.{status}"])
 
 
 if __name__ == "__main__":

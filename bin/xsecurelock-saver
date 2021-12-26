@@ -74,7 +74,7 @@ def on_overlay_draw(widget, cctx, ctx):
     def draw(what):
         x, y = cctx.get_current_point()
         cctx.set_source_rgba(0, 0, 0, 0.3)
-        cctx.move_to(x+2, y+2)
+        cctx.move_to(x + 2, y + 2)
         cctx.show_text(what)
         cctx.set_source_rgb(1, 1, 1)
         cctx.move_to(x, y)

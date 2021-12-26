@@ -880,9 +880,7 @@ async def network_manager_notifications(i3, event, path, state, reason):
         interface="org.freedesktop.DBus.Properties",
         member="PropertiesChanged",
         signature="sa{sv}as",
-        onlyif=lambda args: (
-            args[0] == "org.freedesktop.NetworkManager.AccessPoint"
-        ),
+        onlyif=lambda args: (args[0] == "org.freedesktop.NetworkManager.AccessPoint"),
     ),
 )
 @retry(2)

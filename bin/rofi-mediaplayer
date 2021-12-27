@@ -29,14 +29,14 @@ case $ROFI_RETV in
           i=$((i+1))
           printf "$description\00icon\037$icon\037info\037$i\n"
         done <<EOF
-go-previous                  Previous track
-media-playback-start         Play
-media-playback-pause         Pause
-media-playback-stop          Stop
-go-next                      Next track
-multimedia-volume-control    Open mixer panel
-com.github.wwmm.easyeffects  Open effects panel
-com.spotify.Client           Open ${Mediaplayer}
+go-previous               Previous track
+media-playback-start      Play
+media-playback-pause      Pause
+media-playback-stop       Stop
+go-next                   Next track
+multimedia-volume-control Open mixer panel
+easyeffects               Open effects panel
+com.spotify.Client        Open ${Mediaplayer}
 EOF
 
         # Player status
@@ -58,7 +58,7 @@ EOF
             4) playerctl -p $mediaplayer stop ;;
             5) playerctl -p $mediaplayer next ;;
             6) i3-msg '[class="Pavucontrol"] focus' || i3-msg exec exec pavucontrol ;;
-            7) i3-msg '[class="easyeffects"] focus' || i3-msg exec exec com.github.wwmm.easyeffects ;;
+            7) i3-msg '[class="easyeffects"] focus' || i3-msg exec exec easyeffects ;;
             8) i3-msg '[class="'${Mediaplayer}'"] focus' || i3-msg exec exec ${mediaplayer} ;;
         esac >&2
         ;;

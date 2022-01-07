@@ -6,13 +6,18 @@ if [ -z "${ROFI_OUTSIDE}" ]; then
     export mediaplayer=$1
     export Mediaplayer=$(echo $1 | sed -E 's/(.)/\U\1/')
     exec rofi -no-lazy-grab -show-icons -no-custom -modi m:$0 -show m \
-              -kb-select-1 Super+z \
-              -kb-select-2 Super+x \
-              -kb-select-3 Super+c \
-              -kb-select-4 Super+v \
-              -kb-select-5 Super+b \
-              -kb-select-6 Super+m \
-              -kb-select-7 Super+s
+              -kb-custom-1 Super+z \
+              -kb-custom-2 Super+x \
+              -kb-custom-3 Super+c \
+              -kb-custom-4 Super+v \
+              -kb-custom-5 Super+b \
+              -kb-custom-6 Super+m \
+              -kb-custom-7 Super+s
+fi
+
+if [ $ROFI_RETV -ge 10 ] && [ $ROFI_RETV -le 28 ]; then
+    ROFI_INFO=$((ROFI_RETV-9))
+    ROFI_RETV=1
 fi
 
 case $ROFI_RETV in
@@ -20,6 +25,7 @@ case $ROFI_RETV in
         # Prompt
         printf "\00prompt\037media player\n"
         printf "\00message\037$...\n"
+        printf "\00use-hot-keys\037true\n"
 
         # Available actions
         i=0

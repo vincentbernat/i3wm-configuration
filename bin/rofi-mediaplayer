@@ -12,7 +12,8 @@ if [ -z "${ROFI_OUTSIDE}" ]; then
               -kb-custom-4 Super+v \
               -kb-custom-5 Super+b \
               -kb-custom-6 Super+m \
-              -kb-custom-7 Super+s
+              -kb-custom-7 Super+s \
+              -kb-cancel Escape,Control+g,Super+Escape
 fi
 
 if [ $ROFI_RETV -ge 10 ] && [ $ROFI_RETV -le 28 ]; then

@@ -621,7 +621,7 @@ async def workspace_info(i3, event):
             else:
                 first = "├─"
                 others = "│ "
-            content = format(child).replace("\n", f"\n{others}")
+            content = format(child).replace("\n", f"\n<tt>{others}</tt>")
             children.append(f"<tt>{first}</tt>{content}")
         children.insert(0, root)
         return "\n".join(children)

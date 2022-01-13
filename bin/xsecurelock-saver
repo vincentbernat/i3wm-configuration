@@ -21,12 +21,13 @@ import os
 import types
 import datetime
 import re
-import gi
 import socket
+import time
+import cairo
+import gi
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gdk, GdkX11, GLib, GdkPixbuf, Gio
-import cairo
 
 
 def on_win_realize(widget, ctx):
@@ -161,6 +162,8 @@ def on_clock_change(ctx):
         ctx.overlay.queue_draw()
     if ctx.leader is None:
         # Do leader "election"
+        if ctx.position != (0, 0):
+            time.sleep(0.2)
         s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         try:
             s.bind("\0xsecurelock-saver")

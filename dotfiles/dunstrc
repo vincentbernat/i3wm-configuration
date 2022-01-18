@@ -65,8 +65,6 @@
     always_run_script = true
     title = Dunst
     class = Dunst
-    startup_notification = false
-    verbosity = mesg
     corner_radius = 0
     ignore_dbusclose = false
 

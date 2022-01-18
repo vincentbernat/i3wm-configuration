@@ -40,16 +40,16 @@ sources on [GitHub](https://github.com/vincentbernat/vbeterm).
 
 Required Debian packages to make everything work can be found in my
 [Puppet configuration][]. Packages are basically pulled from Debian
-unstable.
+unstable but some of them are pulled from Nix.
 
 [Puppet configuration]: https://github.com/vincentbernat/puppet-workstation/blob/master/local-modules/desktop/manifests/i3.pp
 
 However, I am recompiling some stuff to get more recent versions:
 
- - `i3-gaps` (check `vbe/master` branch)
- - `dunst` (check `vbe/master` branch)
- - `polybar` (check `vbe/master` branch)
+ - `dunst` (1.7.3)
  - `picom` (`next` branch)
+ - `polybar` (check `vbe/master` branch)
+ - `xsecurelock` (check `vbe/master` branch)
 
 The binaries are put in `~/.local/bin`.
 

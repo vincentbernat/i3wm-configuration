@@ -46,7 +46,7 @@ unstable but some of them are pulled from Nix.
 
 However, I am recompiling some stuff to get more recent versions:
 
- - `dunst` (`master` branch)
+ - `dunst` (check `vbe/master` branch)
  - `picom` (`next` branch)
  - `polybar` (check `vbe/master` branch)
  - `xsecurelock` (check `vbe/master` branch)

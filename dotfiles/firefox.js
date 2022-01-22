@@ -61,8 +61,7 @@ user_pref("media.autoplay.default", 1);
 // And VAAPI decoding with ffmpeg
 user_pref("media.ffmpeg.vaapi.enabled", true);
 // Not needed anymore in FF97:
-user_pref("media.ffvpx.enabled", false);
-user_pref("media.rdd-vpx.enabled", false);
+user_pref("media.rdd-ffmpeg.enabled", true);
 user_pref("media.navigator.mediadatadecoder_vpx_enabled", true);
 
 // Legacy indicator is buggy (no content)

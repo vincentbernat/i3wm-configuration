@@ -4,6 +4,6 @@ PartOf=graphical-session.target
 
 [Service]
 ExecStartPre=%h/.config/i3/bin/picom-configure
-ExecStart=%h/.local/bin/picom --config %t/i3/picom.conf --experimental-backends
+ExecStart=/usr/bin/picom --config %t/i3/picom.conf --experimental-backends
 ExecReload=%h/.config/i3/bin/picom-configure
 Restart=on-failure

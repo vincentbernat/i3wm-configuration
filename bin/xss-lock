@@ -6,7 +6,7 @@ notify=$((timeout/10))
 
 configure() {
     xset s $((timeout - notify)) $notify
-    xset dpms $((timeout * 3)) $((timeout * 32 / 10)) $((timeout * 34 / 10))
+    xset dpms $((timeout * 3)) $((timeout * 32 / 10)) 0
 }
 dimmer() {
     systemctl --user $1 xss-dimmer@$notify.service

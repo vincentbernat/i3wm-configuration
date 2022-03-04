@@ -4,4 +4,5 @@ PartOf=graphical-session.target
 
 [Timer]
 OnCalendar=hourly
+OnStartupSec=30
 Persistent=true

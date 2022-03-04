@@ -9,7 +9,6 @@ Wants=policykit-agent.service
 Wants=pulseaudio.socket
 Wants=redshift.service
 Wants=ssh-agent.service
-Wants=weather.service
 Wants=weather.timer
 Wants=xiccd.service
 Wants=xsettingsd.service

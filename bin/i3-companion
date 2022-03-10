@@ -77,6 +77,7 @@ application_icons = {
     "system-config-printer.py": icon(2, "⎙"),
     "thunar": icon(2, ""),
     "vbeterm": icon(2, ""),
+    "virt-manager": icon(2, ""),
     "webex": icon(2, ""),
     "wireshark": icon(2, ""),
     "zathura": icon(2, ""),

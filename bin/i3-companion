@@ -17,6 +17,7 @@ import shlex
 import subprocess
 import sys
 import types
+import struct
 
 import i3ipc
 from i3ipc.aio import Connection
@@ -263,14 +264,22 @@ def polybar(module):
                 out.write(content)
 
             # Send it to polybar
-            for name in glob.glob("/tmp/polybar_mqueue.*"):
+            cmd = bytes(f"#{module}.send.{content}", "utf-8")
+            data = b"polyipc" + struct.pack("=BIB", 0, len(cmd), 2) + cmd
+            for name in glob.glob(f"{os.getenv('XDG_RUNTIME_DIR')}/polybar/*.sock"):
                 try:
-                    with open(os.open(name, os.O_WRONLY | os.O_NONBLOCK), "w") as out:
-                        cmd = f"action:#{module}.send.{content}"
-                        out.write(cmd)
+                    reader, writer = await asyncio.open_unix_connection(name)
                 except OSError as e:
                     if e.errno != errno.ENXIO:
                         raise
+                else:
+                    try:
+                        writer.write(data)
+                        await writer.drain()
+                        await reader.read()
+                    finally:
+                        writer.close()
+                        await writer.wait_closed()
 
             logger.info(f"polybar/{module}: content updated")
             cache[module] = content

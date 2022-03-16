@@ -765,10 +765,13 @@ async def bluetooth_status(i3, event, *args):
             device = interfaces["org.bluez.Device1"]
             if not device["Connected"][1]:
                 continue
-            device_class = device["Class"][1]
-            major = (device_class & 0x1F00) >> 8
-            minor = (device_class & 0xFC) >> 2
-            devices.append((major, minor))
+            try:
+                device_class = device["Class"][1]
+                major = (device_class & 0x1F00) >> 8
+                minor = (device_class & 0xFC) >> 2
+                devices.append((major, minor))
+            except KeyError:
+                devices.append((0, 0))
 
     # Choose appropriate icons for output
     # See: https://btprodspecificationrefs.blob.core.windows.net/assigned-numbers

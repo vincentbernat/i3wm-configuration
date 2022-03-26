@@ -860,7 +860,7 @@ async def bluetooth_status(i3, event, *args):
                     output[-1] = f"{output[-1]},{icon}"
                     # Schedule a refresh in 5 minutes
                     bluetooth_status.scheduled = loop.call_later(
-                        600, bluetooth_status, i3, StartEvent
+                        600, asyncio.create_task, bluetooth_status(i3, StartEvent)
                     )
                 except Exception as exc:
                     logger.info("cannot get battery status: %s", exc)

@@ -18,6 +18,7 @@ import subprocess
 import sys
 import types
 import struct
+import socket
 
 import i3ipc
 from i3ipc.aio import Connection
@@ -86,6 +87,11 @@ application_icons = {
 }
 icons = {
     "access-point": icon(2, ""),
+    "battery-100": icon(2, ""),
+    "battery-75": icon(2, ""),
+    "battery-50": icon(2, ""),
+    "battery-25": icon(2, ""),
+    "battery-0": icon(2, ""),
     "bluetooth": icon(2, ""),
     "camera": icon(2, "⎙"),
     "car": icon(2, "🚘"),
@@ -736,11 +742,15 @@ async def bluetooth_notifications(i3, event, path, interface, changed, invalid):
         ),
     ),
 )
+@static(scheduled=None)
 @retry(2)
 @debounce(0.2)
 @polybar("bluetooth")
 async def bluetooth_status(i3, event, *args):
     """Update bluetooth status for Polybar."""
+    if bluetooth_status.scheduled:
+        bluetooth_status.scheduled.cancel()
+        bluetooth_status.scheduled = None
     if event is StartEvent:
         # Do we have a bluetooth device?
         if not os.path.exists("/sys/class/bluetooth"):
@@ -769,9 +779,10 @@ async def bluetooth_status(i3, event, *args):
                 device_class = device["Class"][1]
                 major = (device_class & 0x1F00) >> 8
                 minor = (device_class & 0xFC) >> 2
-                devices.append((major, minor))
+                mac = device["Address"][1]
+                devices.append((major, minor, mac))
             except KeyError:
-                devices.append((0, 0))
+                devices.append((0, 0, ""))
 
     # Choose appropriate icons for output
     # See: https://btprodspecificationrefs.blob.core.windows.net/assigned-numbers
@@ -780,7 +791,7 @@ async def bluetooth_status(i3, event, *args):
         output = ""
     else:
         output = ["bluetooth"]
-        for major, minor in devices:
+        for major, minor, mac in devices:
             classes = {
                 1: "laptop",
                 2: "phone",
@@ -815,7 +826,45 @@ async def bluetooth_status(i3, event, *args):
                 else:
                     icon = "unknown"
             output.append(icon)
-        return "|".join(icons[o] for o in output)
+            if mac.startswith("2C:41:A1"):
+                # Get battery status for BOSE QC 35 II. This is hacky.
+                # For other headsets, the information could be
+                # available through upower DBus. See
+                # https://github.com/Denton-L/based-connect.
+                try:
+                    loop = asyncio.get_event_loop()
+                    sock = socket.socket(
+                        socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM
+                    )
+                    try:
+                        sock.setblocking(False)
+                        # Workaround a bug in asyncio: https://bugs.python.org/issue27929
+                        fut = loop.create_future()
+                        loop._sock_connect(fut, sock, (mac, 8))
+                        await fut
+                        # Init
+                        await loop.sock_sendall(sock, b"\0\1\1\0")
+                        ack = await loop.sock_recv(sock, 4)
+                        assert ack == b"\0\1\3\5"
+                        await loop.sock_recv(sock, 5)  # firmware
+                        # Battery level
+                        await loop.sock_sendall(sock, b"\2\2\1\0")
+                        ack = await loop.sock_recv(sock, 4)
+                        assert ack == b"\2\2\3\1"
+                        battery = await loop.sock_recv(sock, 1)
+                        battery = battery[0]
+                    finally:
+                        sock.close()
+                    # Choose an icon
+                    icon = f"battery-{(battery+12)//25*25}"
+                    output[-1] = f"{output[-1]},{icon}"
+                    # Schedule a refresh in 5 minutes
+                    bluetooth_status.scheduled = loop.call_later(
+                        600, bluetooth_status, i3, StartEvent
+                    )
+                except Exception as exc:
+                    logger.info("cannot get battery status: %s", exc)
+        return "|".join(" ".join(icons[oo] for oo in o.split(",")) for o in output)
 
 
 @on(

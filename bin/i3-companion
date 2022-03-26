@@ -857,7 +857,7 @@ async def bluetooth_status(i3, event, *args):
                         sock.close()
                     # Choose an icon
                     icon = f"battery-{(battery+12)//25*25}"
-                    output[-1] = f"{output[-1]},{icon}"
+                    output[-1] = (output[-1], icon)
                     # Schedule a refresh in 5 minutes
                     bluetooth_status.scheduled = loop.call_later(
                         600,
@@ -865,7 +865,10 @@ async def bluetooth_status(i3, event, *args):
                     )
                 except Exception as exc:
                     logger.info("cannot get battery status: %s", exc)
-        return "|".join(" ".join(icons[oo] for oo in o.split(",")) for o in output)
+        return "|".join(
+            (" ".join(icons[oo] for oo in o) if type(o) is tuple else icons[o])
+            for o in output
+        )
 
 
 @on(

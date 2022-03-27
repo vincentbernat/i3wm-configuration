@@ -830,7 +830,10 @@ async def bluetooth_status(i3, event, *args):
                 # Get battery status for BOSE QC 35 II. This is hacky.
                 # For other headsets, the information could be
                 # available through upower DBus. See
-                # https://github.com/Denton-L/based-connect.
+                # https://github.com/Denton-L/based-connect. Starting
+                # from PA 16, it may be exposed by PA, then to BlueZ.
+                # See
+                # https://gitlab.freedesktop.org/pulseaudio/pulseaudio/-/merge_requests/482
                 try:
                     loop = asyncio.get_event_loop()
                     sock = socket.socket(

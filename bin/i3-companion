@@ -861,13 +861,13 @@ async def bluetooth_status(i3, event, *args):
                     # Choose an icon
                     icon = f"battery-{(battery+12)//25*25}"
                     output[-1] = (output[-1], icon)
-                    # Schedule a refresh in 5 minutes
-                    bluetooth_status.scheduled = loop.call_later(
-                        600,
-                        lambda: asyncio.create_task(bluetooth_status(i3, StartEvent)),
-                    )
                 except Exception as exc:
                     logger.info("cannot get battery status: %s", exc)
+                # Schedule a refresh in 5 minutes
+                bluetooth_status.scheduled = loop.call_later(
+                    600,
+                    lambda: asyncio.create_task(bluetooth_status(i3, StartEvent)),
+                )
         return "|".join(
             (" ".join(icons[oo] for oo in o) if type(o) is tuple else icons[o])
             for o in output

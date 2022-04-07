@@ -59,6 +59,8 @@ user_pref("full-screen-api.transition.timeout", 0);
 user_pref("media.autoplay.default", 1);
 
 // And VAAPI decoding with ffmpeg
+// Not working anymore in 99.
+// https://bugzilla.mozilla.org/show_bug.cgi?id=1751363
 user_pref("media.ffmpeg.vaapi.enabled", true);
 
 // Legacy indicator is buggy (no content)

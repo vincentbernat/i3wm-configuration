@@ -38,6 +38,12 @@ EOF
 rm -f ~/.config/gtk-3.0/settings.ini
 dconf load / < ~/.config/i3/dotfiles/dconf.ini
 
+# GTK bookmarks
+for f in ~/.zsh/run/marks/*; do
+    [ -d "$f" ] || continue
+    echo file://"$f"
+done > ~/.config/gtk-3.0/bookmarks
+
 # Services are started with systemd
 systemctl --user import-environment
 systemctl --user daemon-reload

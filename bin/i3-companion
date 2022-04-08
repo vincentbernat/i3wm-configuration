@@ -14,20 +14,20 @@ import logging
 import logging.handlers
 import os
 import shlex
+import socket
+import struct
 import subprocess
 import sys
 import types
-import struct
-import socket
 
-import i3ipc
-from i3ipc.aio import Connection
-from systemd import journal, daemon
-import ravel
 import dbussy
+import i3ipc
+import ravel
 import xcffib
-import xcffib.xproto
 import xcffib.randr
+import xcffib.xproto
+from i3ipc.aio import Connection
+from systemd import daemon, journal
 
 
 def icon(font_number, char):
@@ -816,7 +816,9 @@ async def bluetooth_status(i3, event, *args):
                     (lambda x: x & 0x20, "printer"),
                 ],
             }
-            icon = classes.get((device.major, device.minor)) or classes.get(device.major, "unknown")
+            icon = classes.get((device.major, device.minor)) or classes.get(
+                device.major, "unknown"
+            )
             if type(icon) is list:
                 for matcher, name in icon:
                     if matcher(device.minor):

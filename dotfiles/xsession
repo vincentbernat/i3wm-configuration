@@ -16,6 +16,9 @@ export QT_QPA_PLATFORMTHEME=qt5ct
 # GTK3 apps try to contact org.a11y.Bus. Disable that.
 export NO_AT_BRIDGE=1
 
+# Make cursor works from Nix programs
+export XCURSOR_PATH=/usr/share/icons
+
 # Environment variables
 . ~/.zshenv
 export TERMINAL=vbeterm

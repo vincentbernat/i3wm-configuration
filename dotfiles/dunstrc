@@ -4,10 +4,13 @@
     follow = none
 
     # Appearance
-    geometry = "400x7-15+15"
+    width = 400
+    height = 100
+    offset = 15x15
+    origin = top-right
     indicate_hidden = yes
     shrink = no
-    notification_height = 0
+    notification_limit = 6
     separator_height = 2
     separator_color = frame
     padding = 8
@@ -53,6 +56,7 @@
     icon_position = left
     min_icon_size = 32
     max_icon_size = 32
+    enable_recursive_icon_lookup = true
     icon_path = /usr/share/icons/Adwaita:/usr/share/icons/hicolor:/usr/share/icons/gnome
 
     # History

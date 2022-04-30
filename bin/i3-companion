@@ -280,7 +280,7 @@ def polybar(module):
                 try:
                     reader, writer = await asyncio.open_unix_connection(name)
                 except OSError as e:
-                    if e.errno != errno.ENXIO:
+                    if e.errno not in (errno.ENXIO, errno.ECONNREFUSED):
                         raise
                 else:
                     try:

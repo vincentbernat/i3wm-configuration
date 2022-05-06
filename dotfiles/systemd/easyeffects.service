@@ -1,0 +1,11 @@
+[Unit]
+Description=Easyeffects for Pipewire
+PartOf=graphical-session.target
+
+[Service]
+Type=dbus
+BusName=com.github.wwmm.easyeffects
+ExecStart=%h/.nix-profile/bin/easyeffects --gapplication-service
+ExecStartPost=-%h/.nix-profile/bin/easyeffects -l default-input
+ExecStartPost=-%h/.nix-profile/bin/easyeffects -l default-output
+Restart=on-failure

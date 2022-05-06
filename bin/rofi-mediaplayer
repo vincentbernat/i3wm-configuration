@@ -12,7 +12,8 @@ if [ -z "${ROFI_OUTSIDE}" ]; then
               -kb-custom-4 Super+v \
               -kb-custom-5 Super+b \
               -kb-custom-6 Super+m \
-              -kb-custom-7 Super+s \
+              -kb-custom-7 Super+e \
+              -kb-custom-8 Super+s \
               -kb-cancel Escape,Control+g,Super+Escape
 fi
 
@@ -41,6 +42,7 @@ media-playback-pause      Pause
 media-playback-stop       Stop
 go-next                   Next track
 multimedia-volume-control Open mixer panel
+easyeffects               Open effects panel
 com.gitlab.ColinDuquesnoy.MellowPlayer Open ${Mediaplayer}
 EOF
 
@@ -63,7 +65,8 @@ EOF
             4) playerctl -p $mediaplayer stop ;;
             5) playerctl -p $mediaplayer next ;;
             6) i3-msg '[class="Pavucontrol"] focus' || i3-msg exec exec pavucontrol ;;
-            7) i3-msg '[class="'${Mediaplayer}'"] focus' || i3-msg exec exec ${mediaplayer} ;;
+            7) i3-msg '[class="easyeffects"] focus' || i3-msg exec exec easyeffects ;;
+            8) i3-msg '[class="'${Mediaplayer}'"] focus' || i3-msg exec exec ${mediaplayer} ;;
         esac >&2
         ;;
 esac

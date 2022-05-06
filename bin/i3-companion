@@ -48,6 +48,7 @@ application_icons = {
     "deezer": icon(3, ""),
     "discord": icon(3, ""),
     "draw.io": icon(2, ""),
+    "easyeffects": icon(2, ""),
     "emacs": icon(2, ""),
     "file-roller": icon(2, ""),
     "firefox": icon(3, ""),

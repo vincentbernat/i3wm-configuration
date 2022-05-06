@@ -56,8 +56,8 @@
     icon_position = left
     min_icon_size = 32
     max_icon_size = 32
-    #  echo /usr/share/icons/{Adwaita,gnome}/{512x512,256x256,48x48}/{devices,legacy,status,actions}(N) | tr ' ' ':'
-    icon_path = /usr/share/icons/Adwaita/512x512/devices:/usr/share/icons/Adwaita/512x512/legacy:/usr/share/icons/Adwaita/512x512/status:/usr/share/icons/Adwaita/256x256/legacy:/usr/share/icons/Adwaita/256x256/status:/usr/share/icons/Adwaita/48x48/devices:/usr/share/icons/Adwaita/48x48/legacy:/usr/share/icons/Adwaita/48x48/status:/usr/share/icons/Adwaita/48x48/actions:/usr/share/icons/gnome/256x256/devices:/usr/share/icons/gnome/256x256/status:/usr/share/icons/gnome/256x256/actions:/usr/share/icons/gnome/48x48/devices:/usr/share/icons/gnome/48x48/status:/usr/share/icons/gnome/48x48/actions
+    #  echo /usr/share/icons/{Adwaita,gnome}/{512x512,256x256,48x48}/{devices,status}(N) | tr ' ' ':'
+    icon_path = /usr/share/icons/Adwaita/512x512/devices:/usr/share/icons/Adwaita/512x512/status:/usr/share/icons/Adwaita/256x256/status:/usr/share/icons/Adwaita/48x48/devices:/usr/share/icons/Adwaita/48x48/status:/usr/share/icons/gnome/256x256/devices:/usr/share/icons/gnome/256x256/status:/usr/share/icons/gnome/48x48/devices:/usr/share/icons/gnome/48x48/status
 
     # History
     sticky_history = yes

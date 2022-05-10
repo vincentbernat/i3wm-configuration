@@ -151,12 +151,15 @@ for_window [class="Shadow"] fullscreen enable
 for_window [window_role="PictureInPicture"] floating enable
 for_window [class="Pavucontrol"] floating enable
 # Firefox sharing indicator
-for_window [floating_from="auto" title="Firefox — Sharing Indicator"] border pixel 1, sticky enable, move position 20 ppt -5 px
+for_window [floating_from="auto" title="Firefox — Sharing Indicator"] border pixel 1, sticky enable, move position 10 ppt -5 px
 no_focus   [floating_from="auto" title="Firefox — Sharing Indicator"]
 # Chromium sharing indicator
-for_window [floating_from="auto" title=" is sharing your screen.$"] border pixel 1, sticky enable, move position 20 ppt -5 px
+for_window [floating_from="auto" title=" is sharing your screen.$"] border pixel 1, sticky enable, move position 10 ppt -5 px
 no_focus   [floating_from="auto" title=" is sharing your screen.$"]
-# Zoom random rules
+# Jitsi sharing indicator
+for_window [floating_from="auto" title="Screen Sharing Tracker" instance="jitsi meet"] border pixel 1, sticky enable, move position 10 ppt -5 px
+no_focus   [floating_from="auto" title="Screen Sharing Tracker" instance="jitsi meet"]
+# Zoom
 for_window [class="zoom" instance="zoom" title="^Zoom"] floating disable, border pixel $borderpx
 for_window [class="zoom" instance="zoom" title="^zoom$"] floating enable, border pixel 0
 no_focus   [class="zoom" instance="zoom" title="^zoom$"]

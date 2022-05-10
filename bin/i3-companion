@@ -592,7 +592,7 @@ async def container_info(i3, event):
     )
     result = await notify(
         i3,
-        app_icon="system-search",
+        app_icon="info",
         expire_timeout=10000,
         summary=summary,
         body=body,

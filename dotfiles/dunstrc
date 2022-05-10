@@ -5,7 +5,6 @@
 
     # Appearance
     width = 400
-    height = 100
     offset = 15x15
     origin = top-right
     indicate_hidden = yes

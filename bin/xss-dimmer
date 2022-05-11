@@ -17,17 +17,9 @@ import argparse
 import threading
 import time
 import math
-import os
 from Xlib import display, X
 from Xlib.error import BadWindow
 from Xlib.protocol.event import MapNotify
-
-try:
-    os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"
-    os.environ["SDL_HINT_NO_SIGNAL_HANDLERS"] = "1"
-    import pygame
-except ImportError:
-    pygame = None
 
 
 def on_xevent(source, condition, xdisplay, locker):
@@ -97,17 +89,7 @@ def on_refresh(window, options, start):
     elapsed = time.monotonic() - start
     if elapsed < options.delay:
         next_step = min(options.step, options.delay - elapsed)
-        GLib.timeout_add(next_step * 1000, on_refresh, window, options, start)
-
-
-def on_sound_ticker(options, sound, start):
-    elapsed = time.monotonic() - start
-    if elapsed < options.delay:
-        if sound is None:
-            pygame.mixer.init()
-            sound = pygame.mixer.Sound(options.sound)
-        sound.play()
-        GLib.timeout_add(1000, on_sound_ticker, options, sound, now)
+        GLib.timeout_add(options.step * 1000, on_refresh, window, options, start)
 
 
 # See: https://easings.net/
@@ -162,7 +144,6 @@ if __name__ == "__main__":
         choices=easing_functions.keys(),
         help="easing function for opacity",
     )
-    add("--sound", help="play a sound for each second elapsed while dimmer running")
     options = parser.parse_args()
 
     background = None
@@ -210,9 +191,6 @@ if __name__ == "__main__":
         options.locker,
     )
     xdisplay.pending_events()  # otherwise, socket is inactive
-
-    if options.sound and pygame:
-        GLib.timeout_add(5000, on_sound_ticker, options, None, now)
 
     # Main loop
     Gtk.main()

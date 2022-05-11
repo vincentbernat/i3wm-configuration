@@ -49,7 +49,7 @@
     show_indicators = no
 
     # Progress bar
-    progress_bar = false
+    progress_bar = true
 
     # Icons
     icon_position = left

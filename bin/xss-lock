@@ -9,7 +9,7 @@ configure() {
     xset dpms $((timeout * 3)) $((timeout * 32 / 10)) $((timeout * 34 / 10))
 }
 dimmer() {
-    systemctl --user $1 xss-dimmer@$notify.service
+    systemctl --user --no-block $1 xss-dimmer@$notify.service
 }
 
 case "$1" in

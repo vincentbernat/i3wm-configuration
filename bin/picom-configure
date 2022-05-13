@@ -7,6 +7,7 @@ SHADOW_RADIUS=$((12 * dpi / 96))
 SHADOW_OFFSET=$((SHADOW_RADIUS*2/3))
 
 # Configure picom
+mkdir -p $XDG_RUNTIME_DIR/i3
 cat ~/.config/i3/dotfiles/picom.conf \
     | sed -e "s/@POLYBAR_HEIGHT@/$POLYBAR_HEIGHT/" \
     | sed -e "s/@SHADOW_RADIUS@/$SHADOW_RADIUS/" \

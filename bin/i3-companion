@@ -79,6 +79,7 @@ application_icons = {
     "sxiv": icon(2, ""),
     "system-config-printer.py": icon(2, "⎙"),
     "thunar": icon(2, ""),
+    "thunderbird": icon(2, ""),
     "vbeterm": icon(2, ""),
     "virt-manager": icon(2, ""),
     "webex": icon(2, ""),

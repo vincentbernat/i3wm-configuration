@@ -86,6 +86,7 @@ application_icons = {
     "wireshark": icon(2, ""),
     "zathura": icon(2, ""),
     "zoom": icon(2, ""),
+    "zoom.real ": icon(2, ""),
 }
 icons = {
     "access-point": icon(2, ""),

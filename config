@@ -160,9 +160,9 @@ no_focus   [floating_from="auto" title=" is sharing your screen.$"]
 for_window [floating_from="auto" title="Screen Sharing Tracker" instance="jitsi meet"] border pixel 0, sticky enable, move position 10 ppt -5 px
 no_focus   [floating_from="auto" title="Screen Sharing Tracker" instance="jitsi meet"]
 # Zoom
-for_window [class="zoom" instance="zoom" title="^Zoom"] floating disable, border pixel $borderpx
-for_window [class="zoom" instance="zoom" title="^zoom$"] floating enable, border pixel 0
-no_focus   [class="zoom" instance="zoom" title="^zoom$"]
+for_window [class="^zoom(\.|$)" instance="zoom(\.|$)" title="^Zoom"] floating disable, border pixel $borderpx
+for_window [class="^zoom(\.|$)" instance="zoom(\.|$)" title="^zoom$"] floating enable, border pixel 0
+no_focus   [class="^zoom(\.|$)" instance="zoom(\.|$)" title="^zoom$"]
 
 # start stuff
 exec_always --no-startup-id exec systemctl --user start --no-block i3-session.target

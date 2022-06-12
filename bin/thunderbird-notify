@@ -14,7 +14,7 @@ import argparse
 import os
 import subprocess
 import email.parser
-import email.header
+import email.policy
 from pydbus import SessionBus
 from gi.repository import GLib, Gio
 
@@ -22,15 +22,6 @@ parser = argparse.ArgumentParser(description=sys.modules[__name__].__doc__)
 parser.add_argument("root", metavar="FILE", help="path to Thunderbird mail folder")
 parser.add_argument("folder", metavar="FOLDER", help="folder to monitor", nargs="+")
 options = parser.parse_args()
-
-
-def decode(header):
-    return " ".join(
-        (
-            decoded.decode(charset or "ascii") if type(decoded) is bytes else decoded
-            for decoded, charset in email.header.decode_header(header)
-        )
-    )
 
 
 def process(path):
@@ -87,7 +78,9 @@ def process(path):
 
             # Parse the message to extract subject, author and Message-ID
             message = b"\n".join(message[1:])
-            parsed = email.parser.BytesParser().parsebytes(message, headersonly=True)
+            parsed = email.parser.BytesParser(policy=email.policy.default).parsebytes(
+                message, headersonly=True
+            )
             subject = parsed.get("subject")
             author = parsed.get("from")
             messageid = parsed.get("message-id")
@@ -97,8 +90,8 @@ def process(path):
                     "Thunderbird",
                     0,
                     "thunderbird",
-                    f"Mail from {decode(author)}",
-                    decode(subject),
+                    f"Mail from {author}",
+                    subject,
                     actions,
                     {},
                     10000,

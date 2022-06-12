@@ -1,0 +1,111 @@
+#!/usr/bin/env python3
+
+"""Watch a few mbox folders from Thunderbird and notify when there are
+new messages. This should be a builtin feature in Thunderbird, but it
+is not."""
+
+# TODO:
+#  - handle emails received at the same second
+#  - add an action to Open TB (thunderbird mid:....)
+
+import sys
+import argparse
+import pyinotify
+import os
+import email.parser
+import email.header
+from pydbus import SessionBus
+
+parser = argparse.ArgumentParser(description=sys.modules[__name__].__doc__)
+parser.add_argument("root", metavar="FILE", help="path to Thunderbird mail folder")
+parser.add_argument("folder", metavar="FOLDER", help="folder to monitor", nargs="+")
+options = parser.parse_args()
+
+watermarks = {}
+notify = SessionBus().get(".Notifications")
+
+
+class EventHandler(pyinotify.ProcessEvent):
+    def process_IN_CLOSE_WRITE(self, event):
+        watermark = process(event.pathname, watermarks[event.pathname])
+        watermarks[event.pathname] = watermark
+
+
+def process(path, watermark):
+    new_watermark = None
+    with open(path, "rb") as mbox:
+        marker = b"\nFrom "
+        chunk = 1024
+
+        mbox.seek(0, os.SEEK_END)
+        begin = mbox.tell()
+        while begin > 0:
+            while True:
+                begin -= 1024
+                if begin < 0:
+                    begin = 0
+                    break
+                mbox.seek(begin)
+                buffer = mbox.read(chunk)
+                idx = buffer.rfind(marker)
+                if idx == -1:
+                    continue
+                begin = begin + idx
+                break
+            end = begin + 1
+            while True:
+                mbox.seek(end)
+                buffer = mbox.read(chunk)
+                if len(buffer) < chunk:
+                    end = end + len(buffer)
+                    break
+                idx = buffer.find(marker)
+                if idx == -1:
+                    end += chunk
+                    continue
+                end = end + idx
+                break
+            mbox.seek(begin + 1)
+            message = mbox.read(end - begin).split(b"\n")
+            if message[0] == watermark:
+                return new_watermark
+            if new_watermark is None:
+                new_watermark = message[0]
+            if watermark is None:
+                return new_watermark
+            message = b"\n".join(message[1:])
+            parsed = email.parser.BytesParser().parsebytes(message, headersonly=True)
+            subject = parsed.get("subject")
+            author = parsed.get("from")
+            if subject is not None and author is not None:
+                subject, charset = email.header.decode_header(subject)
+                if charset is not None:
+                    subject = subject.decode(charset)
+                author, charset = email.header.decode_header(author)
+                if charset is not None:
+                    author = author.decode(charset)
+                notify.Notify(
+                    "Thunderbird",
+                    0,
+                    "thunderbird",
+                    f"Mail from {author}",
+                    subject,
+                    [],
+                    {},
+                    10000,
+                )
+    return new_watermark
+
+
+wm = pyinotify.WatchManager()
+mask = pyinotify.IN_CLOSE_WRITE
+handler = EventHandler()
+notifier = pyinotify.Notifier(wm, handler)
+for folder in options.folder:
+    folder = folder.split("/")
+    folder = [f"{f}.sbd" for f in folder[:-1]] + [folder[-1]]
+    folder = os.path.join(os.path.expanduser(options.root), *folder)
+    print(f"Watch {folder}...", flush=True)
+    watermarks[folder] = process(folder, None)
+    wm.add_watch(folder, mask)
+notifier.loop()

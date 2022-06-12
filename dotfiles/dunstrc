@@ -56,7 +56,7 @@
     min_icon_size = 32
     max_icon_size = 32
     #  echo /usr/share/icons/{Adwaita,gnome}/{512x512,256x256,48x48}/{devices,status}(N) | tr ' ' ':'
-    icon_path = /usr/share/icons/Adwaita/512x512/devices:/usr/share/icons/Adwaita/512x512/status:/usr/share/icons/Adwaita/256x256/status:/usr/share/icons/Adwaita/48x48/devices:/usr/share/icons/Adwaita/48x48/status:/usr/share/icons/gnome/256x256/devices:/usr/share/icons/gnome/256x256/status:/usr/share/icons/gnome/48x48/devices:/usr/share/icons/gnome/48x48/status
+    icon_path = /usr/share/icons/Adwaita/512x512/devices:/usr/share/icons/Adwaita/512x512/status:/usr/share/icons/Adwaita/256x256/status:/usr/share/icons/Adwaita/48x48/devices:/usr/share/icons/Adwaita/48x48/status:/usr/share/icons/gnome/256x256/devices:/usr/share/icons/gnome/256x256/status:/usr/share/icons/gnome/48x48/devices:/usr/share/icons/gnome/48x48/status:/home/bernat/.nix-profile/share/icons/hicolor/64x64/apps
 
     # History
     sticky_history = yes

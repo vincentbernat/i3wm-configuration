@@ -1,0 +1,9 @@
+[Unit]
+Description=Display notifications when receiving new mails
+PartOf=graphical-session.target
+ConditionPathExists=%h/.config/thunderbird-notify.env
+
+[Service]
+EnvironmentFile=%h/.config/thunderbird-notify.env
+ExecStart=%h/.config/i3/bin/thunderbird-notify $ARGS
+Restart=on-failure

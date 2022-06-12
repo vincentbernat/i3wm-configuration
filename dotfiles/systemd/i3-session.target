@@ -6,3 +6,4 @@ Wants=wallpaper.timer
 Wants=polybar.service
 Wants=i3-companion.service
 Wants=misc-x.service
+Wants=thunderbird-notify.service

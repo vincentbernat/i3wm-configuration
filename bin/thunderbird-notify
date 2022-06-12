@@ -4,42 +4,49 @@
 new messages. This should be a builtin feature in Thunderbird, but it
 is not."""
 
-# TODO:
-#  - handle emails received at the same second
-#  - add an action to Open TB (thunderbird mid:....)
+# This is quite basic. Notably, it relies on some quirks of the
+# Thunderbird mbox format where the From line contains a timestamp of
+# the received message and therefore can be used as a watermark as
+# long as we don't receive more than 1 message per second.
 
 import sys
 import argparse
-import pyinotify
 import os
+import subprocess
 import email.parser
 import email.header
 from pydbus import SessionBus
+from gi.repository import GLib, Gio
 
 parser = argparse.ArgumentParser(description=sys.modules[__name__].__doc__)
 parser.add_argument("root", metavar="FILE", help="path to Thunderbird mail folder")
 parser.add_argument("folder", metavar="FOLDER", help="folder to monitor", nargs="+")
 options = parser.parse_args()
 
-watermarks = {}
-notify = SessionBus().get(".Notifications")
+
+def decode(header):
+    return " ".join(
+        (
+            decoded.decode(charset or "ascii") if type(decoded) is bytes else decoded
+            for decoded, charset in email.header.decode_header(header)
+        )
+    )
 
 
-class EventHandler(pyinotify.ProcessEvent):
-    def process_IN_CLOSE_WRITE(self, event):
-        watermark = process(event.pathname, watermarks[event.pathname])
-        watermarks[event.pathname] = watermark
-
-
-def process(path, watermark):
+def process(path):
     new_watermark = None
+    watermark = watermarks.get(path)
+    count = 0
     with open(path, "rb") as mbox:
         marker = b"\nFrom "
         chunk = 1024
 
+        # Find next message from the end
         mbox.seek(0, os.SEEK_END)
         begin = mbox.tell()
-        while begin > 0:
+        while begin > 0 and count < 10:
+            count += 1
+            # Look for the beginning of a message
             while True:
                 begin -= 1024
                 if begin < 0:
@@ -52,6 +59,7 @@ def process(path, watermark):
                     continue
                 begin = begin + idx
                 break
+            # Look for the end of this message
             end = begin + 1
             while True:
                 mbox.seek(end)
@@ -65,47 +73,60 @@ def process(path, watermark):
                     continue
                 end = end + idx
                 break
+
+            # Check if we have hit our watermark
             mbox.seek(begin + 1)
             message = mbox.read(end - begin).split(b"\n")
             if message[0] == watermark:
-                return new_watermark
+                return
             if new_watermark is None:
                 new_watermark = message[0]
+                watermarks[path] = new_watermark
             if watermark is None:
-                return new_watermark
+                return
+
+            # Parse the message to extract subject, author and Message-ID
             message = b"\n".join(message[1:])
             parsed = email.parser.BytesParser().parsebytes(message, headersonly=True)
             subject = parsed.get("subject")
             author = parsed.get("from")
+            messageid = parsed.get("message-id")
             if subject is not None and author is not None:
-                subject, charset = email.header.decode_header(subject)
-                if charset is not None:
-                    subject = subject.decode(charset)
-                author, charset = email.header.decode_header(author)
-                if charset is not None:
-                    author = author.decode(charset)
+                actions = [] if messageid is None else [messageid.strip("<>"), "Open"]
                 notify.Notify(
                     "Thunderbird",
                     0,
                     "thunderbird",
-                    f"Mail from {author}",
-                    subject,
-                    [],
+                    f"Mail from {decode(author)}",
+                    decode(subject),
+                    actions,
                     {},
                     10000,
                 )
-    return new_watermark
 
 
-wm = pyinotify.WatchManager()
-mask = pyinotify.IN_CLOSE_WRITE
-handler = EventHandler()
-notifier = pyinotify.Notifier(wm, handler)
+notify = SessionBus().get(".Notifications")
+monitors = []
+watermarks = {}
 for folder in options.folder:
     folder = folder.split("/")
     folder = [f"{f}.sbd" for f in folder[:-1]] + [folder[-1]]
     folder = os.path.join(os.path.expanduser(options.root), *folder)
     print(f"Watch {folder}...", flush=True)
-    watermarks[folder] = process(folder, None)
-    wm.add_watch(folder, mask)
-notifier.loop()
+    # Take a not of the last message in the folder
+    process(folder)
+    # Monitor it for change
+    gfile = Gio.File.new_for_path(folder)
+    monitor = gfile.monitor_file(Gio.FileMonitorFlags.NONE, None)
+    monitor.connect(
+        "changed",
+        lambda m, f1, f2, event: event == Gio.FileMonitorEvent.CHANGES_DONE_HINT
+        and process(folder),
+    )
+    monitors.append(monitor)
+
+# Reply to notification actions
+notify.ActionInvoked.connect(
+    lambda _, mid: subprocess.call(["thunderbird", f"mid:{mid}"])
+)
+GLib.MainLoop().run()

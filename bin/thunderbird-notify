@@ -24,7 +24,7 @@ parser.add_argument("folder", metavar="FOLDER", help="folder to monitor", nargs=
 options = parser.parse_args()
 
 
-def process(path):
+def notify_new_messages(path):
     new_watermark = None
     watermark = watermarks.get(path)
     count = 0
@@ -107,19 +107,21 @@ for folder in options.folder:
     folder = os.path.join(os.path.expanduser(options.root), *folder)
     print(f"Watch {folder}...", flush=True)
     # Take a not of the last message in the folder
-    process(folder)
+    notify_new_messages(folder)
     # Monitor it for change
     gfile = Gio.File.new_for_path(folder)
     monitor = gfile.monitor_file(Gio.FileMonitorFlags.NONE, None)
     monitor.connect(
         "changed",
         lambda m, f1, f2, event: event == Gio.FileMonitorEvent.CHANGES_DONE_HINT
-        and process(folder),
+        and notify_new_messages(folder),
     )
     monitors.append(monitor)
 
 # Reply to notification actions
 notify.ActionInvoked.connect(
-    lambda _, mid: subprocess.call(["thunderbird", f"mid:{mid}"])
+    lambda _, mid: subprocess.call(
+        ["systemd-run", "--user", "thunderbird", f"mid:{mid}"]
+    )
 )
 GLib.MainLoop().run()

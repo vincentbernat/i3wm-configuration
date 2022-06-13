@@ -13,6 +13,7 @@ import sys
 import argparse
 import os
 import subprocess
+import time
 import email.parser
 import email.policy
 from pydbus import SessionBus
@@ -68,10 +69,12 @@ def notify_new_messages(path):
             # Check if we have hit our watermark
             mbox.seek(begin + 1)
             message = mbox.read(end - begin).split(b"\n")
-            if message[0] == watermark:
+            current_date = message[0][len("From - ") :].decode("ascii")
+            current_date = time.strptime(current_date, "%a %b %d %H:%M:%S %Y")
+            if watermark is not None and current_date <= watermark:
                 return
             if new_watermark is None:
-                new_watermark = message[0]
+                new_watermark = current_date
                 watermarks[path] = new_watermark
             if watermark is None:
                 return

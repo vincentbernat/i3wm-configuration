@@ -2,7 +2,17 @@
 
 """Watch a few mbox folders from Thunderbird and notify when there are
 new messages. This should be a builtin feature in Thunderbird, but it
-is not."""
+is not.
+
+It takes a configuration file as first argument written in YAML. It
+should look like this::
+
+    root: ~/.thunderbird/something-default/ImapMail/imap.example.com
+    folders:
+      - INBOX
+      - Notifications/GitHub
+
+"""
 
 # This is quite basic. Notably, it relies on some quirks of the
 # Thunderbird mbox format where the From line contains a timestamp of
@@ -14,15 +24,16 @@ import argparse
 import os
 import subprocess
 import time
+import yaml
 import email.parser
 import email.policy
 from pydbus import SessionBus
 from gi.repository import GLib, Gio
 
 parser = argparse.ArgumentParser(description=sys.modules[__name__].__doc__)
-parser.add_argument("root", metavar="FILE", help="path to Thunderbird mail folder")
-parser.add_argument("folder", metavar="FOLDER", help="folder to monitor", nargs="+")
+parser.add_argument("config", metavar="CONFIG", help="configuration file", type=open)
 options = parser.parse_args()
+config = yaml.safe_load(options.config)
 
 
 def notify_new_messages(path):
@@ -104,10 +115,10 @@ def notify_new_messages(path):
 notify = SessionBus().get(".Notifications")
 monitors = []
 watermarks = {}
-for folder in options.folder:
+for folder in config["folders"]:
     folder = folder.split("/")
     folder = [f"{f}.sbd" for f in folder[:-1]] + [folder[-1]]
-    folder = os.path.join(os.path.expanduser(options.root), *folder)
+    folder = os.path.join(os.path.expanduser(config["root"]), *folder)
     print(f"Watch {folder}...", flush=True)
     # Take a not of the last message in the folder
     notify_new_messages(folder)

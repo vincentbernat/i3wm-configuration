@@ -113,8 +113,9 @@ for folder in options.folder:
     monitor = gfile.monitor_file(Gio.FileMonitorFlags.NONE, None)
     monitor.connect(
         "changed",
-        lambda m, f1, f2, event: event == Gio.FileMonitorEvent.CHANGES_DONE_HINT
+        lambda m, f1, f2, event, folder: event == Gio.FileMonitorEvent.CHANGES_DONE_HINT
         and notify_new_messages(folder),
+        folder,
     )
     monitors.append(monitor)
 

@@ -98,10 +98,7 @@ def notify_new_messages(path):
             subject = parsed.get("subject")
             author = parsed.get("from")
             messageid = parsed.get("message-id")
-            # https://vincent.bernat.ch/en/x-mozilla-status
-            status = parsed.get("x-mozilla-status")
-            status = int(status) & 0x1 if status else 0
-            if subject is not None and author is not None and status == 0:
+            if subject is not None and author is not None:
                 actions = [] if messageid is None else [messageid.strip("<>"), "Open"]
                 notify.Notify(
                     "Thunderbird",

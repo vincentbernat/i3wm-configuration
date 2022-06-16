@@ -30,7 +30,7 @@ user_pref("browser.startup.homepage", "about:newtab");
 user_pref("browser.startup.page", 3);
 
 // Languages
-user_pref("intl.accept_languages", "en-us,en,fr");
+user_pref("intl.accept_languages", "en");
 
 // Disable pocket
 user_pref("browser.newtabpage.activity-stream.feeds.section.topstories", false);

@@ -57,3 +57,4 @@ The binaries are put in `~/.local/bin`.
  - [Hacking i3: Automatic Layout](https://aduros.com/blog/hacking-i3-automatic-layout/)
  - [__luccy desktop](https://www.reddit.com/r/unixporn/comments/odlf79/i3gaps_simple_minimal_round/)
  - [SI7Bot desktop](https://github.com/cosmicraccoon/thinky-nature-dots)
+ - [Catppucin theme](https://github.com/catppuccin/catppuccin)

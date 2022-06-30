@@ -3,5 +3,7 @@ Description=Proxy between org.freedesktop.ScreenSaver and XSS
 PartOf=graphical-session.target
 
 [Service]
+Type=dbus
+BusName=org.freedesktop.ScreenSaver
 ExecStart=%h/.nix-profile/bin/xssproxy -v
 Restart=on-failure

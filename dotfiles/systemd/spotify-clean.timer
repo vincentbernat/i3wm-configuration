@@ -1,0 +1,7 @@
+[Unit]
+Description=Timer for cleaning spotify extra PA streams
+After=pulseaudio.socket
+
+[Timer]
+OnUnitActiveSec=1h
+OnStartupSec=1h

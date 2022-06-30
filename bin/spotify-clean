@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# Kill all spotify streams, except the most recent one.
+
+pactl list short clients \
+    | awk '($3 == "spotify") {print $1}' \
+    | head -n-1 \
+    | xargs -rn1 pacmd kill-client

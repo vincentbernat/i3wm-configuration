@@ -1,0 +1,7 @@
+[Unit]
+Description=Proxy between org.freedesktop.ScreenSaver and XSS
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=%h/.nix-profile/bin/xssproxy -v
+Restart=on-failure

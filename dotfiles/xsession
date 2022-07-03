@@ -17,7 +17,13 @@ export QT_QPA_PLATFORMTHEME=qt5ct
 # GTK3 apps try to contact org.a11y.Bus. Disable that.
 export NO_AT_BRIDGE=1
 
-# Make cursor works from Nix programs
+# Make cursor works from Nix programs. This does not solve it for
+# everything as libXcursor may be loaded dynamically, see:
+# https://github.com/NixOS/nixpkgs/issues/24137 and
+# https://github.com/NixOS/nixpkgs/pull/54916. A possible solution
+# would be to preload host libXcursor. This seems to work:
+# LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libXcursor.so.1. But we don't
+# want to do that for all apps.
 export XCURSOR_PATH=/usr/share/icons
 
 # Environment variables

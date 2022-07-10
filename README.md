@@ -40,9 +40,11 @@ sources on [GitHub](https://github.com/vincentbernat/vbeterm).
 
 Required Debian packages to make everything work can be found in my
 [Puppet configuration][]. Packages are basically pulled from Debian
-unstable but some of them are pulled from Nix.
+unstable but some of them are pulled from Nix. Check my [home-manager
+configuration][].
 
 [Puppet configuration]: https://github.com/vincentbernat/puppet-workstation/blob/master/local-modules/desktop/manifests/i3.pp
+[home-manager configuration]: https://github.com/vincentbernat/homemanager-configuration
 
 However, I am recompiling some stuff to get more recent versions:
 

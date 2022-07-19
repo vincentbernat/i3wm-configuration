@@ -259,7 +259,7 @@ def build(background: Image, wallpaper_parts: list[WallpaperPart]) -> None:
         if imy < rectangle.height:
             imx, imy = image.width * rectangle.height // image.height, rectangle.height
         if image.size != (imx, imy):
-            image = image.resize((imx, imy), Image.LANCZOS)
+            image = image.resize((imx, imy), Image.Resampling.LANCZOS)
         image = image.crop(
             (
                 (imx - rectangle.width) / 2,

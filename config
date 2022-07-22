@@ -128,8 +128,8 @@ bindsym $mod+Shift+o move workspace to output next
 bindsym $mod+Shift+n nop "move-to-new-workspace"
 
 # lock screen
-bindsym XF86ScreenSaver exec --no-startup-id exec xset s activate
-bindsym $mod+Delete exec --no-startup-id exec xset s activate
+bindsym XF86ScreenSaver exec --no-startup-id exec loginctl lock-session
+bindsym $mod+Delete exec --no-startup-id exec loginctl lock-session
 # print screen
 bindsym Print exec --no-startup-id exec ~/.config/i3/bin/screenshot window
 bindsym XF86Display exec --no-startup-id exec ~/.config/i3/bin/screenshot window

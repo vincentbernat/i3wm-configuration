@@ -2,6 +2,7 @@
 
 # Kill all spotify streams, except the most recent (old?) one.
 
+exit 0
 pw-cli dump short client \
     | grep -F 'ap="spotify"' \
     | tail -n+2 \

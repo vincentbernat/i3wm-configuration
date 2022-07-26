@@ -9,7 +9,7 @@ ExecStart=/usr/bin/xsettingsd -c %h/.xsettingsd
 ExecReload=%h/.config/i3/bin/xsettingsd-setup
 ExecReload=/usr/bin/kill -HUP $MAINPID
 # Restart i3 (it uses Xft.dpi)
-ExecReload=-/usr/bin/i3-msg restart
+ExecReload=-%h/.nix-profile/bin/i3-msg restart
 # Restart polybar and reload picom (they use an environment variable)
 ExecReload=/bin/systemctl --user try-restart polybar.service
-ExecReload=/bin/systemctl --user try-reload picom.service
+ExecReload=/bin/systemctl --user try-reload-or-restart picom.service

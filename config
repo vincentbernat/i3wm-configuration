@@ -164,9 +164,13 @@ for_window [instance="^zoom(\.|$)" title="^Zoom($|\s)"] floating disable, border
 for_window [instance="^zoom(\.|$)" title="^zoom"] floating enable, border none
 no_focus   [instance="^zoom(\.|$)" title="^zoom"]
 for_window [instance="^join\?action=join" title="^Zoom($|\s)"] floating disable, border pixel $borderpx
+for_window [instance="^join\?action=join" title="^zoom"] floating enable, border none
+no_focus   [instance="^join\?action=join" title="^zoom"]
 for_window [instance="^join\?action=join" title="^join\?action=join"] floating enable, border none
 no_focus   [instance="^join\?action=join" title="^join\?action=join"]
 for_window [instance="^start\?action=start" title="^Zoom($|\s)"] floating disable, border pixel $borderpx
+for_window [instance="^start\?action=start" title="^zoom"] floating enable, border none
+no_focus   [instance="^start\?action=start" title="^zoom"]
 for_window [instance="^start\?action=start" title="^start\?action=start"] floating enable, border none
 no_focus   [instance="^start\?action=start" title="^start\?action=start"]
 

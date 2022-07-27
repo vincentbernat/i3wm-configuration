@@ -84,7 +84,6 @@ application_icons = {
     "wireshark": icon(2, ""),
     "zathura": icon(2, ""),
     "zoom": icon(2, ""),
-    "zoom.real": icon(2, ""),
 }
 icons = {
     "access-point": icon(2, ""),
@@ -354,12 +353,6 @@ async def workspace_rename(i3, event):
             if cls in application_icons_ignore:
                 continue
             icon = application_icons.get(cls, application_icons.get(cls.split("-")[0]))
-            if icon is None:
-                # Zoom (😱)
-                if (window.window_title or "").startswith("Zoom") or (
-                    window.window_instance or ""
-                ).startswith(("start?action=start", "join?action=join")):
-                    icon = application_icons["zoom"]
             icons.add(icon or application_icons_nomatch)
         if any([i not in application_icons_alone for i in icons]):
             icons -= application_icons_alone

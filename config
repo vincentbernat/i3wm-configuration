@@ -159,20 +159,10 @@ no_focus   [floating_from="auto" title=" is sharing your screen.$"]
 # Jitsi sharing indicator
 for_window [floating_from="auto" title="Screen Sharing Tracker" instance="jitsi meet"] border none, sticky enable, move position 10 ppt -5 px
 no_focus   [floating_from="auto" title="Screen Sharing Tracker" instance="jitsi meet"]
-# Zoom (😱)
-for_window [instance="^zoom(\.|$)" title="^Zoom($|\s)"] floating disable, border pixel $borderpx
-for_window [instance="^zoom(\.|$)" title="^zoom"] floating enable, border none
-no_focus   [instance="^zoom(\.|$)" title="^zoom"]
-for_window [instance="^join\?action=join" title="^Zoom($|\s)"] floating disable, border pixel $borderpx
-for_window [instance="^join\?action=join" title="^zoom"] floating enable, border none
-no_focus   [instance="^join\?action=join" title="^zoom"]
-for_window [instance="^join\?action=join" title="^join\?action=join"] floating enable, border none
-no_focus   [instance="^join\?action=join" title="^join\?action=join"]
-for_window [instance="^start\?action=start" title="^Zoom($|\s)"] floating disable, border pixel $borderpx
-for_window [instance="^start\?action=start" title="^zoom"] floating enable, border none
-no_focus   [instance="^start\?action=start" title="^zoom"]
-for_window [instance="^start\?action=start" title="^start\?action=start"] floating enable, border none
-no_focus   [instance="^start\?action=start" title="^start\?action=start"]
+# Zoom (😱?)
+for_window [class="^zoom$" title="^Zoom($|\s)"] floating disable, border pixel $borderpx
+for_window [class="^zoom$" title="^zoom"] floating enable, border none
+no_focus   [class="^zoom$" title="^zoom"]
 
 # start stuff
 exec_always --no-startup-id exec systemctl --user start --no-block i3-session.target

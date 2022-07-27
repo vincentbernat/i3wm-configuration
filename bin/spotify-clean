@@ -1,10 +1,10 @@
 #!/bin/sh
 
-# Kill all spotify streams, except the most recent (old?) one.
+# Kill all spotify streams, except the most recent one.
 
-exit 0
+pw-cli dump short | grep spotify
 pw-cli dump short client \
     | grep -F 'ap="spotify"' \
-    | tail -n+2 \
+    | head -n-1 \
     | cut -d: -f1 \
     | xargs -rn1 pw-cli destroy

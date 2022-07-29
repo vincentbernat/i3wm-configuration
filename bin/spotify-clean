@@ -1,10 +1,14 @@
 #!/bin/sh
 
-# Kill all spotify streams, except the most recent one.
+# Kill all spotify streams, except the most recent one. We need to use
+# the serial to know which one this is as ID are not monotonous.
 
-pw-cli dump short | grep spotify
 pw-cli dump short client \
     | grep -F 'ap="spotify"' \
-    | head -n-1 \
     | cut -d: -f1 \
-    | xargs -rn1 pw-cli destroy
+    | while read id; do
+    echo $(pw-cli dump $id | sed -nE 's/^\s*object.serial = "([0-9]*)"/\1/p') $id
+done \
+    | sort -n \
+    | head -n-1 \
+    | xargs -trn1 pw-cli destroy

@@ -10,5 +10,6 @@ pw-cli dump short client \
     echo $(pw-cli dump $id | sed -nE 's/^\s*object.serial = "([0-9]*)"/\1/p') $id
 done \
     | sort -n \
+    | cut -d' ' -f2 \
     | head -n-1 \
     | xargs -trn1 pw-cli destroy

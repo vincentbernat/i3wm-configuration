@@ -11,12 +11,14 @@ will stop itself when the locker window is mapped.
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, Gdk, GLib, GdkPixbuf
+gi.require_version("Gst", "1.0")
+from gi.repository import Gtk, Gdk, GLib, GdkPixbuf, GObject, Gst
 import cairo
 import argparse
 import threading
 import time
 import math
+import os
 from Xlib import display, X
 from Xlib.error import BadWindow
 from Xlib.protocol.event import MapNotify
@@ -89,7 +91,22 @@ def on_refresh(window, options, start):
     elapsed = time.monotonic() - start
     if elapsed < options.delay:
         next_step = min(options.step, options.delay - elapsed)
-        GLib.timeout_add(options.step * 1000, on_refresh, window, options, start)
+        GLib.timeout_add(next_step * 1000, on_refresh, window, options, start)
+
+
+def on_sound_ticker(options, sound, start):
+    elapsed = time.monotonic() - start
+    if elapsed < options.delay:
+        if sound is None:
+            Gst.init([])
+            sound = Gst.ElementFactory.make("playbin", "xss-dimmer")
+            sound.set_property("uri", f"file://{os.path.abspath(options.sound)}")
+        sound.set_state(Gst.State.NULL)
+        sound.seek_simple(
+            Gst.Format.TIME, Gst.SeekFlags.FLUSH | Gst.SeekFlags.KEY_UNIT, 0
+        )
+        sound.set_state(Gst.State.PLAYING)
+        GLib.timeout_add(1000, on_sound_ticker, options, sound, now)
 
 
 # See: https://easings.net/
@@ -144,6 +161,7 @@ if __name__ == "__main__":
         choices=easing_functions.keys(),
         help="easing function for opacity",
     )
+    add("--sound", help="play a sound for each second elapsed while dimmer running")
     options = parser.parse_args()
 
     background = None
@@ -191,6 +209,9 @@ if __name__ == "__main__":
         options.locker,
     )
     xdisplay.pending_events()  # otherwise, socket is inactive
+
+    if options.sound:
+        GLib.timeout_add(options.delay * 1000 // 3, on_sound_ticker, options, None, now)
 
     # Main loop
     Gtk.main()

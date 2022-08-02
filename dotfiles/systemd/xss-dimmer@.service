@@ -3,5 +3,6 @@ Description=Screen dimmer
 
 [Service]
 ExecStart=%h/.config/i3/bin/xss-dimmer --delay=%i \
-                                       --background=%t/i3/current-wallpaper.png
+                                       --background=%t/i3/current-wallpaper.png \
+                                       --sound=/usr/share/sounds/freedesktop/stereo/audio-volume-change.oga
 TimeoutSec=1

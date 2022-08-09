@@ -66,6 +66,7 @@ application_icons = {
     "nestopia": icon(2, ""),
     "org.gnome.maps": icon(2, ""),
     "pavucontrol": icon(2, ""),
+    "peek": icon(2, ""),
     "qalculate": icon(2, ""),
     "qemu": icon(2, ""),
     "retroarch": icon(2, ""),

@@ -28,14 +28,26 @@ import inspect
 from Xlib import display
 from Xlib.ext import randr
 from systemd import journal
-from PIL import Image
+import PIL.Image
+from PIL.Image import Image
 from PIL.ImageFile import ImageFile
-from typing import Optional
+from typing import Optional, NamedTuple
 
+# We use typing, but it seems mostly broken with PIL.
 
 logger = logging.getLogger("wallpaper")
-Rectangle = collections.namedtuple("Rectangle", ["x", "y", "width", "height"])
-WallpaperPart = collections.namedtuple("WallpaperPart", ["rectangle", "image"])
+
+
+class Rectangle(NamedTuple):
+    x: int
+    y: int
+    width: int
+    height: int
+
+
+class WallpaperPart(NamedTuple):
+    rectangle: Rectangle
+    image: Image
 
 
 def get_outputs() -> tuple[list[Rectangle], Image]:
@@ -44,7 +56,7 @@ def get_outputs() -> tuple[list[Rectangle], Image]:
     d = display.Display()
     screen = d.screen()
     window = screen.root.create_window(0, 0, 1, 1, 1, screen.root_depth)
-    background = Image.new("RGB", (screen.width_in_pixels, screen.height_in_pixels))
+    background = PIL.Image.new("RGB", (screen.width_in_pixels, screen.height_in_pixels))
 
     # Query randr extension
     outputs = []
@@ -146,14 +158,14 @@ def get_covering_rectangles(outputs: list[Rectangle]) -> set[tuple[Rectangle, ..
     return groups
 
 
-def get_random_images(directory: str, number: int) -> list[ImageFile]:
+def get_random_images(directory: str, number: int) -> list[Image]:
     """Get random images from a directory."""
     image_files = []
     for base, _, files in os.walk(os.path.join(directory)):
         for i in files:
             if os.path.splitext(i)[1].lower() in (".jpg", ".jpeg", ".png", ".webp"):
                 image_files.append(os.path.join(base, i))
-    images = [Image.open(image) for image in random.sample(image_files, number)]
+    images = [PIL.Image.open(image) for image in random.sample(image_files, number)]
 
     for image in images:
         directory_len = len(directory) + 1
@@ -163,7 +175,7 @@ def get_random_images(directory: str, number: int) -> list[ImageFile]:
 
 def get_best_parts(
     groups: set[tuple[Rectangle, ...]],
-    images: list[ImageFile],
+    images: list[Image],
     ratio_score: int = 100,
     scale_score: int = 60,
     wallpaper_score: int = 2,
@@ -172,47 +184,47 @@ def get_best_parts(
 
     >>> gbp = get_best_parts
     >>> gbp([[Rectangle(0, 0, 100, 100)]],
-    ...     [Image.new("RGB", (100, 100))]) # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
+    ...     [PIL.Image.new("RGB", (100, 100))]) # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
     [WallpaperPart(rectangle=Rectangle(x=0, y=0, width=100, height=100),
                    image=<PIL.Image.Image image mode=RGB size=100x100 at ...>)]
     >>> gbp([[Rectangle(0, 0, 100, 100)]],
-    ...     [Image.new("RGB", (100, 100)),
-    ...      Image.new("RGB", (100, 200))]) # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
+    ...     [PIL.Image.new("RGB", (100, 100)),
+    ...      PIL.Image.new("RGB", (100, 200))]) # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
     [WallpaperPart(rectangle=Rectangle(x=0, y=0, width=100, height=100),
                    image=<PIL.Image.Image image mode=RGB size=100x100 at ...>)]
     >>> gbp([[Rectangle(0, 0, 100, 100)]],
-    ...     [Image.new("RGB", (50, 50)),
-    ...      Image.new("RGB", (100, 200))]) # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
+    ...     [PIL.Image.new("RGB", (50, 50)),
+    ...      PIL.Image.new("RGB", (100, 200))]) # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
     [WallpaperPart(rectangle=Rectangle(x=0, y=0, width=100, height=100),
                    image=<PIL.Image.Image image mode=RGB size=50x50 at ...>)]
     >>> gbp([[Rectangle(0, 0, 100, 100)]],
-    ...     [Image.new("RGB", (10, 10)),
-    ...      Image.new("RGB", (100, 200))]) # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
+    ...     [PIL.Image.new("RGB", (10, 10)),
+    ...      PIL.Image.new("RGB", (100, 200))]) # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
     [WallpaperPart(rectangle=Rectangle(x=0, y=0, width=100, height=100),
                    image=<PIL.Image.Image image mode=RGB size=100x200 at ...>)]
     >>> gbp([[Rectangle(0, 0, 100, 100), Rectangle(0, 100, 100, 100)],
     ...      [Rectangle(0, 0, 200, 100)]],
-    ...     [Image.new("RGB", (100, 100)),
-    ...      Image.new("RGB", (200, 100))]) # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
+    ...     [PIL.Image.new("RGB", (100, 100)),
+    ...      PIL.Image.new("RGB", (200, 100))]) # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
     [WallpaperPart(rectangle=Rectangle(x=0, y=0, width=200, height=100),
                    image=<PIL.Image.Image image mode=RGB size=200x100 at ...>)]
     >>> gbp([[Rectangle(0, 0, 100, 100), Rectangle(100, 0, 100, 100)],
     ...      [Rectangle(0, 0, 200, 100)]],
-    ...     [Image.new("RGB", (100, 100)),
-    ...      Image.new("RGB", (100, 100))]) # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
+    ...     [PIL.Image.new("RGB", (100, 100)),
+    ...      PIL.Image.new("RGB", (100, 100))]) # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
     [WallpaperPart(rectangle=Rectangle(x=0, y=0, width=100, height=100),
                    image=<PIL.Image.Image image mode=RGB size=100x100 at ...>),
      WallpaperPart(rectangle=Rectangle(x=100, y=0, width=100, height=100),
                    image=<PIL.Image.Image image mode=RGB size=100x100 at ...>)]
     >>> gbp([[Rectangle(0, 0, 1920, 1080), Rectangle(1920, 0, 1920, 1080)],
     ...      [Rectangle(0, 0, 3840, 1080)]],
-    ...     [Image.new("RGB", (2560, 1440)),
-    ...      Image.new("RGB", (3840, 1440))]) # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
+    ...     [PIL.Image.new("RGB", (2560, 1440)),
+    ...      PIL.Image.new("RGB", (3840, 1440))]) # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
     [WallpaperPart(rectangle=Rectangle(x=0, y=0, width=3840, height=1080),
                    image=<PIL.Image.Image image mode=RGB size=3840x1440 at ...>)]
     """
     best_association = None
-    best_score = 0
+    best_score: float = 0
     for group in groups:
         associations = [tuple(zip(group, p)) for p in itertools.permutations(images)]
         seen = []
@@ -220,7 +232,7 @@ def get_best_parts(
             if association in seen:
                 continue
             seen.append(association)
-            score = 0
+            score: float = 0
             association_ = [
                 WallpaperPart(rectangle=assoc[0], image=assoc[1])
                 for assoc in association
@@ -259,13 +271,13 @@ def build(background: Image, wallpaper_parts: list[WallpaperPart]) -> None:
         if imy < rectangle.height:
             imx, imy = image.width * rectangle.height // image.height, rectangle.height
         if image.size != (imx, imy):
-            image = image.resize((imx, imy), Image.Resampling.LANCZOS)
+            image = image.resize((imx, imy), PIL.Image.Resampling.LANCZOS)
         image = image.crop(
             (
-                (imx - rectangle.width) / 2,
-                (imy - rectangle.height) / 2,
-                imx - (imx - rectangle.width) / 2,
-                imy - (imy - rectangle.height) / 2,
+                (imx - rectangle.width) // 2,
+                (imy - rectangle.height) // 2,
+                imx - (imx - rectangle.width) // 2,
+                imy - (imy - rectangle.height) // 2,
             )
         )
         background.paste(image, (rectangle.x, rectangle.y))

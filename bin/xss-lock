@@ -39,6 +39,8 @@ case "$1" in
             XSECURELOCK_NO_XRANDR15=1 \
             `# Delay mapping saver window by 500ms to give some time to saver to start` \
             XSECURELOCK_SAVER_DELAY_MS=500 \
+            `# Do not kill screensaver when DPMS is enabled` \
+            XSECURELOCK_SAVER_STOP_ON_DPMS=0 \
             `# Image and text for saver` \
             XSECURELOCK_SAVER_IMAGE=$XDG_RUNTIME_DIR/i3/current-wallpaper.png \
             XSECURELOCK_SAVER_WEATHER=$XDG_RUNTIME_DIR/i3/weather.txt \

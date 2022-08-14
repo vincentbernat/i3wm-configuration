@@ -1,5 +1,5 @@
 [Unit]
-Description=Build and display wallpaper
+Description=Wallpaper builder
 PartOf=graphical-session.target
 
 [Service]

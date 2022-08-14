@@ -1,5 +1,5 @@
 [Unit]
-Description=Update weather
+Description=Weather updater
 PartOf=graphical-session.target
 
 [Service]

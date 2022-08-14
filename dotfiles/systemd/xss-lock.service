@@ -1,5 +1,5 @@
 [Unit]
-Description=Manage X screen saver
+Description=X locker
 PartOf=graphical-session.target
 
 [Service]

@@ -1,5 +1,5 @@
 [Unit]
-Description=Configure monitors
+Description=Automatic monitor configuration
 PartOf=graphical-session.target
 
 [Service]

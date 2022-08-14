@@ -1,5 +1,5 @@
 [Unit]
-Description=Clean spotify extra PulseAudio streams
+Description=Cleaner for Spotify extra PulseAudio streams
 After=sound.target
 
 [Service]

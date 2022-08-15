@@ -1006,7 +1006,7 @@ async def on_resume(i3, event, path, sleeping):
     if not sleeping:
         logger.info("resume from sleep")
         dpms = i3.x11(xcffib.dpms.key)
-        dpms.Forcelevel(0)
+        dpms.ForceLevel(0)
         i3.x11.flush()
 
 

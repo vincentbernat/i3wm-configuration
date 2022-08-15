@@ -25,6 +25,7 @@ import i3ipc
 import ravel
 import xcffib
 import xcffib.randr
+import xcffib.dpms
 import xcffib.xproto
 from i3ipc.aio import Connection
 from systemd import daemon, journal
@@ -991,6 +992,21 @@ async def network_manager_status(i3, event, *args):
 
     # Final status line
     return " ".join(status)
+
+
+@on(
+    DBusSignal(
+        interface="org.freedesktop.login1.Manager",
+        member="PrepareForSleep",
+        signature="b",
+    ),
+)
+async def on_sleep_resume(i3, event, path, sleeping):
+    if not sleeping:
+        logger.info("resume from sleep")
+        dpms = i3.x11(xcffib.dpms.key)
+        dpms.Forcelevel(0)
+        i3.x11.flush()
 
 
 # Main function

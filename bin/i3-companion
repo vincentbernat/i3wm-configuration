@@ -1001,7 +1001,8 @@ async def network_manager_status(i3, event, *args):
         signature="b",
     ),
 )
-async def on_sleep_resume(i3, event, path, sleeping):
+async def on_resume(i3, event, path, sleeping):
+    """Switch monitor on when resuming from sleep."""
     if not sleeping:
         logger.info("resume from sleep")
         dpms = i3.x11(xcffib.dpms.key)

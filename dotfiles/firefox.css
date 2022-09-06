@@ -15,9 +15,4 @@
         position: static !important;
         scroll-snap-align: start !important;
     }
-
-    /* Hide the “new Tweets available” floating toast notification */
-    [aria-label="New Tweets are available."] {
-        display: none !important;
-    }
 }

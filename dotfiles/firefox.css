@@ -2,7 +2,7 @@
 
 @-moz-document domain(twitter.com) {
     html {
-        scroll-snap-type: y mandatory !important;
+        scroll-snap-type: y proximity !important;
     }
 
     /* Tweets in the timeline are <article> elements */

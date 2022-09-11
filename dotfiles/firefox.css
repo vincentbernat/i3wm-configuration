@@ -1,18 +1,1 @@
 /* To be symlinked in Firefox profile as chrome/userContent.css */
-
-@-moz-document domain(twitter.com) {
-    html {
-        scroll-snap-type: y proximity !important;
-    }
-
-    /* Tweets in the timeline are <article> elements */
-    article {
-        scroll-snap-align: start !important;
-    }
-
-    /* Un-stick the sticky header and make it “snappable” as well */
-    [aria-label="Home timeline"] > :first-child {
-        position: static !important;
-        scroll-snap-align: start !important;
-    }
-}

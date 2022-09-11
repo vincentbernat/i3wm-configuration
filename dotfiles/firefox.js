@@ -81,5 +81,5 @@ user_pref("browser.safebrowsing.malware.enabled", false);
 // Don't trim URLs
 user_pref("browser.urlbar.trimURLs", false);
 
-// Enable userContent.css
-user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
+// Enable userContent.css (disabled)
+user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", false);

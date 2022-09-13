@@ -11,7 +11,7 @@ showdpi() {
     # For laptop screens, we need to apply a correction factor as the
     # screen is nearer
     case $output in
-        eDP-1|eDP1) corrected=$((dpi * 96/144)) ;;
+        eDP*) corrected=$((dpi * 96/144)) ;;
         *) corrected=$dpi ;;
     esac
 

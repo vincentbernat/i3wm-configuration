@@ -1,6 +1,7 @@
 [Unit]
 Description=Automatic monitor configuration
 PartOf=graphical-session.target
+ConditionPathIsDirectory=%h/.config/autorandr/default
 
 [Service]
 ExecStart=/usr/bin/autorandr --change --default default --force

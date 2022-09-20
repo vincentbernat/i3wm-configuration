@@ -86,6 +86,7 @@ application_icons = {
     "webex": icon(2, ""),
     "wireshark": icon(2, ""),
     "zathura": icon(2, ""),
+    "zeal": icon(2, ""),
     "zoom": icon(2, ""),
 }
 icons = {

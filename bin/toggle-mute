@@ -7,6 +7,7 @@ case $1 in
         pactl list ${1}s \
             | awk '/^(Source|Sink) / { source=substr($2,2) }
                    /^\tName: .*.monitor$/ { source=0 }
+                   /^\tDescription: / { sub("^[^:]*: ", ""); descriptions[source] = $0 }
                    /^\tMute: / { if (source > 0) muted[source] = ($2 == "yes") }
                    END {
                      if (length(muted) == 0) exit;
@@ -17,6 +18,7 @@ case $1 in
                        }
                      }
                      for (source in muted) {
+                       print "echo "(allmuted?"🔊":"🔇")" "descriptions[source]
                        print "pactl set-'$1'-mute "source" "(!allmuted);
                      }
                    }' \

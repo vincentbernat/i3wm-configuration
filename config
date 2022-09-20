@@ -29,8 +29,8 @@ gaps inner 10
 # audio
 bindsym XF86AudioRaiseVolume exec --no-startup-id exec pactl set-sink-volume @DEFAULT_SINK@ +5%
 bindsym XF86AudioLowerVolume exec --no-startup-id exec pactl set-sink-volume @DEFAULT_SINK@ -5%
-bindsym XF86AudioMute        exec --no-startup-id exec pactl set-sink-mute @DEFAULT_SINK@ toggle
-bindsym XF86AudioMicMute     exec --no-startup-id exec pactl set-source-mute @DEFAULT_SOURCE@ toggle
+bindsym XF86AudioMute        exec --no-startup-id exec ~/.config/i3/bin/toggle-mute sink
+bindsym XF86AudioMicMute     exec --no-startup-id exec ~/.config/i3/bin/toggle-mute source
 bindsym XF86AudioPlay        exec --no-startup-id exec playerctl -p $mediaplayer play-pause
 bindsym XF86AudioPause       exec --no-startup-id exec playerctl -p $mediaplayer pause
 bindsym XF86AudioStop        exec --no-startup-id exec playerctl -p $mediaplayer stop

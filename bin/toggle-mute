@@ -1,0 +1,25 @@
+#!/bin/sh
+
+# Toggle mute on all sinks or sources.
+
+case $1 in
+    source|sink)
+        pactl list ${1}s \
+            | awk '/^(Source|Sink) / { source=substr($2,2) }
+                   /^\tName: .*.monitor$/ { source=0 }
+                   /^\tMute: / { if (source > 0) muted[source] = ($2 == "yes") }
+                   END {
+                     if (length(muted) == 0) exit;
+                     allmuted=1;
+                     for (source in muted) {
+                       if (!muted[source]) {
+                         allmuted=0;
+                       }
+                     }
+                     for (source in muted) {
+                       print "pactl set-'$1'-mute "source" "(!allmuted);
+                     }
+                   }' \
+            | sh
+    ;;
+esac

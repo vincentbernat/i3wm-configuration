@@ -3,13 +3,7 @@
 # Kill all spotify streams, except the most recent one. We need to use
 # the serial to know which one this is as ID are not monotonous.
 
-pw-cli dump short client \
-    | grep -F 'ap="spotify"' \
-    | cut -d: -f1 \
-    | while read id; do
-    echo $(pw-cli dump $id | sed -nE 's/^\s*object.serial = "([0-9]*)"/\1/p') $id
-done \
-    | sort -n \
-    | cut -d' ' -f2 \
+pw-dump \
+    | jq '.[]|select(.type == "PipeWire:Interface:Client" and .info.props."application.name" == "spotify").id' \
     | head -n-1 \
     | xargs -trn1 pw-cli destroy

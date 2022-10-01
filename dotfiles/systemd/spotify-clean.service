@@ -6,3 +6,4 @@ After=sound.target
 ExecStart=%h/.config/i3/bin/spotify-clean
 Type=oneshot
 RemainAfterExit=false
+TimeoutStartSec=5s

@@ -4,6 +4,11 @@ xkb_symbols "pause" {
         [ XF86ScreenSaver, XF86ScreenSaver ]
     };
 };
+partial
+xkb_symbols "75percent" {
+    key <HOME> { [ Prior, Prior ] };
+    key <END> { [ Next, Next ] };
+};
 
 partial modifier_keys alphanumeric_keys
 xkb_symbols "x1gen2" {

@@ -29,6 +29,9 @@ case "$event,$use,$(uname -n),$name" in
         ssh-add -e /usr/lib/x86_64-linux-gnu/libykcs11.so 2> /dev/null
         ssh-add -s /usr/lib/x86_64-linux-gnu/libykcs11.so
         ;;
+    *,XISlaveKeyboard,*,"IQUNIX IQUNIX ZX75 Mechanical Keyboard")
+        xkb 75percent
+        ;;
     *,XISlaveKeyboard,*)
         # Todo: detect the fact it is a "classic" keyboard
         xkb default

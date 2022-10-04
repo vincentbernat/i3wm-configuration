@@ -132,9 +132,8 @@ bindsym XF86ScreenSaver exec --no-startup-id exec loginctl lock-session
 bindsym $mod+Delete exec --no-startup-id exec loginctl lock-session
 # print screen
 bindsym Print exec --no-startup-id exec ~/.config/i3/bin/screenshot window
-bindsym XF86Display exec --no-startup-id exec ~/.config/i3/bin/screenshot window
 bindsym $mod+Print exec --no-startup-id exec ~/.config/i3/bin/screenshot desktop
-bindsym $mod+XF86Display exec --no-startup-id exec ~/.config/i3/bin/screenshot desktop
+bindsym $mod+F12 exec --no-startup-id exec ~/.config/i3/bin/screenshot window
 
 # Quake window
 bindsym $mod+grave nop "quake-console:$term:QuakeConsole:0.3"

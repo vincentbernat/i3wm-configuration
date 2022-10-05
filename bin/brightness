@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# Set brightness and sleep a bit before reading back the value
+
+brightnessctl -q set $1
+sleep 0.1
+brightnessctl > /dev/null

@@ -32,6 +32,7 @@ case "$1" in
         configure
         # Pause music player and notifications
         playerctl -a pause
+        dunstctl_state=$(dunstctl is-paused)
         dunstctl set-paused true
         # Then, lock screen
         env XSECURELOCK_SAVER=$HOME/.config/i3/bin/xsecurelock-saver \
@@ -52,6 +53,6 @@ case "$1" in
         echo "lock: unlock screen"
         # After unlocking screen, stop dimmer, restore notifications
         dimmer stop
-        dunstctl set-paused false
+        dunstctl set-paused ${dunstctl_state}
         ;;
 esac

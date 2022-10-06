@@ -39,8 +39,8 @@ bindsym XF86AudioPrev        exec --no-startup-id exec playerctl -p $mediaplayer
 bindsym $mod+s exec --no-startup-id exec ~/.config/i3/bin/rofi-mediaplayer $mediaplayer
 
 # brightness
-bindsym XF86MonBrightnessUp   exec --no-startup-id exec ~/.config/i3/bin/brightness 5%+
-bindsym XF86MonBrightnessDown exec --no-startup-id exec ~/.config/i3/bin/brightness 5%-
+bindsym XF86MonBrightnessUp exec --no-startup-id exec brightnessctl -q set +5%
+bindsym XF86MonBrightnessDown exec --no-startup-id exec brightnessctl -q set 5%-
 
 # use Mouse+$mod to drag floating windows to their wanted position
 floating_modifier $mod

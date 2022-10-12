@@ -51,8 +51,6 @@ case "$1" in
             XSECURELOCK_FONT="Iosevka" \
             `# Timeout for authentication window` \
             XSECURELOCK_AUTH_TIMEOUT=10 \
-            `# Don't show keyboard layout` \
-            XSECURELOCK_SHOW_KEYBOARD_LAYOUT=0 \
             xsecurelock
         echo "lock: unlock screen"
         # After unlocking screen, stop dimmer, restore notifications

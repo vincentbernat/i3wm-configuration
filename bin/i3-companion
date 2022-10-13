@@ -42,6 +42,7 @@ def icon(font_number, char):
 # Configuration
 
 application_icons = {
+    "anydesk": icon(2, ""),
     "blender": icon(2, ""),
     "calibre": icon(2, "📚"),
     "chromium": icon(3, ""),

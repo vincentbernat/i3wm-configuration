@@ -5,5 +5,5 @@ PartOf=graphical-session.target
 [Service]
 Type=dbus
 BusName=org.freedesktop.ScreenSaver
-ExecStart=%h/.nix-profile/bin/xssproxy -v -i firefox
+ExecStart=%h/.nix-profile/bin/xssproxy -v -i firefox -i zoom
 Restart=on-failure

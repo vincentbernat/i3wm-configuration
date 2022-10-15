@@ -20,11 +20,6 @@
                    "delete-from-cursor" (paragraph-ends, 1) };
   bind "<alt>backslash" { "delete-from-cursor" (whitespace, 1) };
   bind "<alt>BackSpace" { "delete-from-cursor" (word-ends, -1) };
-
-  bind "<alt>space" { "delete-from-cursor" (whitespace, 1)
-                      "insert-at-cursor" (" ") };
-  bind "<alt>KP_Space" { "delete-from-cursor" (whitespace, 1)
-                         "insert-at-cursor" (" ")  };
 }
 
 entry, textview

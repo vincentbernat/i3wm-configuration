@@ -12,7 +12,6 @@ user_pref("ui.context_menus.after_mouseup", true);
 // Don't display menubar when pressing Alt
 user_pref("ui.key.menuAccessKeyFocuses", false);
 // Keep GTK keybindings
-user_pref("ui.key.textcontrol.prefer_native_key_bindings_over_builtin_shortcut_key_definitions", true);
 user_pref("ui.key.use_select_all_in_single_line_editor", false);
 
 // Be more compact

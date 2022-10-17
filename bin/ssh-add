@@ -1,0 +1,10 @@
+#!/bin/sh
+
+export SSH_ASKPASS=/usr/bin/ssh-askpass
+ssh-add -l > /dev/null || ssh-add $(
+    sed -n 's/^ *IdentityFile ~\/\([^ ]*\).*/\1/p' ~/.ssh/config ~/.ssh/*/config \
+        | sort \
+        | uniq
+    )
+
+ssh-add -l

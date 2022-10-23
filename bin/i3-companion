@@ -125,7 +125,13 @@ icons = {
 application_icons_nomatch = icon(2, "")
 application_icons_ignore = {"dimmer"}
 application_icons_alone = {application_icons[k] for k in {"vbeterm"}}
-exclusive_apps = {"emacs", "firefox", "chromium-browser", "google-chrome"}
+exclusive_apps = {
+    "emacs",
+    "firefox",
+    "chromium-browser",
+    "google-chrome",
+    "thunderbird",
+}
 intrusive_apps = {"vbeterm"}
 
 logger = logging.getLogger("i3-companion")

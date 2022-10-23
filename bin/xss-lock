@@ -41,7 +41,7 @@ case "$1" in
             `# Delay mapping saver window by 500ms to give some time to saver to start` \
             XSECURELOCK_SAVER_DELAY_MS=500 \
             `# Do not kill screensaver when DPMS is enabled` \
-            XSECURELOCK_SAVER_STOP_ON_DPMS=0 \
+            XSECURELOCK_SAVER_STOP_ON_BLANK=0 \
             `# Do not mess with DPMS settings` \
             XSECURELOCK_BLANK_TIMEOUT=-1 \
             `# Image and text for saver` \

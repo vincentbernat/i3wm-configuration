@@ -4,6 +4,10 @@
 # Don't read anything from stdin.
 exec < /dev/null
 
+# Set some XDG_* variables
+export XDG_SESSION_DESKTOP=i3
+export XDG_CURRENT_DESKTOP=i3
+
 # Ensure we use the appropriate gtkrc-2.0 file
 export GTK2_RC_FILES=$HOME/.gtkrc-2.0
 

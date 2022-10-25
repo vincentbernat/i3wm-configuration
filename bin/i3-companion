@@ -131,6 +131,7 @@ exclusive_apps = {
     "chromium-browser",
     "google-chrome",
     "thunderbird",
+    "thunderbird-beta",
 }
 intrusive_apps = {"vbeterm"}
 

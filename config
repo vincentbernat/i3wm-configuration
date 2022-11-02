@@ -168,4 +168,5 @@ exec_always --no-startup-id exec systemctl --user start --no-block i3-session.ta
 exec --no-startup-id exec i3-msg "\
   workspace number 1; append_layout ~/.config/i3/ws-emacs.json; exec exec emacs; exec exec $term; exec exec $term; \
   workspace number 2; exec nm-online -q -t 5 && exec firefox; \
+  workspace number 3; exec test -d ~/.thunderbird && exec thunderbird; \
   workspace number 1"

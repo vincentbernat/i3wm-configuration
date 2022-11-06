@@ -23,7 +23,7 @@ client.placeholder      #0c0c0c #0c0c0c #ffffff #000000   #0c0c0c
 client.background       #ffffff
 
 # gaps
-gaps inner 5
+gaps inner 10
 # smart_gaps on
 
 # audio

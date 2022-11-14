@@ -1,0 +1,2 @@
+# See /usr/share/X11/locale/en_US.UTF-8/Compose for default ones.
+include "%L"

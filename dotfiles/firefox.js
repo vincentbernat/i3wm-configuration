@@ -14,6 +14,9 @@ user_pref("ui.key.menuAccessKeyFocuses", false);
 // Keep GTK keybindings
 user_pref("ui.key.use_select_all_in_single_line_editor", false);
 
+// Don't beep when using type ahead find
+user_pref("accessibility.typeaheadfind.enablesound", false);
+
 // Be more compact
 user_pref("browser.uidensity", 1);
 

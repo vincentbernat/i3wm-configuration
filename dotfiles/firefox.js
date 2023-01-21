@@ -5,6 +5,14 @@
 user_pref("extensions.activeThemeID", "firefox-compact-dark@mozilla.org");
 user_pref("layout.css.prefers-color-scheme.content-override", 1); // light
 
+// Fonts
+user_pref("font.name.monospace.x-western", "Source Code Pro");
+user_pref("font.name.monospace.x-unicode", "Source Code Pro");
+user_pref("font.name.sans-serif.x-western", "Source Sans Pro");
+user_pref("font.name.sans-serif.x-unicode", "Source Sans Pro");
+user_pref("font.name.serif.x-western", "Source Serif Pro");
+user_pref("font.name.serif.x-unicode", "Source Serif Pro");
+
 // Ensure context menus stay open after left-click (useful when scale
 // == 1.5)
 user_pref("ui.context_menus.after_mouseup", true);

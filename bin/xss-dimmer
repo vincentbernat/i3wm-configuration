@@ -57,7 +57,9 @@ def on_draw(widget, event, options, background, start):
     scale = widget.get_scale_factor()
     bg = None
     if background:
-        bg = background.new_subpixbuf(x, y, wwidth * scale, wheight * scale)
+        bg = background.new_subpixbuf(
+            x * scale, y * scale, wwidth * scale, wheight * scale
+        )
     cctx.set_operator(cairo.OPERATOR_SOURCE)
     if not bg:
         cctx.set_source_rgba(0, 0, 0, opacity)

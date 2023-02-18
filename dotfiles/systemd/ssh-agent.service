@@ -11,3 +11,4 @@ ExecStart=/usr/bin/ssh-agent -a $SSH_AUTH_SOCK
 ExecStartPost=%h/.config/i3/bin/ssh-add
 ExecStopPost=/usr/bin/dbus-update-activation-environment --systemd SSH_AUTH_SOCK=
 Restart=always
+TimeoutStartSec=infinity

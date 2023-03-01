@@ -51,6 +51,7 @@ user_pref("mail.phishing.detection.enabled", false);
 user_pref("mail.purge.ask", false);
 user_pref("mail.server.default.check_all_folders_for_new", true);
 user_pref("mail.warn_on_send_accel_key", false);
+user_pref("mail.strip_sig_on_reply", false);
 user_pref("mailnews.headers.useMinimalUserAgent", true);
 user_pref("mailnews.headers.showUserAgent", true);
 

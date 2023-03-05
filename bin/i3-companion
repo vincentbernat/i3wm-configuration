@@ -69,6 +69,7 @@ application_icons = {
     "org.gnome.maps": icon(2, ""),
     "pavucontrol": icon(2, ""),
     "peek": icon(2, ""),
+    "pinentry": icon(2, ""),
     "qalculate": icon(2, ""),
     "qemu": icon(2, ""),
     "retroarch": icon(2, ""),

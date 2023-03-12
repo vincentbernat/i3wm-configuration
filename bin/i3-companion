@@ -884,6 +884,39 @@ async def dunst_status_check(i3, event):
 
 @on(
     DBusSignal(
+        interface="org.usbguard.Devices1",
+        member="DevicePresenceChanged",
+        signature="uuusa{ss}",
+    )
+)
+async def usbguard_notifications(
+    i3, event, path, id, event_, target, device_rule, attributes
+):
+    """Display notifications related to Network Manager state."""
+    if attributes["name"]:
+        human = f"\"{attributes['name']}\" ({attributes['id']})"
+    else:
+        human = f"{attributes['id']}"
+    if event_ == 1:
+        # Insertion
+        await notify(
+            i3,
+            app_icon="media-removable",
+            summary="New USB device",
+            body=f"USB device {human} inserted\non port {attributes['via-port']}",
+        )
+    elif event_ == 3:
+        # Removal
+        await notify(
+            i3,
+            app_icon="media-removable",
+            summary="Removed USB device",
+            body=f"USB device {human} removed\nfrom port {attributes['via-port']}",
+        )
+
+
+@on(
+    DBusSignal(
         interface="org.freedesktop.NetworkManager.Connection.Active",
         member="StateChanged",
         signature="uu",

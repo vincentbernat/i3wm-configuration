@@ -911,8 +911,7 @@ async def usbguard_notifications(
         body="\n".join(
             [
                 f"USB device {human} {action}",
-                f"ID: <tt>{id}</tt>",
-                f"Port: <tt>{attributes['via-port']}</tt>",
+                f"ID: <tt>{id}</tt>, Port: <tt>{attributes['via-port']}</tt>",
             ]
         ),
     )

@@ -67,6 +67,7 @@ application_icons = {
     "mednafen": icon(2, ""),
     "mpv": icon(2, ""),
     "nestopia": icon(2, ""),
+    "onlyoffice desktop editors": icon(2, "📄"),
     "org.gnome.maps": icon(2, ""),
     "pavucontrol": icon(2, ""),
     "peek": icon(2, ""),

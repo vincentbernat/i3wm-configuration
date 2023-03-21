@@ -64,5 +64,5 @@ user_pref("print.printer_Mozilla_Save_to_PDF.print_bgcolor", true);
 user_pref("print.printer_Mozilla_Save_to_PDF.print_bgimages", true);
 user_pref("print.printer_Mozilla_Save_to_PDF.print_paper_id", "iso_a4");
 user_pref("print.printer_Mozilla_Save_to_PDF.print_paper_size_unit", 0);
-user_pref("print.printer_Mozilla_Save_to_PDF.print_paper_width", 8.26771653543307);
-user_pref("print.printer_Mozilla_Save_to_PDF.print_paper_height", 11.6929133858268);
+user_pref("print.printer_Mozilla_Save_to_PDF.print_paper_width", "8.26771653543307");
+user_pref("print.printer_Mozilla_Save_to_PDF.print_paper_height", "11.6929133858268");

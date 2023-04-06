@@ -42,6 +42,9 @@ case "$event,$use,$(uname -n),$name" in
     *,XISlavePointer,*,"TPPS/2 IBM TrackPoint")
         xinput set-prop $device "libinput Accel Speed" 1
         ;;
+    *,XISlavePointer,*,"ELAN"*" Touchpad")
+        xinput set-prop $device "libinput Tapping Enabled" 1
+        ;;
     *,XISlavePointer,*,"ELAN Touchscreen")
         xinput disable $device
         ;;

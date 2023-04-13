@@ -1,7 +1,7 @@
 // Preferences for Thunderbird. To be symlinked in the profile as user.js.
 
 // Theme
-user_pref("extensions.activeThemeID", "default-theme@mozilla.org");
+user_pref("extensions.activeThemeID", "thunderbird-compact-dark@mozilla.org");
 user_pref("layout.css.prefers-color-scheme.content-override", 1); // light
 user_pref("mail.uidensity", 1);
 

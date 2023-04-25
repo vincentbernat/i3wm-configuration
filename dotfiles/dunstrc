@@ -5,7 +5,7 @@
 
     # Appearance
     width = 400
-    offset = 3x17
+    offset = 5x17
     origin = top-right
     indicate_hidden = yes
     shrink = no
@@ -20,6 +20,7 @@
     transparency = 5
     font = Cantarell 10
     line_height = 0
+    corner_radius = 5
 
     # Put urgent notifications on top
     sort = yes
@@ -68,7 +69,6 @@
     always_run_script = true
     title = Dunst
     class = Dunst
-    corner_radius = 0
     ignore_dbusclose = false
 
     # Mouse

@@ -36,8 +36,10 @@ case "$1" in
         dunstctl set-paused true
         # Then, lock screen
         env XSECURELOCK_SAVER=$HOME/.config/i3/bin/xsecurelock-saver \
-            `# Disable Randr 1.5 support to make screensaver spans accross the whole monitor` \
+            `# Disable RandR 1.5 support to make screensaver spans accross the whole monitor` \
             XSECURELOCK_NO_XRANDR15=1 \
+            `# Disable RandR when we know we have a single monitor` \
+            XSECURELOCK_NO_XRANDR=$($(grep -qFwx 1 $XDG_RUNTIME_DIR/i3/outputs.txt 2> /dev/null) && echo 1 || echo 0) \
             `# Delay mapping saver window by 500ms to give some time to saver to start` \
             XSECURELOCK_SAVER_DELAY_MS=500 \
             `# Do not kill screensaver when DPMS is enabled` \

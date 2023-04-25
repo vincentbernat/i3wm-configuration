@@ -60,8 +60,10 @@ def get_outputs() -> tuple[list[Rectangle], Image]:
 
     # Query randr extension
     outputs = []
+    edids = []
     screen_resources = randr.get_screen_resources_current(window)
     for output in screen_resources.outputs:
+        # Extract dimension
         output_info = randr.get_output_info(window, output, screen_resources.timestamp)
         if output_info.crtc == 0:
             continue
@@ -69,7 +71,48 @@ def get_outputs() -> tuple[list[Rectangle], Image]:
         outputs.append(
             Rectangle(crtc_info.x, crtc_info.y, crtc_info.width, crtc_info.height)
         )
+        # Extract EDID
+        output_properties = randr.list_output_properties(window, output)
+        edid = [0] * 128
+        for atom in output_properties._data["atoms"]:
+            atom_name = d.get_atom_name(atom)
+            if atom_name == "EDID":
+                edid = randr.get_output_property(
+                    window, output, atom, 19, 0, 128
+                )._data["value"]
+                break
+        edids.append(edid)
 
+    # If for some outputs, EDID is the same, merge them. We assume only
+    # horizontal. For some reason, for a Dell Ultrasharp, EDID version and model
+    # number is not the same for HDMI and DP. Version is bytes 18-19, while
+    # product code are bytes 10-11
+    if len(edids) >= 2:
+        edids = [edid[:10] + edid[12:18] for edid in edids]
+        changed = True
+        while changed:
+            changed = False
+            for i, j in itertools.combinations(range(len(edids)), 2):
+                if (
+                    edids[i] == edids[j]
+                    and outputs[i].y == outputs[j].y
+                    and outputs[i].height == outputs[j].height
+                    and (
+                        outputs[i].x + outputs[i].width == outputs[j].x
+                        or outputs[j].x + outputs[j].width == outputs[i].x
+                    )
+                ):
+                    logger.debug("merge outputs %s + %s", outputs[i], outputs[j])
+                    outputs[i] = Rectangle(
+                        min(outputs[i].x, outputs[j].x),
+                        outputs[i].y,
+                        outputs[i].width + outputs[j].width,
+                        outputs[i].height,
+                    )
+                    del edids[j]
+                    del outputs[j]
+                    changed = True
+                    break
     for o in outputs:
         logger.debug("output: %s", o)
     return outputs, background

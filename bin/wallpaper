@@ -380,9 +380,16 @@ if __name__ == "__main__":
         "--target",
         default="background.png",
         help="write background to FILE",
+        metavar="FILE",
     )
     group.add_argument(
         "--compression", default=0, type=int, help="compression level when saving"
+    )
+    group.add_argument(
+        "--outputs",
+        default=None,
+        help="write number of outputs to FILE",
+        metavar="FILE",
     )
     options = parser.parse_args()
 
@@ -420,6 +427,10 @@ if __name__ == "__main__":
             )
         build(background, wallpaper_parts)
         save(background, options.target, options.compression)
+
+        if options.outputs is not None:
+            with open(options.outputs, "w") as f:
+                f.write(str(len(outputs)))
     except Exception as e:
         logger.exception("%s", e)
         sys.exit(1)

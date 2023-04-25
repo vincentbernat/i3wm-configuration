@@ -4,10 +4,12 @@ PartOf=graphical-session.target
 
 [Service]
 Environment=WALLPAPER_DIRECTORY=%h/.config/i3/wallpapers
-Environment=WALLPAPER_OUTPUT=%t/i3/current-wallpaper.png
+Environment=WALLPAPER_TARGET=%t/i3/current-wallpaper.png
+Environment=WALLPAPER_OUTPUTS=%t/i3/outputs.txt
 ExecStart=/usr/bin/mkdir -p %t/i3
 ExecStart=%h/.config/i3/bin/wallpaper --directory $WALLPAPER_DIRECTORY \
-                                      --target $WALLPAPER_OUTPUT
-ExecStart=/usr/bin/hsetroot -root -center $WALLPAPER_OUTPUT
+                                      --target $WALLPAPER_TARGET \
+                                      --outputs $WALLPAPER_OUTPUTS
+ExecStart=/usr/bin/hsetroot -root -center $WALLPAPER_TARGET
 Type=oneshot
 RemainAfterExit=false

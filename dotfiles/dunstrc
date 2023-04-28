@@ -21,6 +21,7 @@
     font = Cantarell 10
     line_height = 0
     corner_radius = 5
+    icon_corner_radius = 5
 
     # Put urgent notifications on top
     sort = yes

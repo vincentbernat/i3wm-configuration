@@ -28,6 +28,8 @@
 
     # Don't remove messages, if the user is idle (no mouse or keyboard input)
     idle_threshold = 60
+    # Don't show age of old messages
+    show_age_threshold = -1
 
     # The format of the message.  Possible variables are:
     #   %a  appname

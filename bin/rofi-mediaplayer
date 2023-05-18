@@ -21,6 +21,8 @@ if [ $ROFI_RETV -ge 10 ] && [ $ROFI_RETV -le 28 ]; then
     ROFI_RETV=1
 fi
 
+playerctl="playerctl -p $mediaplayer"
+
 case $ROFI_RETV in
     0)
         # Prompt
@@ -41,15 +43,15 @@ media-playback-pause      Pause
 media-playback-stop       Stop
 go-next                   Next track
 multimedia-volume-control Open mixer panel
-com.spotify.Client        Open ${Mediaplayer}
+com.spotify.Client        Open Spotify
 EOF
 
         # Player status
-        status=$(playerctl -p $mediaplayer status)
+        status=$($playerctl status)
         case $status in
             Playing|Paused)
-                title="$(playerctl -p $mediaplayer metadata xesam:title | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g')"
-                artist="$(playerctl -p $mediaplayer metadata xesam:artist | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g')"
+                title="$($playerctl metadata xesam:title | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g')"
+                artist="$($playerctl metadata xesam:artist | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g')"
                 status="$status <span weight='light'><i>${title} (${artist})</i></span>"
                 ;;
         esac
@@ -57,13 +59,13 @@ EOF
         ;;
     1)
         case $ROFI_INFO in
-            1) playerctl -p $mediaplayer previous ;;
-            2) playerctl -p $mediaplayer play ;;
-            3) playerctl -p $mediaplayer pause ;;
-            4) playerctl -p $mediaplayer stop ;;
-            5) playerctl -p $mediaplayer next ;;
+            1) $playerctl previous ;;
+            2) $playerctl play ;;
+            3) $playerctl pause ;;
+            4) $playerctl stop ;;
+            5) $playerctl next ;;
             6) i3-msg '[class="Pavucontrol"] focus' || i3-msg exec exec pavucontrol ;;
-            7) i3-msg '[class="'${Mediaplayer}'"] focus' || i3-msg exec exec ${mediaplayer} ;;
+            7) i3-msg '[class="Spotify"] focus' || i3-msg exec exec spotify ;;
         esac >&2
         ;;
 esac

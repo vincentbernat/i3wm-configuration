@@ -39,6 +39,9 @@ user_pref("browser.search.suggest.enabled", false);
 user_pref("browser.startup.homepage", "about:newtab");
 user_pref("browser.startup.page", 3);
 
+// Sort tabs by recently used
+user_pref("browser.ctrlTab.sortByRecentlyUsed", true);
+
 // Languages
 user_pref("intl.accept_languages", "en");
 

@@ -560,20 +560,26 @@ async def quake_console(i3, event):
         term = quake_window.result()
         await term.command("move window to scratchpad")
 
-    workspaces = await i3.get_workspaces()
-    workspace = [ws for ws in workspaces if ws.focused][0]
-    ws_x, ws_y = workspace.rect.x, workspace.rect.y
-    ws_width, ws_height = workspace.rect.width, workspace.rect.height
-    height = int(ws_height * height)
-    command = (
-        f"[instance={term_name}] "
-        "border none,"
-        f"resize set {ws_width} px {height} px,"
-        "scratchpad show,"
-        f"move absolute position {ws_x}px {ws_y}px"
-    )
-    logger.debug("QuakeConsole: %s", command)
-    await i3.command(command)
+    if term in tree.scratchpad().descendants():
+        workspaces = await i3.get_workspaces()
+        workspace = [ws for ws in workspaces if ws.focused][0]
+        ws_x, ws_y = workspace.rect.x, workspace.rect.y
+        ws_width, ws_height = workspace.rect.width, workspace.rect.height
+        height = int(ws_height * height)
+        command = (
+            f"[instance={term_name}] "
+            "border none,"
+            f"resize set {ws_width} px {height} px,"
+            "scratchpad show,"
+            f"move absolute position {ws_x}px {ws_y}px,"
+            "focus"
+        )
+        logger.debug("QuakeConsole (show): %s", command)
+        await i3.command(command)
+    else:
+        command = f"[instance={term_name}] scratchpad show"
+        logger.debug("QuakeConsole (hide): %s", command)
+        await i3.command(command)
 
 
 @on(CommandEvent("container-info"))

@@ -3,6 +3,7 @@
 // Theme
 user_pref("extensions.activeThemeID", "thunderbird-compact-dark@mozilla.org");
 user_pref("layout.css.prefers-color-scheme.content-override", 1); // light
+user_pref("layout.css.color-scheme.enabled", false);
 user_pref("mail.uidensity", 1);
 
 // Fonts

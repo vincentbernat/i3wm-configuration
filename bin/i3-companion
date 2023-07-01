@@ -436,6 +436,25 @@ async def new_workspace(i3, event):
         await current.command(f"move container to workspace " f'number "{num}"')
 
 
+@on(CommandEvent("move-all-workspaces-to-next-output"))
+async def move_all_workspaces_to_next_output(i3, event):
+    """Move all workspaces from the current output to the next one."""
+    outputs = await i3.get_outputs()
+    if len(outputs) < 2:
+        return
+    workspaces = await i3.get_workspaces()
+    try:
+        focused = [w for w in workspaces if w.focused][0]
+    except IndexError:
+        return
+    output = focused.output
+    for workspace in workspaces:
+        if workspace.output == output:
+            await i3.command(
+                f"workspace number {workspace.num} ; move workspace to output next"
+            )
+
+
 @on(I3Event.WORKSPACE_INIT)
 @static(lock=asyncio.Lock())
 async def workspace_rename_duplicate(i3, event):

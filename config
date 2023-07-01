@@ -132,6 +132,7 @@ bindsym $mod+Shift+8 move container to workspace number 8
 bindsym $mod+Shift+9 move container to workspace number 9
 bindsym $mod+Shift+0 move container to workspace number 10
 bindsym $mod+Shift+o move workspace to output next
+bindsym $mod+Ctrl+Shift+o nop "move-all-workspaces-to-next-output"
 bindsym $mod+Shift+n nop "move-to-new-workspace"
 
 # lock screen

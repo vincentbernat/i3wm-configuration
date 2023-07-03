@@ -1,6 +1,7 @@
 [Unit]
 Description=Compositor for X11
 PartOf=graphical-session.target
+After=xsettingsd.service
 
 [Service]
 ExecStartPre=%h/.config/i3/bin/picom-configure

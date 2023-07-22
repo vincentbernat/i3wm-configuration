@@ -12,4 +12,4 @@ ExecReload=/usr/bin/kill -HUP $MAINPID
 ExecReload=-%h/.nix-profile/bin/i3-msg restart
 # Restart polybar and reload picom (they use an environment variable)
 ExecReload=/bin/systemctl --user try-restart polybar.service
-ExecReload=/bin/systemctl --user try-reload-or-restart picom.service
+ExecReload=/bin/systemctl --user --no-block try-reload-or-restart picom.service

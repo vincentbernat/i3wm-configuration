@@ -11,6 +11,11 @@ xkb_symbols "75percent" {
     key <INS> { [ Delete ] };
     key <DELE> { [ Insert ] };
 };
+partial
+xkb_symbols "hyperwin" {
+    key <LWIN> { [ Hyper_L ] };
+    modifier_map Mod4 { Hyper_L };
+};
 
 partial modifier_keys alphanumeric_keys
 xkb_symbols "x1gen2" {

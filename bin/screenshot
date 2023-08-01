@@ -10,8 +10,14 @@ case $1 in
         echo -n $target | xclip -selection clipboard
         ;;
     window)
+        target=/dev/shm/screenshot.png
+        maim -u $target
+        nsxiv -N nsxiv-screenshot --anti-alias=no -b /dev/shm/screenshot.png &
+        nsxiv_pid=$!
         maim -u -s -b 5 -l -c 0.3,0.4,0.6,0.4 -d 0.1 \
             | xclip -selection clipboard -t image/png
+        kill "$nsxiv_pid"
+        # rm -f $target
         notify-send -i camera-photo "Screenshot" "Saved to clipboard"
         ;;
     ocr)

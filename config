@@ -157,6 +157,7 @@ for_window [class="Nm-connection-editor"] floating enable
 for_window [class="Shadow"] fullscreen enable
 for_window [window_role="PictureInPicture"] floating enable
 for_window [class="Pavucontrol"] floating enable
+for_window [instance="nsxiv-screenshot"] floating enable, fullscreen enable global
 # Firefox sharing indicator
 for_window [floating_from="auto" title="Firefox — Sharing Indicator"] border none, sticky enable, move position 10 ppt -5 px
 no_focus   [floating_from="auto" title="Firefox — Sharing Indicator"]

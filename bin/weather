@@ -18,7 +18,7 @@ def get_location():
     """Return current location as latitude/longitude tuple."""
     logger.debug("query MaxMind for location")
     r = requests.get(
-        "https://www.maxmind.com/geoip/v2.1/city/me",
+        "https://geoip.maxmind.com/geoip/v2.1/city/me",
         headers={"referer": "https://www.maxmind.com/en/locate-my-ip-address"},
         timeout=10,
     )

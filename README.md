@@ -53,6 +53,23 @@ However, I am recompiling some stuff to get more recent versions:
 
 The binaries are put in `~/.local/bin`.
 
+## About Wayland
+
+What's missing for me to migrate to Wayland:
+
+ - Sway does not support
+   [`append_layout`](https://github.com/swaywm/sway/issues/1005), but it should
+   be possible to get something close (also, I use it mostly on start)
+ - Something to replace `xsecurelock` (I want to use my own screen saver)
+ - Something to replace `polybar`
+
+Everything else should be adaptable:
+
+ - i3 can be replaced by Sway
+ - Dunst [supports](https://github.com/dunst-project/dunst/issues/264) Wayland
+ - There is a [fork](https://github.com/lbonn/rofi) of Rofi with Wayland support
+ - Wallpaper building should be adaptable
+
 ## Interesting links
 
  - [/r/unixporn on reddit](https://www.reddit.com/r/unixporn/search?q=i3&restrict_sr=1)

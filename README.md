@@ -60,7 +60,8 @@ What's missing for me to migrate to Wayland:
  - Sway does not support
    [`append_layout`](https://github.com/swaywm/sway/issues/1005), but it should
    be possible to get something close (also, I use it mostly on start)
- - Something to replace `xsecurelock` (I want to use my own screen saver)
+ - Something to replace `xsecurelock` (I want to use my own screen saver), maybe
+   [swaylock-plugin](https://github.com/mstoeckl/swaylock-plugin)?
  - Something to replace `polybar`, maybe [Waybar](https://github.com/Alexays/Waybar)?
 
 Everything else should be adaptable:

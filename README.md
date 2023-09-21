@@ -70,6 +70,8 @@ Everything else should be adaptable:
  - There is a [fork](https://github.com/lbonn/rofi) of Rofi with Wayland support
  - Wallpaper building should be adaptable
 
+Also see [this post from Anarcat](https://anarc.at/software/desktop/wayland/).
+
 ## Interesting links
 
  - [/r/unixporn on reddit](https://www.reddit.com/r/unixporn/search?q=i3&restrict_sr=1)

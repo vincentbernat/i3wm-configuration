@@ -11,8 +11,9 @@ if [ -z "${ROFI_OUTSIDE}" ]; then
               -kb-custom-3 Super+c \
               -kb-custom-4 Super+v \
               -kb-custom-5 Super+b \
-              -kb-custom-6 Super+m \
-              -kb-custom-7 Super+s \
+              -kb-custom-6 Super+n \
+              -kb-custom-7 Super+m \
+              -kb-custom-8 Super+s \
               -kb-cancel Escape,Control+g,Super+Escape
 fi
 
@@ -42,6 +43,7 @@ media-playback-start      Play
 media-playback-pause      Pause
 media-playback-stop       Stop
 go-next                   Next track
+audio-input-microphone    Toggle microphone
 multimedia-volume-control Open mixer panel
 com.spotify.Client        Open Spotify
 EOF
@@ -64,8 +66,9 @@ EOF
             3) $playerctl pause ;;
             4) $playerctl stop ;;
             5) $playerctl next ;;
-            6) i3-msg '[class="Pavucontrol"] focus' || i3-msg exec exec pavucontrol ;;
-            7) i3-msg '[class="Spotify"] focus' || i3-msg exec exec spotify ;;
+            6) ~/.config/i3/bin/toggle-mute source ;;
+            7) i3-msg '[class="Pavucontrol"] focus' || i3-msg exec exec pavucontrol ;;
+            8) i3-msg '[class="Spotify"] focus' || i3-msg exec exec spotify ;;
         esac >&2
         ;;
 esac

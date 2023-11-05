@@ -57,7 +57,7 @@ bindsym $mod+Return exec exec $term
 bindsym $mod+x kill
 
 # execute command
-set $rofi exec rofi -modi drun -show drun -show-icons -drun-match-fields name
+set $rofi exec rofi -modi drun -show drun -show-icons -drun-match-fields name -run-command "i3-msg exec '{cmd}'"
 bindsym $mod+r      exec --no-startup-id $rofi
 bindsym XF86LaunchA exec --no-startup-id $rofi
 

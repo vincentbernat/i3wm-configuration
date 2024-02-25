@@ -58,6 +58,7 @@ case "$1" in
         # After unlocking screen, stop dimmer, restore notifications
         dimmer stop
         dunstctl set-paused ${dunstctl_state}
+        # Hack around an issue with brightness
         [[ "$(uname -n)" != "wally" ]] || brightnessctl -q set $(brightnessctl get)
         ;;
 esac

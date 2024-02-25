@@ -50,7 +50,7 @@ case "$1" in
             XSECURELOCK_SAVER_IMAGE=$XDG_RUNTIME_DIR/i3/current-wallpaper.png \
             XSECURELOCK_SAVER_WEATHER=$XDG_RUNTIME_DIR/i3/weather.txt \
             `# Font for authentication window` \
-            XSECURELOCK_FONT="Iosevka" \
+            XSECURELOCK_FONT="Iosevka Term SS18" \
             `# Timeout for authentication window` \
             XSECURELOCK_AUTH_TIMEOUT=10 \
             xsecurelock

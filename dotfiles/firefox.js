@@ -89,6 +89,9 @@ user_pref("browser.aboutConfig.showWarning", false);
 user_pref("browser.disableResetPrompt", true);
 user_pref("browser.tabs.firefox-view", false);
 
+//Don't close on last tab
+user_pref("browser.tabs.closeWindowWithLastTab", false);
+
 // Disable safebrowsing malware (sends hash of each file to Google)
 user_pref("browser.safebrowsing.malware.enabled", false);
 

@@ -363,7 +363,7 @@ async def workspace_rename(i3, event):
     for workspace in workspaces:
         icons = set()
         for window in workspace.leaves():
-            if window.sticky:
+            if window.sticky and window.floating in {"auto_on", "user_on"}:
                 continue
             cls = (window.window_class or "").lower()
             if cls in application_icons_ignore:

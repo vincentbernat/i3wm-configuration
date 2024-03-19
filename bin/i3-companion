@@ -518,7 +518,7 @@ async def workspace_exclusive(i3, event):
         if w.id != ow.id
         and (w.window_class or object()) != ow.window_class
         and (ow.window_class or "").lower() in exclusive_apps
-        and not ow.sticky
+        and not (ow.sticky and ow.floating in {"auto_on", "user_on"})
     }
 
     # If current one is OK, don't move

@@ -1,9 +1,0 @@
-[Unit]
-Description=Cleaner for Spotify extra PulseAudio streams
-After=sound.target
-
-[Service]
-ExecStart=%h/.config/i3/bin/spotify-clean
-Type=oneshot
-RemainAfterExit=false
-TimeoutStartSec=5s

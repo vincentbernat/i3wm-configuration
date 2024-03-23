@@ -6,7 +6,7 @@ set $down k
 set $left j
 set $right semicolon
 set $term vbeterm
-set $mediaplayer spotify
+set $mediaplayer MellowPlayer3
 set $borderpx 3
 
 font pango:Iosevka Aile 9

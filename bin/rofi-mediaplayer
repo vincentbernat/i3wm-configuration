@@ -68,7 +68,7 @@ EOF
             5) $playerctl next ;;
             6) ~/.config/i3/bin/toggle-mute source ;;
             7) i3-msg '[class="Pavucontrol"] focus' || i3-msg exec exec pavucontrol ;;
-            8) i3-msg '[class="Deezer"] focus' || i3-msg exec exec dev.aunetx.deezer ;;
+            8) i3-msg '[class="Deezer"] focus' || i3-msg exec gtk-launch dev.aunetx.deezer ;;
         esac >&2
         ;;
 esac

@@ -52,6 +52,7 @@ dunstrc      .config/dunst/dunstrc
 polybar.conf .config/polybar/config
 rofi.conf    .config/rofi/config.rasi
 fonts.conf   .config/fontconfig/fonts.conf
+portals.conf .config/xdg-desktop-portal/portals.conf
 EOF
 rm -f ~/.config/gtk-3.0/settings.ini
 dconf load / < ~/.config/i3/dotfiles/dconf.ini

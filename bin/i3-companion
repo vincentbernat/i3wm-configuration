@@ -56,6 +56,7 @@ application_icons = {
     "file-roller": icon(2, ""),
     "firefox": icon(3, ""),
     "gaupol": icon(2, ""),
+    "geeqie": icon(2, ""),
     "gimp": icon(2, ""),
     "gitg": icon(2, ""),
     "gnome-boxes": icon(2, ""),

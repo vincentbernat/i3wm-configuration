@@ -108,7 +108,7 @@ def on_overlay_draw(widget, cctx, ctx):
 
     # Weather
     # We can have polybar markups in it. We assume %{Tx} means to use
-    # Font Awesome 6 and we ignore font color change. The parsing is
+    # Weather Icons and we ignore font color change. The parsing is
     # quite basic.
     if ctx.weather:
         data = re.sub(r"%{F[#\d+-]+?}", "", ctx.weather)
@@ -120,7 +120,7 @@ def on_overlay_draw(widget, cctx, ctx):
                 font = ctx.font_family
                 continue
             elif chunk.startswith("%{T"):
-                font = "Font Awesome 6 Pro"
+                font = "Weather Icons"
                 continue
             elif not chunk:
                 continue

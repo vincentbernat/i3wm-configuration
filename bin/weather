@@ -30,17 +30,17 @@ def get_location():
     return ((data["location"]["latitude"], data["location"]["longitude"]), location)
 
 
-def get_weather(apikey, latitude, longitude):
-    """Return data from openweathermap."""
-    logger.debug("query openweathermap for %s, %s", latitude, longitude)
+def get_weather(latitude, longitude):
+    """Return data from met.no."""
+    logger.debug("query met.no for %s, %s", latitude, longitude)
     r = requests.get(
-        f"https://api.openweathermap.org/data/2.5/onecall",
+        "https://api.met.no/weatherapi/locationforecast/2.0/complete.json",
         params={
-            "appid": apikey,
-            "lat": latitude,
-            "lon": longitude,
-            "units": "metric",
-            "exclude": "minutely,hourly",
+            "lat": f"{latitude:.4f}",
+            "lon": f"{longitude:.4f}",
+        },
+        headers={
+            "user-agent": "WeatherWidget https://github.com/vincentbernat/i3wm-configuration"
         },
         timeout=10,
     )
@@ -50,37 +50,43 @@ def get_weather(apikey, latitude, longitude):
     return data
 
 
-def format_weather(data, show_temperature=True):
-    """Translate OWM icon to WeatherIcons."""
-    # https://erikflowers.github.io/weather-icons/
-    icon = data["weather"][0]["icon"]
-    temperature = data["temp"] if show_temperature else 0
-    if icon == "01d" and temperature > 32:
-        icon = ""
-    else:
-        icon = {
-            "01d": "",  # Clear sky - day
-            "01n": "⏾",  # Clear sky - night
-            "02d": "🌤",  # Few clouds (11-25%) - day
-            "02n": "",  # Few clouds (11-25%) - night
-            "03d": "⛅",  # Scattered clouds (25-50%) - day/night
-            "03n": "",  # Scattered clouds (25-50%) - day/night
-            "04d": "",  # Broken / Overcast clouds (51-84% / 85-100%) - day/night
-            "04n": "",  # Broken / Overcast clouds (51-84% / 85-100%) - day/night
-            "09d": "🌦",  # Shower rain - day
-            "09n": "",  # Shower rain - night
-            "10d": "",  # Moderate / heavy rain - day
-            "10n": "",  # Moderate / heavy rain - night
-            "11d": "",  # Thunderstorm - day
-            "11n": "",  # Thunderstorm - night
-            "13d": "",  # Snow - day
-            "13n": "❄",  # Snow - night
-            "50d": "",  # Fog - day
-            "50n": "🌫",  # Fog - night
-        }.get(icon, "")
+def format_icon(symbol_code):
+    """Translate met.no icon to Font Awesome."""
+    # See https://github.com/metno/weathericons/blob/main/weather/legend.csv
+    symbol_code = symbol_code.removeprefix("light")
+    symbol_code = symbol_code.removeprefix("heavy")
+    if symbol_code.startswith("ss"):
+        symbol_code = symbol_code[1:]
+    icon = {
+        "clearsky_day": "\uf00d",
+        "clearsky_night": "\uf02e",
+        "cloudy": "\uf013",
+        "fair_day": "\uf002",
+        "fair_night": "\uf086",
+        "fog": "\uf014",
+        "partlycloudy_day": "\uf002",
+        "partlycloudy_night": "\uf086",
+        "rain": "\uf019",
+        "rainandthunder": "\uf01e",
+        "rainshowers_day": "\uf009",
+        "rainshowers_night": "\uf037",
+        "rainshowersandthunder_day": "\uf010",
+        "rainshowersandthunder_night": "\uf03b",
+        "sleet": "\uf0b5",
+        "sleetandthunder": "\uf01d",
+        "sleetshowers_day": "\uf0b2",
+        "sleetshowers_night": "\uf0b3",
+        "sleetshowersandthunder_day": "\uf068",
+        "sleetshowersandthunder_night": "\uf069",
+        "snow": "\uf01b",
+        "snowandthunder": "\uf06b",
+        "snowshowers_day": "\uf009",
+        "snowshowers_night": "\uf038",
+        "snowshowersandthunder_day": "\uf06b",
+        "snowshowersandthunder_night": "\uf06c",
+    }.get(symbol_code, "?")
+    logger.debug("symbol %s translated to %s (\\u%04x)", symbol_code, icon, ord(icon))
     output = ["%{Tx}", icon, "%{T-}"]
-    if show_temperature:
-        output += [" ", str(int(round(temperature))), "°C"]
     return "".join(output)
 
 
@@ -106,12 +112,7 @@ if __name__ == "__main__":
         help="enable debugging",
     )
     parser.add_argument(
-        "--owm-api-key",
-        default=os.environ.get("OWM_API_KEY"),
-        help="OpenWeatherMap API key",
-    )
-    parser.add_argument(
-        "--font-index", default=3, type=int, help="Font Awesome 1-index"
+        "--font-index", default=4, type=int, help="Polybar font 1-index"
     )
     parser.add_argument(
         "--output",
@@ -156,25 +157,21 @@ if __name__ == "__main__":
                     sys.exit(1)
 
         # Grab current weather and daily forecast
-        weather = get_weather(options.owm_api_key, *location)
-        daily_weather_ts = time.strftime(
-            "%Y-%m-%d %H:%M %Z", time.gmtime(weather["daily"][0]["dt"])
-        )
-        description = weather["current"]["weather"][0]["description"]
-        logger.info(f"current weather at {city}: {description}")
-        logger.info(f"daily forecast: {daily_weather_ts}")
+        weather = get_weather(*location)
+        weather = weather["properties"]["timeseries"][0]["data"]
 
         # Format output
-        conditions = [format_weather(weather["current"])]
-        conditions += [
-            format_weather(weather["daily"][0], False),
+        conditions = [
+            format_icon(weather["next_1_hours"]["summary"]["symbol_code"]),
+            "{}°C".format(round(weather["instant"]["details"]["air_temperature"])),
+            format_icon(weather["next_6_hours"]["summary"]["symbol_code"]),
             "{}—{}°C".format(
-                round(weather["daily"][0]["temp"]["min"]),
-                round(weather["daily"][0]["temp"]["max"]),
+                round(weather["next_6_hours"]["details"]["air_temperature_min"]),
+                round(weather["next_6_hours"]["details"]["air_temperature_max"]),
             ),
         ]
         city = city.replace("%", "%%")
-        conditions.insert(0, f"%{{F#888}}%{{Tx}}%{{T-}} {city}%{{F-}}")
+        conditions.insert(0, f"%{{F#888}}{city}%{{F-}}")
         output = " ".join(conditions).replace("%{Tx}", "%%{T%d}" % options.font_index)
         logger.debug("output: %s", output)
 

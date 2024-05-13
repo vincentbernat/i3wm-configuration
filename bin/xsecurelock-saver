@@ -120,7 +120,7 @@ def on_overlay_draw(widget, cctx, ctx):
                 font = ctx.font_family
                 continue
             elif chunk.startswith("%{T"):
-                font = "Weather Icons"
+                font = ctx.weather_font_family
                 continue
             elif not chunk:
                 continue
@@ -197,6 +197,9 @@ if __name__ == "__main__":
     ctx.weather_font_size = int(os.getenv("XSECURELOCK_SAVER_CLOCK_FONT_SIZE", 40))
     ctx.weather_file = os.getenv("XSECURELOCK_SAVER_WEATHER", None)
     ctx.font_family = os.getenv("XSECURELOCK_SAVER_FONT", "Iosevka Aile")
+    ctx.weather_font_family = os.getenv(
+        "XSECURELOCK_SAVER_WEATHER_FONT_FAMILY", "Weather Icons"
+    )
     ctx.background = None
     ctx.weather = None
     ctx.clock = None

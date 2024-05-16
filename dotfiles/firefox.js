@@ -104,3 +104,7 @@ user_pref("browser.translations.panelShown", true);
 
 // Enable userContent.css (disabled)
 user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", false);
+
+// Disable some telemetry stuff releated to search engines
+user_pref("browser.search.serpEventTelemetry.enabled", false);
+user_pref("browser.search.serpEventTelemetryCategorization.enabled", false);

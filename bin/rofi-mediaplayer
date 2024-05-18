@@ -45,7 +45,7 @@ media-playback-stop       Stop
 go-next                   Next track
 audio-input-microphone    Toggle microphone
 multimedia-volume-control Open mixer panel
-dev.aunetx.deezer         Open Deezer
+com.spotify.Client        Open Spotify
 EOF
 
         # Player status
@@ -68,7 +68,7 @@ EOF
             5) $playerctl next ;;
             6) ~/.config/i3/bin/toggle-mute source ;;
             7) i3-msg '[class="Pavucontrol"] focus' || i3-msg exec exec pavucontrol ;;
-            8) i3-msg '[class="Deezer"] focus' || i3-msg exec gtk-launch dev.aunetx.deezer ;;
+            8) i3-msg '[class="Spotify"] focus' || i3-msg exec gtk-launch com.spotify.Client ;;
         esac >&2
         ;;
 esac

@@ -48,7 +48,6 @@ application_icons = {
     "chromium": icon(3, ""),
     "d-feet": icon(2, ""),
     "darktable": icon(2, ""),
-    "deezer": icon(3, ""),
     "discord": icon(3, ""),
     "draw.io": icon(2, ""),
     "easyeffects": icon(2, ""),

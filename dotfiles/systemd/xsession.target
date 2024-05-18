@@ -8,6 +8,7 @@ Wants=picom.service
 Wants=pipewire-pulse.socket
 Wants=policykit-agent.service
 Wants=redshift.service
+Wants=spotify-clean.timer
 Wants=ssh-agent.service
 Wants=weather.timer
 Wants=wireplumber.service

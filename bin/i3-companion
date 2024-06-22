@@ -46,6 +46,7 @@ application_icons = {
     "blender": icon(2, ""),
     "calibre": icon(2, "📚"),
     "chromium": icon(3, ""),
+    "ungoogled_chromium": icon(3, ""),
     "d-feet": icon(2, ""),
     "darktable": icon(2, ""),
     "discord": icon(3, ""),
@@ -372,7 +373,10 @@ async def workspace_rename(i3, event):
             icon = application_icons.get(
                 cls,
                 application_icons.get(
-                    cls.split("-")[0], application_icons.get(cls.split("_")[0])
+                    cls.split("-")[0],
+                    application_icons.get(
+                        cls.split("_")[0], application_icons.get(cls.split(".")[-1])
+                    ),
                 ),
             )
             icons.add(icon or application_icons_nomatch)

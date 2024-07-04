@@ -815,7 +815,7 @@ async def bluetooth_status(i3, event, *args):
                 powered = True
         elif "org.bluez.Device1" in interfaces:
             # We have a device!
-            device = types.SimpleNamespace(major=0, minor=0, battery=None)
+            device = types.SimpleNamespace(major=0, minor=0, battery=None, icon=None)
             interface = interfaces["org.bluez.Device1"]
             if not interface["Connected"][1]:
                 continue
@@ -823,7 +823,14 @@ async def bluetooth_status(i3, event, *args):
                 device_class = interface["Class"][1]
                 device.major = (device_class & 0x1F00) >> 8
                 device.minor = (device_class & 0xFC) >> 2
+            except KeyError:
+                pass
+            try:
                 device.battery = interfaces["org.bluez.Battery1"]["Percentage"][1]
+            except KeyError:
+                pass
+            try:
+                device.icon = interface["Icon"][1]
             except KeyError:
                 pass
             devices.append(device)
@@ -861,8 +868,13 @@ async def bluetooth_status(i3, event, *args):
                     (lambda x: x & 0x20, "printer"),
                 ],
             }
-            icon = classes.get((device.major, device.minor)) or classes.get(
-                device.major, "unknown"
+            bicons = {
+                "input-mouse": "mouse",
+            }
+            icon = (
+                bicons.get(device.icon)
+                or classes.get((device.major, device.minor))
+                or classes.get(device.major, "unknown")
             )
             if type(icon) is list:
                 for matcher, name in icon:

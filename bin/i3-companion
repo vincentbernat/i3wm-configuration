@@ -782,6 +782,8 @@ async def bluetooth_notifications(i3, event, path, interface, changed, invalid):
         onlyif=lambda args: (
             args[0] == "org.bluez.Device1"
             and "Connected" in args[1]
+            or args[0] == "org.bluez.Device1"
+            and "ServicesResolved" in args[1]
             or args[0] == "org.bluez.Adapter1"
             and "Powered" in args[1]
             or args[0] == "org.bluez.Battery1"

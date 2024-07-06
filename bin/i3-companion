@@ -105,7 +105,6 @@ icons = {
     "battery-0": icon(2, ""),
     "bluetooth": icon(2, ""),
     "camera": icon(2, "⎙"),
-    "car": icon(2, "🚘"),
     "gamepad": icon(2, "🎮"),
     "headphones": icon(2, "🎧"),
     "headset": icon(2, ""),
@@ -824,16 +823,10 @@ async def bluetooth_status(i3, event, *args):
                 powered = True
         elif "org.bluez.Device1" in interfaces:
             # We have a device!
-            device = types.SimpleNamespace(major=0, minor=0, battery=None, icon=None)
+            device = types.SimpleNamespace(battery=None, icon=None)
             interface = interfaces["org.bluez.Device1"]
             if not interface["Connected"][1]:
                 continue
-            try:
-                device_class = interface["Class"][1]
-                device.major = (device_class & 0x1F00) >> 8
-                device.minor = (device_class & 0xFC) >> 2
-            except KeyError:
-                pass
             try:
                 device.battery = interfaces["org.bluez.Battery1"]["Percentage"][1]
             except KeyError:
@@ -844,58 +837,29 @@ async def bluetooth_status(i3, event, *args):
                 pass
             devices.append(device)
 
-    # Choose appropriate icons for output
-    # See: https://btprodspecificationrefs.blob.core.windows.net/assigned-numbers
-    #      /Assigned%20Number%20Types/Baseband.pdf
     if not powered:
         output = ""
     else:
         output = ["bluetooth"]
         for device in devices:
-            classes = {
-                1: "laptop",
-                2: "phone",
-                3: "access-point",
-                (4, 1): "headset",
-                (4, 2): "headset",
-                (4, 4): "microphone",
-                (4, 5): "loudspeaker",
-                (4, 7): "loudspeaker",
-                (4, 10): "loudspeaker",
-                (4, 6): "headphones",
-                (4, 8): "car",
-                (4, 12): "webcam",
-                (5, 1): "gamepad",
-                (5, 2): "gamepad",
-                5: [
-                    (lambda x: x & 0x10, "keyboard"),
-                    (lambda x: x & 0x20, "mouse"),
-                ],
-                6: [
-                    (lambda x: x & 0x8, "camera"),
-                    (lambda x: x & 0x10, "scanner"),
-                    (lambda x: x & 0x20, "printer"),
-                ],
-            }
             bicons = {
+                "audio-card": "loudspeaker",
+                "audio-headphones": "headphones",
+                "audio-headset": "headset",
+                "camera-photo": "camera",
+                "camera-video": "webcam",
+                "computer": "laptop",
+                "input-gaming": "gamepad",
+                "input-keyboard": "keyboard",
                 "input-mouse": "mouse",
+                "network-wireless": "access-point",
+                "phone": "phone",
+                "printer": "printer",
+                "scanner": "scanner",
             }
-            icon = (
-                bicons.get(device.icon)
-                or classes.get((device.major, device.minor))
-                or classes.get(device.major, "unknown")
-            )
-            if type(icon) is list:
-                for matcher, name in icon:
-                    if matcher(device.minor):
-                        icon = name
-                        break
-                else:
-                    icon = "unknown"
-            output.append(icon)
+            output.append(bicons.get(device.icon, "unknown"))
             if device.battery is not None:
-                icon = f"battery-{(device.battery+12)//25*25}"
-                output[-1] = (output[-1], icon)
+                output[-1] = (output[-1], f"battery-{(device.battery+12)//25*25}")
         return "|".join(
             (" ".join(icons[oo] for oo in o) if type(o) is tuple else icons[o])
             for o in output

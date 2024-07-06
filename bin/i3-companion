@@ -1184,7 +1184,7 @@ async def main(options):
 
 if __name__ == "__main__":
     # Parse
-    description = sys.modules[__name__].__doc__
+    description = sys.modules[__name__].__doc__ or ""
     for fn, events in on.functions.items():
         description += f" {fn.__doc__}"
     parser = argparse.ArgumentParser(description=description)

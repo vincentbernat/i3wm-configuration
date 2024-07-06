@@ -838,32 +838,31 @@ async def bluetooth_status(i3, event, *args):
             devices.append(device)
 
     if not powered:
-        output = ""
-    else:
-        output = ["bluetooth"]
-        for device in devices:
-            bicons = {
-                "audio-card": "loudspeaker",
-                "audio-headphones": "headphones",
-                "audio-headset": "headset",
-                "camera-photo": "camera",
-                "camera-video": "webcam",
-                "computer": "laptop",
-                "input-gaming": "gamepad",
-                "input-keyboard": "keyboard",
-                "input-mouse": "mouse",
-                "network-wireless": "access-point",
-                "phone": "phone",
-                "printer": "printer",
-                "scanner": "scanner",
-            }
-            output.append(bicons.get(device.icon, "unknown"))
-            if device.battery is not None:
-                output[-1] = (output[-1], f"battery-{(device.battery+12)//25*25}")
-        return "|".join(
-            (" ".join(icons[oo] for oo in o) if type(o) is tuple else icons[o])
-            for o in output
-        )
+        return ""
+    output = ["bluetooth"]
+    for device in devices:
+        bicons = {
+            "audio-card": "loudspeaker",
+            "audio-headphones": "headphones",
+            "audio-headset": "headset",
+            "camera-photo": "camera",
+            "camera-video": "webcam",
+            "computer": "laptop",
+            "input-gaming": "gamepad",
+            "input-keyboard": "keyboard",
+            "input-mouse": "mouse",
+            "network-wireless": "access-point",
+            "phone": "phone",
+            "printer": "printer",
+            "scanner": "scanner",
+        }
+        output.append(bicons.get(device.icon, "unknown"))
+        if device.battery is not None:
+            output[-1] = (output[-1], f"battery-{(device.battery+12)//25*25}")
+    return "|".join(
+        (" ".join(icons[oo] for oo in o) if type(o) is tuple else icons[o])
+        for o in output
+    )
 
 
 @on(

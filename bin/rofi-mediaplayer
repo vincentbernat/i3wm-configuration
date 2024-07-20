@@ -5,7 +5,8 @@
 if [ -z "${ROFI_OUTSIDE}" ]; then
     export mediaplayer=$1
     export Mediaplayer=$(echo $1 | sed -E 's/(.)/\U\1/')
-    exec rofi -no-lazy-grab -show-icons -no-custom -modi m:$0 -show m \
+    dpi=$(xrdb -query | sed -nE 's/^Xft\.dpi:\s*//p')
+    exec rofi -dpi $dpi -no-lazy-grab -show-icons -no-custom -modi m:$0 -show m \
               -kb-custom-1 Super+z \
               -kb-custom-2 Super+x \
               -kb-custom-3 Super+c \

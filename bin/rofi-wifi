@@ -4,7 +4,8 @@
 
 if [ -z "${ROFI_OUTSIDE}" ]; then
     yoffset=$(( $(xrdb -query | sed -n 's/^Xft.dpi:\t\([0-9]*\)$/\1/p')*20/96 ))
-    exec rofi -show-icons -no-custom -modi m:$0 -show m -location 3 -yoffset $yoffset
+    dpi=$(xrdb -query | sed -nE 's/^Xft\.dpi:\s*//p')
+    exec rofi -dpi $dpi -show-icons -no-custom -modi m:$0 -show m -location 3 -yoffset $yoffset
 fi
 
 case $ROFI_RETV in

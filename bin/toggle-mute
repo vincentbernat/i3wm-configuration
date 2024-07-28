@@ -18,6 +18,7 @@ case $1 in
                        }
                      }
                      for (source in muted) {
+                       gsub(/['"'"'"\\\$\(\)`]/, "\\\\&", descriptions[source])
                        print "echo "(allmuted?"🔊":"🔇")" "descriptions[source]
                        print "pactl set-'$1'-mute "source" "(!allmuted);
                      }

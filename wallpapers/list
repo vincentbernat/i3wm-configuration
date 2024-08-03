@@ -1,0 +1,10 @@
+#!/bin/zsh
+
+find -regextype posix-extended -iregex '.*\.(jpe?g|png|webp)' -print0 \
+    | xargs -0 identify -format "%[fx:w*h]	%[w]x%[h]	%i\n" \
+    | while read pixels resolution name; do
+    count=$(getfattr --only-values -n user.count $name 2> /dev/null || echo 0)
+    printf "%s\t%9s\t%5d\t%s\n" $pixels $resolution $count $name
+done \
+    | sort -g -b -k3,3r -k1,1 \
+    | cut -f2-

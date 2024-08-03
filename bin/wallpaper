@@ -23,6 +23,7 @@ import itertools
 import logging
 import logging.handlers
 import inspect
+import xattr
 
 from Xlib import display
 from Xlib.ext import randr
@@ -202,11 +203,26 @@ def get_covering_rectangles(outputs: list[Rectangle]) -> set[tuple[Rectangle, ..
 def get_random_images(directory: str, number: int) -> list[Image]:
     """Get random images from a directory."""
     image_files = []
+    weights = []
+    counts = []
     for base, _, files in os.walk(os.path.join(directory)):
         for i in files:
             if os.path.splitext(i)[1].lower() in (".jpg", ".jpeg", ".png", ".webp"):
-                image_files.append(os.path.join(base, i))
-    images = [PIL.Image.open(image) for image in random.sample(image_files, number)]
+                filename = os.path.join(base, i)
+                image_files.append(filename)
+                if options.count_attribute:
+                    try:
+                        count = int(
+                            xattr.get(filename, options.count_attribute).decode()
+                        )
+                    except (OSError, ValueError):
+                        count = 0
+                    counts.append(count)
+    weights = [1 / (count + 1) for count in counts]
+    images = [
+        PIL.Image.open(image)
+        for image in random.choices(image_files, k=number, weights=weights)
+    ]
 
     for image in images:
         directory_len = len(directory) + 1
@@ -356,6 +372,12 @@ if __name__ == "__main__":
         metavar="N",
         help="consider N additional images to choose the best combination",
     )
+    group.add_argument(
+        "--count-attribute",
+        default="user.count",
+        metavar="ATTR",
+        help="store number of times an image was used in the provided attribute",
+    )
     params = inspect.signature(get_best_parts).parameters
     group.add_argument(
         "--ratio-score",
@@ -423,6 +445,16 @@ if __name__ == "__main__":
                     *part.image.size
                 )
             )
+            if options.count_attribute:
+                try:
+                    count = int(xattr.get(part.image.filename, options.count_attribute))
+                except (OSError, ValueError):
+                    count = 0
+                xattr.set(
+                    part.image.filename,
+                    options.count_attribute,
+                    bytes(str(count + 1), "ascii"),
+                )
         build(background, wallpaper_parts)
         save(background, options.target, options.compression)
 

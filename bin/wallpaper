@@ -213,7 +213,7 @@ def get_random_images(directory: str, number: int) -> list[Image]:
                 if options.count_attribute:
                     try:
                         count = int(
-                            xattr.get(filename, options.count_attribute).decode()
+                            xattr.getxattr(filename, options.count_attribute).decode()
                         )
                     except (OSError, ValueError):
                         count = 0
@@ -448,10 +448,12 @@ if __name__ == "__main__":
             )
             if options.count_attribute:
                 try:
-                    count = int(xattr.get(part.image.filename, options.count_attribute))
+                    count = int(
+                        xattr.getxattr(part.image.filename, options.count_attribute)
+                    )
                 except (OSError, ValueError):
                     count = 0
-                xattr.set(
+                xattr.setxattr(
                     part.image.filename,
                     options.count_attribute,
                     bytes(str(count + 1), "ascii"),

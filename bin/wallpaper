@@ -19,7 +19,6 @@ import sys
 import random
 import argparse
 import tempfile
-import collections
 import itertools
 import logging
 import logging.handlers
@@ -30,7 +29,6 @@ from Xlib.ext import randr
 from systemd import journal
 import PIL.Image
 from PIL.Image import Image
-from PIL.ImageFile import ImageFile
 from typing import Optional, NamedTuple
 
 # We use typing, but it seems mostly broken with PIL.

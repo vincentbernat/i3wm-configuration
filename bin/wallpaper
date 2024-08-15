@@ -234,8 +234,8 @@ def get_best_parts(
     groups: set[tuple[Rectangle, ...]],
     images: list[Image],
     ratio_score: int = 100,
-    scale_score: int = 5,
-    wallpaper_score: int = 2,
+    scale_score: int = 10,
+    multiple_wallpaper_score: int = -50,
 ) -> Optional[list[WallpaperPart]]:
     """Find optimal association for images for the groups of covering rectangles.
 
@@ -309,7 +309,7 @@ def get_best_parts(
                 if r >= 1:
                     r = 1
                 score += r * scale_score
-            score /= pow(len(group), wallpaper_score)
+            score += (len(group) - 1) * multiple_wallpaper_score
             logger.debug("association: %s, score %.2f", association_, score)
             if score > best_score or best_association is None:
                 best_association = association_
@@ -390,9 +390,9 @@ if __name__ == "__main__":
         help="multiplicative weight applied to pixel matching for score",
     )
     group.add_argument(
-        "--wallpaper-score",
-        default=params["wallpaper_score"].default,
-        help="invert power weight applied to the number of wallpapers used",
+        "--multiple-wallpaper-score",
+        default=params["multiple_wallpaper_score"].default,
+        help="additive weight for each additional wallpaper used",
     )
     group = parser.add_argument_group("image output")
     group.add_argument(
@@ -435,7 +435,7 @@ if __name__ == "__main__":
             images,
             ratio_score=options.ratio_score,
             scale_score=options.scale_score,
-            wallpaper_score=options.wallpaper_score,
+            multiple_wallpaper_score=options.multiple_wallpaper_score,
         )
         assert wallpaper_parts is not None
         for part in wallpaper_parts:

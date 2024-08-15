@@ -12,7 +12,9 @@
 #                     -loop-playlist=inf
 
 # Alternative:
-# https://moewalls.com/category/pixel-art/
+#  https://moewalls.com/category/pixel-art/
+#  We could extract the first frame as a wallpaper, but use the whole video for
+#  the lock screen (and pause when the screen is off)
 
 import os
 import sys

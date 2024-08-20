@@ -370,9 +370,9 @@ if __name__ == "__main__":
     )
     group.add_argument(
         "--extra-images",
-        default=3,
+        default=1,
         metavar="N",
-        help="consider N additional images to choose the best combination",
+        help="consider N additional images per output to choose the best combination",
     )
     group.add_argument(
         "--count-attribute",
@@ -430,7 +430,7 @@ if __name__ == "__main__":
         outputs, background = get_outputs()
         candidates = get_covering_rectangles(outputs)
         images = get_random_images(
-            options.directory, len(outputs) + options.extra_images
+            options.directory, len(outputs) * (1 + options.extra_images)
         )
         wallpaper_parts = get_best_parts(
             candidates,

@@ -236,7 +236,7 @@ def get_best_parts(
     groups: set[tuple[Rectangle, ...]],
     images: list[Image],
     ratio_score: int = 100,
-    scale_score: int = 10,
+    scale_score: int = 20,
     multiple_wallpaper_score: int = -50,
 ) -> Optional[list[WallpaperPart]]:
     """Find optimal association for images for the groups of covering rectangles.

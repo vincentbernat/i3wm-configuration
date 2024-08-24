@@ -1,0 +1,3 @@
+tooltip, menu, window, frame, popover > contents {
+  border-radius: 0;
+}

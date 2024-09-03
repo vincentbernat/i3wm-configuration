@@ -52,7 +52,8 @@ echo "using ${dpi}dpi" >&2
     echo Xft.rgba: $( [ $dpi -gt 144 ] && echo none || echo rgb )
 } | xrdb -merge
 
-# X server update
+# X server update (+ trigger update)
+xrandr --dpi $((dpi-1))
 xrandr --dpi $dpi
 
 # Build xsettingsd

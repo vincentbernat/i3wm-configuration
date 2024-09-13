@@ -186,7 +186,7 @@ if __name__ == "__main__":
             "{}—{}°C".format(round(mintemp), round(maxtemp)),
         ]
         city = city.replace("%", "%%")
-        conditions.insert(0, f"%{{F#888}}{city}%{{F-}}")
+        conditions.insert(0, f"%{{F#bbb}}{city}%{{F-}}")
         output = " ".join(conditions).replace("%{Tx}", "%%{T%d}" % options.font_index)
         logger.debug("output: %s", output)
 

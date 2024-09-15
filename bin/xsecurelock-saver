@@ -111,7 +111,7 @@ def on_overlay_draw(widget, cctx, ctx):
     # Weather Icons and we ignore font color change. The parsing is
     # quite basic.
     if ctx.weather:
-        data = re.sub(r"%{F[#\d+-]+?}", "", ctx.weather)
+        data = re.sub(r"%{F[#\da-f+-]+?}", "", ctx.weather)
         data = re.split(r"(%{T[1-9-]})", data)
         font = ctx.font_family
         cctx.move_to(20, wheight - 20)

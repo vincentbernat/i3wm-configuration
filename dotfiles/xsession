@@ -45,7 +45,7 @@ Xresources   .Xresources
 XCompose     .XCompose
 gtkrc-2.0    .gtkrc-2.0
 gtk3.css     .config/gtk-3.0/gtk.css
-gtk3.css     .config/gtk-4.0/gtk.css
+gtk4.css     .config/gtk-4.0/gtk.css
 qt5ct.conf   .config/qt5ct/qt5ct.conf
 qt5ct.conf   .config/qt6ct/qt6ct.conf
 systemd      .config/systemd/user

@@ -126,7 +126,7 @@ icons = {
     "wifi-high": icon(2, ""),
     "wifi-low": icon(2, ""),
     "wifi-medium": icon(2, ""),
-    "wired": icon(2, ""),
+    "wired": icon(2, ""),
 }
 application_icons_nomatch = icon(2, "")
 application_icons_ignore = {"dimmer"}

@@ -158,13 +158,13 @@ for_window [class="Shadow"] fullscreen enable
 for_window [window_role="PictureInPicture"] floating enable, resize set 1280 720
 for_window [class="pavucontrol"] floating enable
 # Firefox sharing indicator
-for_window [floating_from="auto" title="Firefox — Sharing Indicator"] border none, sticky enable, move position 30 ppt -5 px
+for_window [floating_from="auto" title="Firefox — Sharing Indicator"] border none, sticky enable, move position 15 ppt -5 px
 no_focus   [floating_from="auto" title="Firefox — Sharing Indicator"]
 # Chromium sharing indicator
-for_window [floating_from="auto" title=" is sharing your screen.$"] border none, sticky enable, move position 30 ppt -5 px
+for_window [floating_from="auto" title=" is sharing your screen.$"] border none, sticky enable, move position 15 ppt -5 px
 no_focus   [floating_from="auto" title=" is sharing your screen.$"]
 # Jitsi sharing indicator
-for_window [floating_from="auto" title="Screen Sharing Tracker" instance="jitsi meet"] border none, sticky enable, move position 30 ppt -5 px
+for_window [floating_from="auto" title="Screen Sharing Tracker" instance="jitsi meet"] border none, sticky enable, move position 15 ppt -5 px
 no_focus   [floating_from="auto" title="Screen Sharing Tracker" instance="jitsi meet"]
 # Zoom (😱?)
 for_window [class="^zoom$" title="^Zoom($|\s)"] floating disable, border pixel $borderpx

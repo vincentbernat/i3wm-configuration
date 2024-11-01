@@ -63,4 +63,4 @@ xrandr --dpi $dpi
     echo Xft/RGBA \"$( [ $dpi -gt 144 ] && echo none || echo rgb )\"
     echo Gdk/WindowScalingFactor $(( $dpi/96 ))
     echo Gdk/UnscaledDPI $(( $dpi*1024/($dpi/96) ))
-} > ~/.xsettingsd
+} > $XDG_RUNTIME_DIR/i3/xsettingsd.conf

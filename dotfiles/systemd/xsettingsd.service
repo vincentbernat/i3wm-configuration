@@ -5,7 +5,7 @@ PartOf=graphical-session.target
 [Service]
 Restart=on-failure
 ExecStartPre=%h/.config/i3/bin/xsettingsd-setup
-ExecStart=/usr/bin/xsettingsd -c %h/.xsettingsd
+ExecStart=/usr/bin/xsettingsd -c %t/i3/xsettingsd.conf
 ExecReload=%h/.config/i3/bin/xsettingsd-setup
 ExecReload=/usr/bin/kill -HUP $MAINPID
 # Restart i3 (it uses Xft.dpi)

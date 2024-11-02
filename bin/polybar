@@ -3,6 +3,7 @@
 export DPI=$(xrdb -query | sed -nE 's/^Xft\.dpi:\s*//p')
 export HEIGHT=$((20 * DPI / 96))
 export BACKLIGHT=$(cd /sys/class/backlight ; ls | head -1)
+export I3SOCK=$(i3 --get-socketpath)
 
 polybar --version
 

@@ -82,7 +82,9 @@ user_pref("network.trr.mode", 5);
 // Disable auto-update
 user_pref("app.update.auto", false);
 user_pref("app.update.interval", 259200);
-user_pref("beacon.enabled", false);
+
+// Let beacon enabled. This is disabled by uBlock Origin.
+user_pref("beacon.enabled", true);
 
 // Disable annoying prompts
 user_pref("browser.aboutConfig.showWarning", false);

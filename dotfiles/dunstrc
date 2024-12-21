@@ -5,7 +5,7 @@
 
     # Appearance
     width = 400
-    offset = 5x17
+    offset = (5, 17)
     origin = top-right
     indicate_hidden = yes
     shrink = no

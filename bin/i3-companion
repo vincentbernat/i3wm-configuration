@@ -46,6 +46,7 @@ application_icons = {
     "anydesk": icon(2, ""),
     "blender": icon(2, ""),
     "calibre": icon(2, "📚"),
+    "cheese": icon(2, ""),
     "chromium": icon(3, ""),
     "ungoogled_chromium": icon(3, ""),
     "d-feet": icon(2, ""),

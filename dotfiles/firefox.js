@@ -97,7 +97,7 @@ user_pref("browser.tabs.closeWindowWithLastTab", false);
 // Don't allow sites to override shortcuts
 // Also check https://www.math.cmu.edu/~gautam/sj/blog/20220329-firefox-disable-ctrl-w.html
 // Also check commit 289649e15479
-user_pref("permissions.default.shortcuts", 2);
+// user_pref("permissions.default.shortcuts", 2);
 
 // Disable safebrowsing malware (sends hash of each file to Google)
 user_pref("browser.safebrowsing.malware.enabled", false);

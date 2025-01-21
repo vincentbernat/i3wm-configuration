@@ -94,6 +94,9 @@ user_pref("browser.tabs.firefox-view", false);
 //Don't close on last tab
 user_pref("browser.tabs.closeWindowWithLastTab", false);
 
+// Don't allow sites to override shortcurs
+user_pref("permissions.default.shortcuts", 2);
+
 // Disable safebrowsing malware (sends hash of each file to Google)
 user_pref("browser.safebrowsing.malware.enabled", false);
 

@@ -86,6 +86,10 @@ user_pref("app.update.interval", 259200);
 // Let beacon enabled. This is disabled by uBlock Origin.
 user_pref("beacon.enabled", true);
 
+// Disable autofill
+user_pref("extensions.formautofill.addresses.enabled", false);
+user_pref("extensions.formautofill.creditCards.enabled", false);
+
 // Disable annoying prompts
 user_pref("browser.aboutConfig.showWarning", false);
 user_pref("browser.disableResetPrompt", true);

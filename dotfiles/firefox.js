@@ -72,19 +72,12 @@ user_pref("media.autoplay.default", 1);
 // And VAAPI decoding with ffmpeg
 user_pref("media.ffmpeg.vaapi.enabled", true);
 
-// Legacy indicator is buggy (no content)
-user_pref("privacy.webrtc.legacyGlobalIndicator", false);
-user_pref("privacy.webrtc.globalMuteToggles", true);
-
 // Disable DoH for now
 user_pref("network.trr.mode", 5);
 
 // Disable auto-update
 user_pref("app.update.auto", false);
 user_pref("app.update.interval", 259200);
-
-// Let beacon enabled. This is disabled by uBlock Origin.
-user_pref("beacon.enabled", true);
 
 // Disable autofill
 user_pref("extensions.formautofill.addresses.enabled", false);

@@ -42,6 +42,9 @@ user_pref("browser.startup.page", 3);
 // Sort tabs by recently used
 user_pref("browser.ctrlTab.sortByRecentlyUsed", true);
 
+// Enable tab groups
+user_pref("browser.tabs.groups.enabled", true);
+
 // Languages
 user_pref("intl.accept_languages", "en");
 

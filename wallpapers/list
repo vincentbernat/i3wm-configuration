@@ -14,5 +14,5 @@ join \
     | while read name pixels resolution count; do
         printf "%s\t%9s\t%5d\t%s\n" $pixels $resolution ${count:-0} $name
 done \
-    | sort -g -b -k3,3r -k1,1 \
+    | sort -b -k3,3rn -k1,1 \
     | cut -f2-

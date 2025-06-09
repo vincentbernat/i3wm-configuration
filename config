@@ -151,6 +151,7 @@ bindsym $mod+i nop "container-info"
 bindsym $mod+Shift+i nop "workspace-info"
 
 # random rules
+focus_on_window_activation smart
 no_focus   [window_type="splash"]
 for_window [tiling] border pixel $borderpx
 for_window [class="Nm-connection-editor"] floating enable

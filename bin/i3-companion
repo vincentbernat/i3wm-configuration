@@ -427,6 +427,7 @@ async def previous_workspace(i3, event):
                 return
         logger.debug("switching to workspace %d on %s", previous, output)
         await i3.command(f"workspace number {previous}")
+        await i3.command("focus tiling")
 
 
 @on(CommandEvent("new-workspace"), CommandEvent("move-to-new-workspace"))

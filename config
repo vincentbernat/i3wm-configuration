@@ -160,17 +160,13 @@ for_window [window_role="PictureInPicture"] floating enable, resize set 1280 720
 for_window [class="pavucontrol"] floating enable
 # Firefox sharing indicator
 for_window [floating title="Firefox — Sharing Indicator"] border none, sticky enable, move position 15 ppt -5 px
-no_focus   [floating title="Firefox — Sharing Indicator"]
 # Chromium sharing indicator
 for_window [floating title=" is sharing your screen.$"] border none, sticky enable, move position 15 ppt -5 px
-no_focus   [floating title=" is sharing your screen.$"]
 # Jitsi sharing indicator
 for_window [floating title="Screen Sharing Tracker" instance="jitsi meet"] border none, sticky enable, move position 15 ppt -5 px
-no_focus   [floating title="Screen Sharing Tracker" instance="jitsi meet"]
 # Zoom (😱?)
 for_window [class="^zoom$" title="^Zoom($|\s)"] floating disable, border pixel $borderpx
 for_window [class="^zoom$" title="^zoom"] floating enable, border none
-no_focus   [class="^zoom$" title="^zoom"]
 
 # start stuff
 exec_always --no-startup-id exec systemctl --user start --no-block i3-session.target

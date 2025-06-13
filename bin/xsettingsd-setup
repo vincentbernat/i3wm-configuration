@@ -57,6 +57,7 @@ xrandr --dpi $((dpi-1))
 xrandr --dpi $dpi
 
 # Build xsettingsd
+mkdir -p $XDG_RUNTIME_DIR/i3
 {
     cat  ~/.config/i3/dotfiles/xsettingsd
     echo Xft/DPI $(( $dpi*1024 ))

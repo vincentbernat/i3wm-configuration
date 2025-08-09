@@ -1,5 +1,7 @@
 // Preferences for Thunderbird. To be symlinked in the profile as user.js.
 
+user_pref("accessibility.force_disabled", 1);
+
 // Theme
 user_pref("extensions.activeThemeID", "thunderbird-compact-dark@mozilla.org");
 user_pref("layout.css.prefers-color-scheme.content-override", 1); // light

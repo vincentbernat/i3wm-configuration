@@ -3,5 +3,5 @@ Description=PolicyKit authentication agent
 PartOf=graphical-session.target
 
 [Service]
-ExecStart=/usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1
+ExecStart=/usr/libexec/xfce-polkit
 Restart=on-failure

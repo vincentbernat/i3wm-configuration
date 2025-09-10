@@ -62,7 +62,10 @@ What's missing for me to migrate to Wayland:
    be possible to get something close (also, I use it mostly on start)
  - Something to replace `xsecurelock` (I want to use my own screen saver), maybe
    [swaylock-plugin](https://github.com/mstoeckl/swaylock-plugin)?
- - Something to replace `polybar`, maybe [Waybar](https://github.com/Alexays/Waybar)?
+ - Something to replace `polybar`, maybe
+   [Waybar](https://github.com/Alexays/Waybar), but it would be nice if there
+   was something like `custom/ipc`, but this could be emulated with `exec` and a
+   small long-running process for each widget, exposing an Unix socket.
  - Ability to [mirror outputs](https://github.com/swaywm/sway/issues/1666) (and
    more complex layouts would be nice too).
 

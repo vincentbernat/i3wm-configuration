@@ -61,7 +61,10 @@ What's missing for me to migrate to Wayland:
    [`append_layout`](https://github.com/swaywm/sway/issues/1005), but it should
    be possible to get something close (also, I use it mostly on start)
  - Something to replace `xsecurelock` (I want to use my own screen saver), maybe
-   [swaylock-plugin](https://github.com/mstoeckl/swaylock-plugin)?
+   [swaylock-plugin](https://github.com/mstoeckl/swaylock-plugin)? Also, how to
+   fade the screen before locking? This should be possible with swayidle and two
+   timeouts or by wrapping swaylock into a script running the dimmer, then the
+   lock.
  - Something to replace `polybar`, maybe
    [Waybar](https://github.com/Alexays/Waybar), but it would be nice if there
    was something like `custom/ipc`, but this could be emulated with `exec` and a

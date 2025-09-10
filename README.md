@@ -57,9 +57,6 @@ The binaries are put in `~/.local/bin`.
 
 What's missing for me to migrate to Wayland:
 
- - Sway does not support
-   [`append_layout`](https://github.com/swaywm/sway/issues/1005), but it should
-   be possible to get something close (also, I use it mostly on start)
  - Something to replace `xsecurelock` (I want to use my own screen saver), maybe
    [swaylock-plugin](https://github.com/mstoeckl/swaylock-plugin)? Also, how to
    fade the screen before locking? This should be possible with swayidle and two
@@ -69,8 +66,14 @@ What's missing for me to migrate to Wayland:
    [Waybar](https://github.com/Alexays/Waybar), but it would be nice if there
    was something like `custom/ipc`, but this could be emulated with `exec` and a
    small long-running process for each widget, exposing an Unix socket.
+
+What would be nice to have, but I can live without it:
+
  - Ability to [mirror outputs](https://github.com/swaywm/sway/issues/1666) (and
    more complex layouts would be nice too).
+ - Sway does not support
+   [`append_layout`](https://github.com/swaywm/sway/issues/1005), but it should
+   be possible to get something close (also, I use it mostly on start)
 
 Everything else should be adaptable:
 

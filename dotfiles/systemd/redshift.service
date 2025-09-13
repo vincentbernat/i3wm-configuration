@@ -1,7 +1,6 @@
 [Unit]
 Description=Time-based display color temperature adjustment
 PartOf=graphical-session.target
-ConditionHost=!wally
 
 [Service]
 ExecStart=/usr/bin/redshift -l manual:lon=2.35:lat=48.87 -t 6500:3900

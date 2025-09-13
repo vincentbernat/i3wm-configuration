@@ -49,7 +49,7 @@ application_icons = {
     "cheese": icon(2, ""),
     "chromium": icon(3, ""),
     "ungoogled_chromium": icon(3, ""),
-    "d-feet": icon(2, ""),
+    "d-spy": icon(2, ""),
     "darktable": icon(2, ""),
     "discord": icon(3, ""),
     "draw.io": icon(2, ""),

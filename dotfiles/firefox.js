@@ -122,5 +122,6 @@ user_pref("browser.search.serpEventTelemetryCategorization.enabled", false);
 // Disable anonymized tracker
 user_pref("dom.private-attribution.submission.enabled", false);
 
-// Disable widevine plugin
+// Disable third-party plugins
 user_pref("media.gmp-widevinecdm.enabled", false);
+user_pref("media.gmp-gmpopenh264.enabled", false);

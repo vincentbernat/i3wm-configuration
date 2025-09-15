@@ -15,10 +15,14 @@ showdpi() {
         *) corrected=$dpi ;;
     esac
 
-    # Authorized factors: 1, 1.25, 1.5, 2, 3, 4, ...
-    rounded=$(((corrected + 12) / 24 * 24))
-    [ $rounded -ge 168 ] && rounded=$(((corrected + 48) / 96 * 96))
-    [ $rounded -lt 96 ] && rounded=96
+    # Authorized factors: 1, 1.25, 1.5, 1.75, 2, 3, 4, ...
+    if [ $corrected -gt 168 ]; then
+        rounded=$(((corrected + 48) / 96 * 96))
+    elif [ $corrected -lt 96 ]; then
+        rounded=96
+    else
+        rounded=$(((corrected + 12) / 24 * 24))
+    fi
 
     echo "$output: ${dpi}dpi (corrected to ${corrected}dpi, rounded to ${rounded}dpi)" >&2
     echo "$rounded"

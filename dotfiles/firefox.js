@@ -42,6 +42,7 @@ user_pref("browser.startup.page", 3);
 // Tabs-related settings
 user_pref("browser.ctrlTab.sortByRecentlyUsed", true);
 user_pref("browser.tabs.groups.enabled", true);
+user_pref("browser.tabs.insertAfterCurrent", true);
 user_pref("browser.tabs.allowTabDetach", false);
 user_pref("browser.tabs.tabClipWidth", 1000);
 user_pref("browser.tabs.closeWindowWithLastTab", false);

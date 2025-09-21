@@ -39,11 +39,13 @@ user_pref("browser.search.suggest.enabled", false);
 user_pref("browser.startup.homepage", "about:newtab");
 user_pref("browser.startup.page", 3);
 
-// Sort tabs by recently used
+// Tabs-related settings
 user_pref("browser.ctrlTab.sortByRecentlyUsed", true);
-
-// Enable tab groups
 user_pref("browser.tabs.groups.enabled", true);
+user_pref("browser.tabs.insertAfterCurrent", true);
+user_pref("browser.tabs.allowTabDetach", false);
+user_pref("browser.tabs.tabClipWidth", 1000);
+user_pref("browser.tabs.closeWindowWithLastTab", false);
 
 // Languages
 user_pref("intl.accept_languages", "en");
@@ -58,12 +60,6 @@ user_pref("browser.discovery.enabled", false);
 
 // Backspace is like back
 user_pref("browser.backspace_action", 0);
-
-// Don't allow detaching a tab by pulling it
-user_pref("browser.tabs.allowTabDetach", false);
-
-// Don't display a close button for tabs
-user_pref("browser.tabs.tabClipWidth", 1000);
 
 // Don't display fullscreen warning
 user_pref("full-screen-api.warning.timeout", 0);
@@ -90,9 +86,6 @@ user_pref("extensions.formautofill.creditCards.enabled", false);
 user_pref("browser.aboutConfig.showWarning", false);
 user_pref("browser.disableResetPrompt", true);
 user_pref("browser.tabs.firefox-view", false);
-
-//Don't close on last tab
-user_pref("browser.tabs.closeWindowWithLastTab", false);
 
 // Don't allow sites to override shortcuts
 // Also check https://www.math.cmu.edu/~gautam/sj/blog/20220329-firefox-disable-ctrl-w.html

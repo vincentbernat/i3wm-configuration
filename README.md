@@ -79,7 +79,7 @@ Everything else should be adaptable:
 
  - i3 can be replaced by Sway
  - Dunst [supports](https://github.com/dunst-project/dunst/issues/264) Wayland
- - There is a [fork](https://github.com/lbonn/rofi) of Rofi with Wayland support
+ - Rofi [supports](https://github.com/davatorium/rofi/releases/tag/2.0.0) Wayland
  - Wallpaper building should be adaptable
 
 Also see [this post from Anarcat](https://anarc.at/software/desktop/wayland/).

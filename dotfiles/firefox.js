@@ -95,6 +95,9 @@ user_pref("browser.tabs.firefox-view", false);
 // Disable safebrowsing malware (sends hash of each file to Google)
 user_pref("browser.safebrowsing.malware.enabled", false);
 
+// Disable machine learning
+user_pref("browser.ml.enable", false);
+
 // Don't trim URLs
 user_pref("browser.urlbar.trimURLs", false);
 

@@ -972,8 +972,8 @@ async def audio_update(i3, event, line=""):
         if device is not None:
             text = (
                 f"{icons[f"{icon}-muted" if device.muted else icon]} "
-                f"{device.volume:>2}% "
-                f"%{{T5}}%{{F#bbb}}{device.name}%{{F-}}%{{T-}}"
+                f"{device.volume:>2}%"
+                f"%{{T5}} {device.name}%{{T-}}"
             )
             wpdevice = f"@DEFAULT_AUDIO_{kind.upper()}@"
             actions = [
@@ -1124,7 +1124,7 @@ async def network_manager_status(i3, event, *args):
 
             def wrap(s):
                 rofi = os.path.expanduser("~/.config/i3/bin/rofi-wifi")
-                return "%%{A1:%s:}%s%%{A}" % (rofi, s)
+                return f"%{{A1:{rofi}:}}{s}%{{A}}" % (rofi, s)
 
             if state != NM_DEVICE_STATE_ACTIVATED:
                 status.append(wrap(icons["nowifi"]))
@@ -1138,6 +1138,7 @@ async def network_manager_status(i3, event, *args):
             nmap = await conn[ap].get_async_interface(f"{ofnm}.AccessPoint")
             name = await nmap.Ssid
             strength = int(await nmap.Strength)
+            network_name = bytes(name).decode(errors="replace").replace("%", "%\u200b")
             status.append(
                 wrap(
                     [
@@ -1145,8 +1146,7 @@ async def network_manager_status(i3, event, *args):
                         icons["wifi-medium"],
                         icons["wifi-high"],
                     ][strength // 34]
-                    + " "
-                    + bytes(name).decode(errors="replace").replace("%", "%\u200b")
+                    + f"%{{T5}} {network_name}%{{T-}}"
                 )
             )
         elif kind == NM_DEVICE_TYPE_ETHERNET and state == NM_DEVICE_STATE_ACTIVATED:
@@ -1161,8 +1161,8 @@ async def network_manager_status(i3, event, *args):
         if vpn or kind == "wireguard":
             state = await nma.State
             if state == NM_ACTIVE_CONNECTION_STATE_ACTIVATED:
-                status.append(icons["vpn"])
-                status.append((await nma.Id).replace("%", "%\u200b"))
+                vpn_name = (await nma.Id).replace("%", "%\u200b")
+                status.append(f"{icons["vpn"]}%{{T5}} {vpn_name}%{{T-}}")
 
     # Final status line
     return " ".join(status)

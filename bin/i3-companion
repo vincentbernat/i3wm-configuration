@@ -1124,7 +1124,7 @@ async def network_manager_status(i3, event, *args):
 
             def wrap(s):
                 rofi = os.path.expanduser("~/.config/i3/bin/rofi-wifi")
-                return f"%{{A1:{rofi}:}}{s}%{{A}}" % (rofi, s)
+                return f"%{{A1:{rofi}:}}{s}%{{A}}"
 
             if state != NM_DEVICE_STATE_ACTIVATED:
                 status.append(wrap(icons["nowifi"]))

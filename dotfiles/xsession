@@ -51,7 +51,7 @@ qt5ct.conf   .config/qt5ct/qt5ct.conf
 qt5ct.conf   .config/qt6ct/qt6ct.conf
 systemd      .config/systemd/user
 dunstrc      .config/dunst/dunstrc
-polybar.conf .config/polybar/config
+polybar.conf .config/polybar/config.ini
 rofi.conf    .config/rofi/config.rasi
 fonts.conf   .config/fontconfig/fonts.conf
 portals.conf .config/xdg-desktop-portal/i3-portals.conf

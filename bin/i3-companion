@@ -969,20 +969,23 @@ async def audio_update(i3, event, line=""):
     status = []
     for kind, icon in [("source", "microphone"), ("sink", "speaker")]:
         device = devices[kind]
-        if device is not None:
-            text = (
-                f"{icons[f"{icon}-muted" if device.muted else icon]} "
-                f"{device.volume:>2}%"
-                f"%{{T5}} {device.name}%{{T-}}"
-            )
-            wpdevice = f"@DEFAULT_AUDIO_{kind.upper()}@"
-            actions = [
-                f"%{{A1:wpctl set-mute {wpdevice} toggle:}}",
+        if device is None:
+            continue
+        wpdevice = f"@DEFAULT_AUDIO_{kind.upper()}@"
+        actions = [
+            f"%{{A1:wpctl set-mute {wpdevice} toggle:}}",
+        ]
+        if device.muted:
+            state = f"{icons[f"{icon}-muted"]}"
+        else:
+            state = f"{icons[icon]} {device.volume:>2}%"
+            actions += [
                 f"%{{A4:wpctl set-volume {wpdevice} 5%+:}}",
                 f"%{{A5:wpctl set-volume {wpdevice} 5%-:}}",
             ]
-            end = "%{A}" * len(actions)
-            status.append(f"{"".join(actions)}{text}{end}")
+        state += f"%{{T5}} {device.name}%{{T-}}"
+        end = "%{A}" * len(actions)
+        status.append(f"{"".join(actions)}{state}{end}")
 
     return " ".join(status)
 

@@ -13,8 +13,8 @@ import html
 import logging
 import logging.handlers
 import os
+import re
 import shlex
-import socket
 import struct
 import subprocess
 import sys
@@ -116,6 +116,9 @@ icons = {
     "laptop": icon(2, "💻"),
     "loudspeaker": icon(2, ""),
     "microphone": icon(2, ""),
+    "microphone-muted": icon(2, ""),
+    "speaker": icon(2, ""),
+    "speaker-muted": icon(2, "🔇"),
     "mouse": icon(2, ""),
     "notifications-disabled": icon(2, "🔕"),
     "notifications-enabled": icon(2, ""),
@@ -156,6 +159,7 @@ DBusSignal = collections.namedtuple(
 StartEvent = object()
 I3Event = i3ipc.Event
 CommandEvent = collections.namedtuple("CommandEvent", ["name"])
+TailEvent = collections.namedtuple("TailEvent", ["command", "match"])
 
 NM_ACTIVE_CONNECTION_STATE_ACTIVATED = 2
 NM_DEVICE_TYPE_ETHERNET = 1
@@ -888,6 +892,76 @@ async def dunst_status_update(i3, event, path, interface, changed, invalid):
     return icons[paused and "notifications-disabled" or "notifications-enabled"]
 
 
+async def audio_update(kind):
+    """Update audio sink or source volume/status in Polybar."""
+    proc = await asyncio.create_subprocess_exec(
+        "wpctl", "status", stdout=subprocess.PIPE
+    )
+    stdout, _ = await proc.communicate()
+    if proc.returncode != 0:
+        logger.info("cannot get wpctl status")
+        return
+
+    # Audio
+    #  ├─ Devices:
+    #  │      43. Navi 48 HDMI/DP Audio Controller    [alsa]
+    #  │      44. HD Pro Webcam C920                  [alsa]
+    #  │      45. Starship/Matisse HD Audio Controller [alsa]
+    #  │
+    #  ├─ Sinks:
+    #  │  *   55. Starship/Matisse HD Audio Controller Digital Stereo (IEC958) [vol: 0.65]
+    #  │
+    #  ├─ Sources:
+    #  │
+    #  ├─ Filters:
+    #  │
+    #  └─ Streams:
+    #         70. spotify
+    #              75. output_FR       > ALCS1200A Digital:playback_FR	[active]
+    #              89. output_FL       > ALCS1200A Digital:playback_FL	[active]
+    in_audio_section = False
+    in_sink_section = False
+    lines = stdout.decode().split("\n")
+    volume = None
+    muted = None
+    for line in lines:
+        if line == "Audio":
+            in_audio_section = True
+        elif line == "" and in_audio_section:
+            break
+        elif line == f" ├─ {kind.capitalize()}s:" and in_audio_section:
+            in_sink_section = True
+        elif line == " │" and in_sink_section:
+            break
+        elif line.startswith(" │  *") and in_sink_section:
+            mo = re.match(r".*\[vol: (?P<volume>[0-9.]+)(?P<muted> MUTED)?\]", line)
+            if mo:
+                volume = int(float(mo.group("volume")) * 100)
+                muted = bool(mo.group("muted"))
+            break
+    return volume, muted
+
+
+@on(StartEvent, TailEvent(command="pactl -f json subscribe", match='"on":"sink"'))
+@polybar("speaker")
+async def audio_sink_update(i3, event):
+    """Update audio sink volume/status in Polybar."""
+    volume, muted = await audio_update("sink")
+    if volume is None:
+        return ""
+    return f"{icons["speaker-muted" if muted else "speaker"]} {volume:>2}%"
+
+
+@on(StartEvent, TailEvent(command="pactl -f json subscribe", match='"on":"source"'))
+@polybar("microphone")
+async def audio_source_update(i3, event):
+    """Update audio source volume/status in Polybar."""
+    volume, muted = await audio_update("source")
+    if volume is None:
+        return ""
+    return f"{icons["microphone-muted" if muted else "microphone"]} {volume:>2}%"
+
+
 @on(StartEvent)
 @polybar("dunst")
 async def dunst_status_check(i3, event):
@@ -1143,6 +1217,47 @@ async def main(options):
                     await fn(i3, event.payload)
 
     i3.on(I3Event.TICK, tick_event)
+
+    # Listen to tail events
+    for fn, events in on.functions.items():
+        for event in events:
+            if isinstance(event, TailEvent):
+
+                def wrapping(fn, event):
+                    async def tail_worker():
+                        while True:
+                            try:
+                                args = shlex.split(event.command)
+                                logger.debug(f"starting tail event for {event.command}")
+                                proc = await asyncio.create_subprocess_exec(
+                                    *args,
+                                    stdout=asyncio.subprocess.PIPE,
+                                    stderr=asyncio.subprocess.DEVNULL,
+                                )
+
+                                async for line in proc.stdout:
+                                    line_str = line.decode(
+                                        "utf-8", errors="replace"
+                                    ).rstrip()
+                                    if event.match in line_str:
+                                        logger.debug(f"tail event matched for {fn}")
+                                        await fn(i3, event)
+
+                                await proc.wait()
+                                logger.warning(
+                                    f"tail event command {event.command} exited "
+                                    f"with status {proc.returncode}"
+                                )
+                                await asyncio.sleep(1)  # Wait before restarting
+                            except Exception as e:
+                                logger.error(
+                                    f"error in tail event for {event.command}: {e}"
+                                )
+                                await asyncio.sleep(1)
+
+                    return tail_worker
+
+                asyncio.create_task(wrapping(fn, event)())
 
     # Listen to DBus events
     for fn, events in on.functions.items():

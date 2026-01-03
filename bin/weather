@@ -185,7 +185,7 @@ if __name__ == "__main__":
             # And the temperature range computed for the next 24 hours
             "{}—{}°C".format(round(mintemp), round(maxtemp)),
         ]
-        city = city.replace("%", "%%")
+        city = city.replace("%", "%\u200b")
         conditions.insert(0, f"%{{F#bbb}}{city}%{{F-}}")
         output = " ".join(conditions).replace("%{Tx}", "%%{T%d}" % options.font_index)
         logger.debug("output: %s", output)

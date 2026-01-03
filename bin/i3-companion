@@ -950,7 +950,7 @@ async def audio_update(i3, event, line=""):
             )
             if mo:
                 devices[current_device] = Device(
-                    name=mo.group("name").replace("%", "%%"),
+                    name=mo.group("name").replace("%", "%\u200b"),
                     volume=int(float(mo.group("volume")) * 100),
                     muted=bool(mo.group("muted")),
                 )
@@ -1134,7 +1134,7 @@ async def network_manager_status(i3, event, *args):
                         icons["wifi-high"],
                     ][strength // 34]
                     + " "
-                    + bytes(name).decode("utf-8", errors="replace").replace("%", "%%")
+                    + bytes(name).decode(errors="replace").replace("%", "%\u200b")
                 )
             )
         elif kind == NM_DEVICE_TYPE_ETHERNET and state == NM_DEVICE_STATE_ACTIVATED:
@@ -1150,7 +1150,7 @@ async def network_manager_status(i3, event, *args):
             state = await nma.State
             if state == NM_ACTIVE_CONNECTION_STATE_ACTIVATED:
                 status.append(icons["vpn"])
-                status.append((await nma.Id).replace("%", "%%"))
+                status.append((await nma.Id).replace("%", "%\u200b"))
 
     # Final status line
     return " ".join(status)
@@ -1249,7 +1249,11 @@ async def main(options):
                                 )
 
                                 async for line in proc.stdout:
-                                    await fn(i3, event, line.decode().rstrip())
+                                    await fn(
+                                        i3,
+                                        event,
+                                        line.decode(errors="replace").rstrip(),
+                                    )
 
                                 await proc.wait()
                                 logger.warning(

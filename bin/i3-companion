@@ -159,7 +159,7 @@ DBusSignal = collections.namedtuple(
 StartEvent = object()
 I3Event = i3ipc.Event
 CommandEvent = collections.namedtuple("CommandEvent", ["name"])
-TailEvent = collections.namedtuple("TailEvent", ["command", "match"])
+TailEvent = collections.namedtuple("TailEvent", ["command"])
 
 NM_ACTIVE_CONNECTION_STATE_ACTIVATED = 2
 NM_DEVICE_TYPE_ETHERNET = 1
@@ -892,8 +892,12 @@ async def dunst_status_update(i3, event, path, interface, changed, invalid):
     return icons[paused and "notifications-disabled" or "notifications-enabled"]
 
 
-async def audio_update(kind, icon):
+@on(StartEvent, TailEvent(command="pactl -f json subscribe"))
+@polybar("audio")
+async def audio_update(i3, event, line=""):
     """Update audio sink or source volume/status in Polybar."""
+    if '"on":"sink"' not in line and '"on":"source"' not in line and line != "":
+        return
     proc = await asyncio.create_subprocess_exec(
         "wpctl",
         "status",
@@ -923,54 +927,52 @@ async def audio_update(kind, icon):
     #         70. spotify
     #              75. output_FR       > ALCS1200A Digital:playback_FR	[active]
     #              89. output_FL       > ALCS1200A Digital:playback_FL	[active]
+    Device = collections.namedtuple("Device", ["name", "volume", "muted"])
+    devices = {"source": None, "sink": None}
     in_audio_section = False
-    in_sink_section = False
+    current_device = None
     lines = stdout.decode().split("\n")
-    device = None
-    volume = None
-    muted = None
     for line in lines:
         if line == "Audio":
             in_audio_section = True
         elif line == "" and in_audio_section:
             break
-        elif line == f" ├─ {kind.capitalize()}s:" and in_audio_section:
-            in_sink_section = True
-        elif line == " │" and in_sink_section:
-            break
-        elif line.startswith(" │  *") and in_sink_section:
+        elif line == " ├─ Sinks:" and in_audio_section:
+            current_device = "sink"
+        elif line == " ├─ Sources:" and in_audio_section:
+            current_device = "source"
+        elif line == " │":
+            current_device = None
+        elif line.startswith(" │  *") and current_device is not None:
             mo = re.match(
-                r"^ │  \*\s+\d+\.\s+(?P<device>.*?)\s+\[vol: (?P<volume>[0-9.]+)(?P<muted> MUTED)?\]",
+                r"^ │  \*\s+\d+\.\s+(?P<name>.*?)\s+\[vol: (?P<volume>[0-9.]+)(?P<muted> MUTED)?\]",
                 line,
             )
             if mo:
-                device = mo.group("device")
-                volume = int(float(mo.group("volume")) * 100)
-                muted = bool(mo.group("muted"))
-            break
-    return (
-        ""
-        if device is None
-        else (
-            f"{icons[f"{icon}-muted" if muted else icon]} "
-            f"{volume:>2}% "
-            f"%{{T5}}%{{F#bbb}}{device}%{{F-}}%{{T-}}"
-        )
-    )
+                devices[current_device] = Device(
+                    name=mo.group("name").replace("%", "%%"),
+                    volume=int(float(mo.group("volume")) * 100),
+                    muted=bool(mo.group("muted")),
+                )
+    status = []
+    for kind, icon in [("source", "microphone"), ("sink", "speaker")]:
+        device = devices[kind]
+        if device is not None:
+            text = (
+                f"{icons[f"{icon}-muted" if device.muted else icon]} "
+                f"{device.volume:>2}% "
+                f"%{{T5}}%{{F#bbb}}{device.name}%{{F-}}%{{T-}}"
+            )
+            wpdevice = f"@DEFAULT_AUDIO_{kind.upper()}@"
+            actions = [
+                f"%{{A1:wpctl set-mute {wpdevice} toggle:}}",
+                f"%{{A4:wpctl set-volume {wpdevice} 5%+:}}",
+                f"%{{A5:wpctl set-volume {wpdevice} 5%-:}}",
+            ]
+            end = "%{A}" * len(actions)
+            status.append(f"{"".join(actions)}{text}{end}")
 
-
-@on(StartEvent, TailEvent(command="pactl -f json subscribe", match='"on":"sink"'))
-@polybar("speaker")
-async def audio_sink_update(i3, event):
-    """Update audio sink volume/status in Polybar."""
-    return await audio_update("sink", "speaker")
-
-
-@on(StartEvent, TailEvent(command="pactl -f json subscribe", match='"on":"source"'))
-@polybar("microphone")
-async def audio_source_update(i3, event):
-    """Update audio source volume/status in Polybar."""
-    return await audio_update("source", "microphone")
+    return " ".join(status)
 
 
 @on(StartEvent)
@@ -1247,12 +1249,7 @@ async def main(options):
                                 )
 
                                 async for line in proc.stdout:
-                                    line_str = line.decode(
-                                        "utf-8", errors="replace"
-                                    ).rstrip()
-                                    if event.match in line_str:
-                                        logger.debug(f"tail event matched for {fn}")
-                                        await fn(i3, event)
+                                    await fn(i3, event, line.decode().rstrip())
 
                                 await proc.wait()
                                 logger.warning(

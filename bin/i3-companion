@@ -895,7 +895,10 @@ async def dunst_status_update(i3, event, path, interface, changed, invalid):
 async def audio_update(kind):
     """Update audio sink or source volume/status in Polybar."""
     proc = await asyncio.create_subprocess_exec(
-        "wpctl", "status", stdout=subprocess.PIPE
+        "wpctl",
+        "status",
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.DEVNULL,
     )
     stdout, _ = await proc.communicate()
     if proc.returncode != 0:

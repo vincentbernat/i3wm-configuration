@@ -1149,7 +1149,7 @@ async def network_manager_status(i3, event, *args):
                         icons["wifi-medium"],
                         icons["wifi-high"],
                     ][strength // 34]
-                    + f" {network_name}"
+                    + f"%{{T5}} {network_name}%{{T-}}"
                 )
             )
         elif kind == NM_DEVICE_TYPE_ETHERNET and state == NM_DEVICE_STATE_ACTIVATED:
@@ -1165,7 +1165,7 @@ async def network_manager_status(i3, event, *args):
             state = await nma.State
             if state == NM_ACTIVE_CONNECTION_STATE_ACTIVATED:
                 vpn_name = (await nma.Id).replace("%", "%\u200b")
-                status.append(f"{icons["vpn"]} {vpn_name}")
+                status.append(f"{icons["vpn"]}%{{T5}} {vpn_name}%{{T-}}")
 
     # Final status line
     return " ".join(status)

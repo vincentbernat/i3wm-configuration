@@ -197,6 +197,16 @@ def on(*events):
     return decorator
 
 
+def log_task_exception(task):
+    """Log exceptions from background tasks immediately."""
+    try:
+        task.result()
+    except asyncio.CancelledError:
+        pass
+    except Exception as e:
+        logger.exception("Task exception: %s", e)
+
+
 def retry(max_retries):
     """Retry an async function."""
 
@@ -264,7 +274,9 @@ def debounce(sleep, *, unless=None):
             if workers[fn] is None:
                 logger.debug("create new worker for %s", fn)
                 workers[fn] = types.SimpleNamespace()
-                workers[fn].task = asyncio.create_task(worker())
+                task = asyncio.create_task(worker())
+                task.add_done_callback(log_task_exception)
+                workers[fn].task = task
                 workers[fn].urgent = asyncio.Event()
                 workers[fn].queue = (args, kwargs)
             else:
@@ -1269,7 +1281,8 @@ async def main(options):
 
                     return tail_worker
 
-                asyncio.create_task(wrapping(fn, event)())
+                task = asyncio.create_task(wrapping(fn, event)())
+                task.add_done_callback(log_task_exception)
 
     # Listen to DBus events
     for fn, events in on.functions.items():
@@ -1308,7 +1321,9 @@ async def main(options):
     for fn, events in on.functions.items():
         for event in events:
             if event is StartEvent:
-                start_tasks.append(asyncio.create_task(fn(i3, event)))
+                task = asyncio.create_task(fn(i3, event))
+                task.add_done_callback(log_task_exception)
+                start_tasks.append(task)
 
     daemon.notify("READY=1")
     await i3.main()
@@ -1342,6 +1357,8 @@ if __name__ == "__main__":
 
     try:
         asyncio.run(main(options))
+    except KeyboardInterrupt:
+        pass
     except Exception as e:
         logger.exception("%s", e)
         sys.exit(1)

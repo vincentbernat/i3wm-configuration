@@ -950,9 +950,11 @@ async def audio_update(kind):
 async def audio_sink_update(i3, event):
     """Update audio sink volume/status in Polybar."""
     volume, muted = await audio_update("sink")
-    if volume is None:
-        return ""
-    return f"{icons["speaker-muted" if muted else "speaker"]} {volume:>2}%"
+    return (
+        ""
+        if volume is None
+        else f"{icons["speaker-muted" if muted else "speaker"]} {volume:>2}%"
+    )
 
 
 @on(StartEvent, TailEvent(command="pactl -f json subscribe", match='"on":"source"'))
@@ -960,9 +962,11 @@ async def audio_sink_update(i3, event):
 async def audio_source_update(i3, event):
     """Update audio source volume/status in Polybar."""
     volume, muted = await audio_update("source")
-    if volume is None:
-        return ""
-    return f"{icons["microphone-muted" if muted else "microphone"]} {volume:>2}%"
+    return (
+        ""
+        if volume is None
+        else f"{icons["microphone-muted" if muted else "microphone"]} {volume:>2}%"
+    )
 
 
 @on(StartEvent)

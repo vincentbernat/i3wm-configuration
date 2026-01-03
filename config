@@ -27,10 +27,10 @@ gaps inner 10
 # smart_gaps on
 
 # audio
-bindsym XF86AudioRaiseVolume exec --no-startup-id exec pactl set-sink-volume @DEFAULT_SINK@ +5%
-bindsym $mod+Up              exec --no-startup-id exec pactl set-sink-volume @DEFAULT_SINK@ +5%
-bindsym XF86AudioLowerVolume exec --no-startup-id exec pactl set-sink-volume @DEFAULT_SINK@ -5%
-bindsym $mod+Down            exec --no-startup-id exec pactl set-sink-volume @DEFAULT_SINK@ -5%
+bindsym XF86AudioRaiseVolume exec --no-startup-id exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+
+bindsym $mod+Up              exec --no-startup-id exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+
+bindsym XF86AudioLowerVolume exec --no-startup-id exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
+bindsym $mod+Down            exec --no-startup-id exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
 bindsym XF86AudioMute        exec --no-startup-id exec ~/.config/i3/bin/toggle-mute sink
 bindsym XF86AudioMicMute     exec --no-startup-id exec ~/.config/i3/bin/toggle-mute source
 bindsym XF86AudioPlay        exec --no-startup-id exec playerctl -p $mediaplayer play-pause

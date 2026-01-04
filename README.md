@@ -76,7 +76,9 @@ What would be nice to have, but I can live without it:
    be possible to get something close (also, I use it mostly on start)
  - Proper scaling of X11 applications. See [issue
    #2966](https://github.com/swaywm/sway/issues/2966). I may not have that many
-   X applications remaining.
+   X applications remaining. Maybe
+   [xwayland-satellite](https://github.com/Supreeeme/xwayland-satellite) could
+   be a solution?
 
 Everything else should be adaptable:
 

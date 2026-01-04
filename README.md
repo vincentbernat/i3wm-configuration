@@ -85,7 +85,9 @@ Everything else should be adaptable:
  - Rofi [supports](https://github.com/davatorium/rofi/releases/tag/2.0.0) Wayland
  - Wallpaper building should be adaptable
 
-Also see [this post from Anarcat](https://anarc.at/software/desktop/wayland/).
+Also see [this post from Anarcat](https://anarc.at/software/desktop/wayland/)
+and [this one from Michael
+Stapelberg](https://michael.stapelberg.ch/posts/2026-01-04-wayland-sway-in-2026/).
 
 ## Interesting links
 

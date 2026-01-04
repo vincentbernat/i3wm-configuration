@@ -974,6 +974,7 @@ async def audio_update(i3, event, line=""):
         wpdevice = f"@DEFAULT_AUDIO_{kind.upper()}@"
         actions = [
             f"%{{A1:wpctl set-mute {wpdevice} toggle:}}",
+            "%{A3:pavucontrol:}",
         ]
         if device.muted:
             state = f"{icons[f"{icon}-muted"]}"

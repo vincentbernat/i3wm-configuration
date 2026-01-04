@@ -74,6 +74,9 @@ What would be nice to have, but I can live without it:
  - Sway does not support
    [`append_layout`](https://github.com/swaywm/sway/issues/1005), but it should
    be possible to get something close (also, I use it mostly on start)
+ - Proper scaling of X11 applications. See [issue
+   #2966](https://github.com/swaywm/sway/issues/2966). I may not have that many
+   X applications remaining.
 
 Everything else should be adaptable:
 

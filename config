@@ -164,9 +164,6 @@ for_window [floating title="Firefox — Sharing Indicator"] border none, sticky 
 for_window [floating title=" is sharing your screen.$"] border none, sticky enable, move position 15 ppt -5 px
 # Jitsi sharing indicator
 for_window [floating title="Screen Sharing Tracker" instance="jitsi meet"] border none, sticky enable, move position 15 ppt -5 px
-# Zoom (😱?)
-for_window [class="^zoom$" title="^Zoom($|\s)"] floating disable, border pixel $borderpx
-for_window [class="^zoom$" title="^zoom"] floating enable, border none
 
 # start stuff
 exec_always --no-startup-id exec systemctl --user start --no-block i3-session.target

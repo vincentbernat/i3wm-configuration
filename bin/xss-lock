@@ -30,10 +30,14 @@ case "$1" in
         echo "lock: lock screen (idle: $(xprintidle))"
         # Something may have meddled with screensaver settings
         configure
-        # Pause music player and notifications
+        # Pause music player
         playerctl -a pause
+        # Pause notifications
         dunstctl_state=$(dunstctl is-paused)
         dunstctl set-paused true
+        # Mute microphone
+        source_state=$(~/.config/i3/bin/toggle-mute --is-muted source)
+        ~/.config/i3/bin/toggle-mute --set-muted true source
         # Then, lock screen
         env XSECURELOCK_SAVER=$HOME/.config/i3/bin/xsecurelock-saver \
             `# Disable RandR 1.5 support to make screensaver spans accross the whole monitor` \
@@ -55,9 +59,10 @@ case "$1" in
             XSECURELOCK_AUTH_TIMEOUT=10 \
             xsecurelock
         echo "lock: unlock screen"
-        # After unlocking screen, stop dimmer, restore notifications
+        # After unlocking screen, stop dimmer, restore notifications and microphone
         dimmer stop
         dunstctl set-paused ${dunstctl_state}
+        ~/.config/i3/bin/toggle-mute --set-muted ${source_state} source
         # Hack around an issue with brightness
         [[ "$(uname -n)" != "wally" ]] || brightnessctl -q set $(brightnessctl get)
         ;;

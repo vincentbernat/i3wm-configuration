@@ -2,25 +2,52 @@
 
 # Toggle mute on all sinks or sources.
 
+action="toggle"
+mute_value=""
+
+case $1 in
+    --is-muted)
+        action="check"
+        shift
+        ;;
+    --set-muted)
+        action="set"
+        shift
+        mute_value=$1
+        shift
+        ;;
+esac
+
 case $1 in
     source|sink)
         pactl list ${1}s \
-            | awk '/^(Source|Sink) / { source=substr($2,2) }
+            | awk -v action="$action" -v mute_value="$mute_value" '
+                   /^(Source|Sink) / { source=substr($2,2) }
                    /^\tName: .*.monitor$/ { source=0 }
                    /^\tDescription: / { sub("^[^:]*: ", ""); descriptions[source] = $0 }
                    /^\tMute: / { if (source > 0) muted[source] = ($2 == "yes") }
                    END {
-                     if (length(muted) == 0) exit;
+                     if (length(muted) == 0) {
+                       if (action == "check") print "echo true";
+                       exit;
+                     }
                      allmuted=1;
                      for (source in muted) {
                        if (!muted[source]) {
                          allmuted=0;
                        }
                      }
-                     for (source in muted) {
-                       gsub(/['"'"'"\\\$\(\)`]/, "\\\\&", descriptions[source])
-                       print "echo "(allmuted?"🔊":"🔇")" "descriptions[source]
-                       print "pactl set-'$1'-mute "source" "(!allmuted);
+                     if (action == "check") {
+                       print allmuted ? "echo true" : "echo false";
+                     } else {
+                       if (action == "toggle") {
+                         mute_value = !allmuted;
+                       }
+                       for (source in muted) {
+                         gsub(/['"'"'"\\\$\(\)`]/, "\\\\&", descriptions[source])
+                         print "echo "(mute_value=="true"||mute_value==1?"🔇":"🔊")" "descriptions[source]
+                         print "pactl set-'$1'-mute "source" "mute_value;
+                       }
                      }
                    }' \
             | sh

@@ -23,7 +23,7 @@ case $1 in
         pactl list ${1}s \
             | awk -v action="$action" -v mute_value="$mute_value" '
                    /^(Source|Sink) / { source=substr($2,2) }
-                   /^\tName: .*.monitor$/ { source=0 }
+                   /^\tName: .*\.monitor$/ { source=0 }
                    /^\tDescription: / { sub("^[^:]*: ", ""); descriptions[source] = $0 }
                    /^\tMute: / { if (source > 0) muted[source] = ($2 == "yes") }
                    END {

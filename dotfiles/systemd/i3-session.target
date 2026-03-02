@@ -8,4 +8,3 @@ Wants=i3-companion.service
 Wants=misc-x.service
 Wants=thunderbird-notify.service
 Wants=onedrive.service
-Wants=speech-dispatcher.socket

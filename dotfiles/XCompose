@@ -1,2 +1,10 @@
 # See /usr/share/X11/locale/en_US.UTF-8/Compose for default ones.
 include "%L"
+
+# Emoji
+<Multi_key> <plus> <1>                               : "👍"
+<Multi_key> <minus> <1>                              : "👎"
+<Multi_key> <colon> <D>                              : "😀"
+<Multi_key> <colon> <O>                              : "😱"
+<Multi_key> <X> <D>                                  : "😂"
+<Multi_key> <asterisk> <asterisk>                    : "✨"

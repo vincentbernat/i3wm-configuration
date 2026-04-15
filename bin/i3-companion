@@ -904,11 +904,11 @@ async def dunst_status_update(i3, event, path, interface, changed, invalid):
     return icons[paused and "notifications-disabled" or "notifications-enabled"]
 
 
-@on(StartEvent, TailEvent(command="pactl -f json subscribe"))
+@on(StartEvent, TailEvent(command="pw-dump --monitor -N -R"))
 @polybar("audio")
 async def audio_update(i3, event, line=""):
     """Update audio sink or source volume/status in Polybar."""
-    if '"on":"sink"' not in line and '"on":"source"' not in line and line != "":
+    if '"Audio/Source"' not in line and '"Audio/Sink"' not in line and line != "":
         return
     Device = collections.namedtuple("Device", ["name", "volume", "muted"])
     devices = {}
@@ -1259,6 +1259,7 @@ async def main(options):
                                     *args,
                                     stdout=asyncio.subprocess.PIPE,
                                     stderr=asyncio.subprocess.DEVNULL,
+                                    limit=1024 * 256,
                                 )
 
                                 async for line in proc.stdout:

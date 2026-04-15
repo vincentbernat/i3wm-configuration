@@ -1279,6 +1279,11 @@ async def main(options):
                                 logger.error(
                                     f"error in tail event for {event.command}: {e}"
                                 )
+                                try:
+                                    proc.kill()
+                                    await proc.wait()
+                                except (ProcessLookupError, NameError):
+                                    pass
                                 await asyncio.sleep(1)
 
                     return tail_worker

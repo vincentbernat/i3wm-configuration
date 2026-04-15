@@ -155,6 +155,7 @@ focus_on_window_activation smart
 no_focus   [window_type="splash"]
 for_window [tiling] border pixel $borderpx
 for_window [class="Nm-connection-editor"] floating enable
+for_window [class="zbar"] floating enable
 for_window [class="Shadow"] fullscreen enable
 for_window [window_role="PictureInPicture"] floating enable, resize set 1280 720
 for_window [class="pavucontrol"] floating enable

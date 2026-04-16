@@ -65,6 +65,10 @@ for f in ~/.zsh/run/marks/*; do
     echo file://"$f"
 done > ~/.config/gtk-3.0/bookmarks
 
+# Prevent unauthenticated access through abstract Unix socket
+xhost -
+xhost -SI:localuser:$USER
+
 # Services are started with systemd
 systemctl --user import-environment
 systemctl --user daemon-reload

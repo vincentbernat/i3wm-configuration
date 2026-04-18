@@ -1,0 +1,9 @@
+[Unit]
+Description=Spotify Player Daemon
+PartOf=graphical-session.target
+After=pipewire-pulse.socket
+
+[Service]
+ExecStart=%h/.nix-profile/bin/spotify_player --daemon
+Type=forking
+Restart=on-failure

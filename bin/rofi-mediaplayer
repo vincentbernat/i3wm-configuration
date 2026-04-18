@@ -46,7 +46,6 @@ media-playback-stop       Stop
 go-next                   Next track
 audio-input-microphone    Toggle microphone
 multimedia-volume-control Open mixer panel
-com.spotify.Client        Open Spotify
 EOF
 
         # Player status
@@ -65,11 +64,10 @@ EOF
             1) $playerctl previous ;;
             2) $playerctl play ;;
             3) $playerctl pause ;;
-            4) $playerctl stop ;;
+            4) $playerctl pause ;;
             5) $playerctl next ;;
             6) ~/.config/i3/bin/toggle-mute source ;;
             7) i3-msg '[class="Pavucontrol"] focus' || i3-msg exec exec pavucontrol ;;
-            8) i3-msg '[class="Spotify"] focus' || i3-msg exec gtk-launch com.spotify.Client ;;
         esac >&2
         ;;
 esac

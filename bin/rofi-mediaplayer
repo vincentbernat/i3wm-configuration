@@ -64,7 +64,7 @@ EOF
             1) $playerctl previous ;;
             2) $playerctl play ;;
             3) $playerctl pause ;;
-            4) $playerctl pause ;;
+            4) $playerctl stop ;;
             5) $playerctl next ;;
             6) ~/.config/i3/bin/toggle-mute source ;;
             7) i3-msg '[class="Pavucontrol"] focus' || i3-msg exec exec pavucontrol ;;

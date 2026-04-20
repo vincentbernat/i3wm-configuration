@@ -1,0 +1,11 @@
+[Unit]
+Description=Spotify playing daemon
+Documentation=https://github.com/Spotifyd/spotifyd
+PartOf=graphical-session.target
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+ExecStart=%h/.nix-profile/bin/spotifyd --no-daemon
+Restart=on-failure
+RestartSec=12

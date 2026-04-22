@@ -7,5 +7,14 @@ After=network-online.target
 
 [Service]
 ExecStart=%h/.nix-profile/bin/spotifyd --no-daemon
+ProtectHome=tmpfs
+BindReadOnlyPaths=%h/.config/spotifyd
+BindReadOnlyPaths=%h/.nix-profile
+BindPaths=%h/.cache/spotifyd
+BindPaths=%t/bus
+BindPaths=%t/pulse
+PrivateTmp=true
+PrivateDevices=true
+PrivatePIDs=true
 Restart=on-failure
 RestartSec=12

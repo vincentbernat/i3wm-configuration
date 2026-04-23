@@ -1177,13 +1177,17 @@ async def network_manager_status(i3, event, *args):
     ),
 )
 async def on_resume(i3, event, path, sleeping):
-    """Switch monitor on when resuming from sleep."""
+    """Switch monitor on and trigger resume.target when resuming from sleep."""
     if not sleeping:
         logger.info("resume from sleep")
         dpms = i3.x11(xcffib.dpms.key)
         if dpms.Info().reply().power_level != 0:
             dpms.ForceLevel(0)
             i3.x11.flush()
+        proc = await asyncio.create_subprocess_exec(
+            "systemctl", "--user", "--no-block", "restart", "resume.target"
+        )
+        await proc.wait()
 
 
 # Main function

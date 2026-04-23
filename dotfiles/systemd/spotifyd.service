@@ -2,6 +2,7 @@
 Description=Spotify playing daemon
 Documentation=https://github.com/Spotifyd/spotifyd
 PartOf=graphical-session.target
+PartOf=resume.target
 Wants=network-online.target
 After=network-online.target
 

@@ -18,3 +18,4 @@ PrivateDevices=true
 PrivatePIDs=true
 Restart=on-failure
 RestartSec=12
+TimeoutStopSec=3

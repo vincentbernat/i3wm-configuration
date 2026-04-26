@@ -23,7 +23,6 @@ if [ $ROFI_RETV -ge 10 ] && [ $ROFI_RETV -le 28 ]; then
     ROFI_RETV=1
 fi
 
-getplayback="dbus-send --dest=rs.spotifyd.instance1 /rs/spotifyd/Controls rs.spotifyd.Controls.TransferPlayback"
 playerctl="playerctl -p $mediaplayer"
 
 case $ROFI_RETV in
@@ -63,7 +62,7 @@ EOF
     1)
         case $ROFI_INFO in
             1) $playerctl previous ;;
-            2) $getplayback ; $playerctl play ;;
+            2) $playerctl play ;;
             3) $playerctl pause ;;
             4) $playerctl stop ;;
             5) $playerctl next ;;

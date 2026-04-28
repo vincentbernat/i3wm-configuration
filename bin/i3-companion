@@ -120,7 +120,7 @@ icons = {
     "speaker": icon(2, ""),
     "speaker-muted": icon(2, "🔇"),
     "mouse": icon(2, ""),
-    "notifications-disabled": icon(2, "🔕"),
+    "notifications-disabled": "%%{F#f55}%s%%{F-}" % icon(2, "🔕"),
     "notifications-enabled": icon(2, ""),
     "nowifi": icon(2, ""),
     "phone": icon(2, "📞"),

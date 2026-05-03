@@ -1,22 +1,22 @@
 [Unit]
-Description=Spotify playing daemon
-Documentation=https://github.com/Spotifyd/spotifyd
+Description=Spotify Player Daemon
 PartOf=graphical-session.target
 PartOf=resume.target
+After=pipewire-pulse.socket
 Wants=network-online.target
 After=network-online.target
 
 [Service]
-ExecStart=%h/.nix-profile/bin/spotifyd --no-daemon
+ExecStart=%h/.nix-profile/bin/spotify_player --daemon
+Type=forking
 ProtectHome=tmpfs
-BindReadOnlyPaths=%h/.config/spotifyd
+BindReadOnlyPaths=%h/.config/spotify-player
 BindReadOnlyPaths=%h/.nix-profile
-BindPaths=%h/.cache/spotifyd
+BindPaths=%h/.cache/spotify-player
 BindPaths=%t/bus
 BindPaths=%t/pulse
 PrivateTmp=true
 PrivateDevices=true
-PrivatePIDs=true
 Restart=on-failure
 RestartSec=12
 TimeoutStopSec=3

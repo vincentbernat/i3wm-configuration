@@ -999,6 +999,35 @@ async def dunst_status_check(i3, event):
     return icons[paused and "notifications-disabled" or "notifications-enabled"]
 
 
+@on(I3Event.WINDOW_NEW, I3Event.WINDOW_CLOSE, I3Event.WINDOW_TITLE)
+@static(sharing_windows=set(), paused_by_us=False)
+async def dunst_pause_while_sharing(i3, event):
+    """Pause Dunst while a screen-sharing indicator window is visible."""
+    state = dunst_pause_while_sharing
+    w = event.container
+    is_sharing = event.change != "close" and "Sharing Indicator" in (
+        w.window_title or ""
+    )
+    if not is_sharing and w.id not in state.sharing_windows:
+        return
+
+    if is_sharing:
+        state.sharing_windows.add(w.id)
+    else:
+        state.sharing_windows.discard(w.id)
+
+    if state.sharing_windows and not state.paused_by_us:
+        proc = await asyncio.create_subprocess_exec("dunstctl", "set-paused", "true")
+        await proc.wait()
+        state.paused_by_us = True
+        logger.info("pause dunst while sharing indicator is visible")
+    elif not state.sharing_windows and state.paused_by_us:
+        proc = await asyncio.create_subprocess_exec("dunstctl", "set-paused", "false")
+        await proc.wait()
+        state.paused_by_us = False
+        logger.info("unpause dunst after sharing indicator closed")
+
+
 @on(
     DBusSignal(
         interface="org.usbguard.Devices1",

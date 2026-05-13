@@ -887,23 +887,6 @@ async def bluetooth_status(i3, event, *args):
     )
 
 
-@on(
-    DBusSignal(
-        system=False,
-        path="/org/freedesktop/Notifications",
-        interface="org.freedesktop.DBus.Properties",
-        member="PropertiesChanged",
-        signature="sa{sv}as",
-        onlyif=lambda args: args[0] == "org.dunstproject.cmd0" and "paused" in args[1],
-    )
-)
-@polybar("dunst")
-async def dunst_status_update(i3, event, path, interface, changed, invalid):
-    """Update notification status in Polybar."""
-    paused = changed["paused"][1]
-    return icons[paused and "notifications-disabled" or "notifications-enabled"]
-
-
 @on(StartEvent, TailEvent(command="pw-dump --monitor -N -R"))
 @polybar("audio")
 async def audio_update(i3, event, line=""):
@@ -996,6 +979,23 @@ async def dunst_status_check(i3, event):
     obj = conn["/org/freedesktop/Notifications"]
     dunst = await obj.get_async_interface("org.dunstproject.cmd0")
     paused = await dunst.paused
+    return icons[paused and "notifications-disabled" or "notifications-enabled"]
+
+
+@on(
+    DBusSignal(
+        system=False,
+        path="/org/freedesktop/Notifications",
+        interface="org.freedesktop.DBus.Properties",
+        member="PropertiesChanged",
+        signature="sa{sv}as",
+        onlyif=lambda args: args[0] == "org.dunstproject.cmd0" and "paused" in args[1],
+    )
+)
+@polybar("dunst")
+async def dunst_status_update(i3, event, path, interface, changed, invalid):
+    """Update notification status in Polybar."""
+    paused = changed["paused"][1]
     return icons[paused and "notifications-disabled" or "notifications-enabled"]
 
 

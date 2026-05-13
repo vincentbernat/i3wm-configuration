@@ -1015,7 +1015,10 @@ async def dunst_pause_while_sharing(i3, event):
     state = dunst_pause_while_sharing
     w = event.container
     title = w.window_title or ""
-    is_sharing = event.change != "close" and ("Sharing Indicator" in title)
+    is_sharing = event.change != "close" and (
+        title in ("Firefox — Sharing Indicator", "Screen Sharing Tracker") in title
+        or " is sharing your screen" in title
+    )
 
     if not is_sharing and w.id not in state.sharing_windows:
         return

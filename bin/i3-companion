@@ -972,14 +972,19 @@ async def audio_update(i3, event, line=""):
 
 
 @on(StartEvent)
+@static(paused=False)
 @polybar("dunst")
 async def dunst_status_check(i3, event):
     """Display notification status for Polybar."""
     conn = i3.session_bus["org.freedesktop.Notifications"]
     obj = conn["/org/freedesktop/Notifications"]
     dunst = await obj.get_async_interface("org.dunstproject.cmd0")
-    paused = await dunst.paused
-    return icons[paused and "notifications-disabled" or "notifications-enabled"]
+    dunst_status_check.paused = await dunst.paused
+    return icons[
+        dunst_status_check.paused
+        and "notifications-disabled"
+        or "notifications-enabled"
+    ]
 
 
 @on(
@@ -995,8 +1000,12 @@ async def dunst_status_check(i3, event):
 @polybar("dunst")
 async def dunst_status_update(i3, event, path, interface, changed, invalid):
     """Update notification status in Polybar."""
-    paused = changed["paused"][1]
-    return icons[paused and "notifications-disabled" or "notifications-enabled"]
+    dunst_status_check.paused = changed["paused"][1]
+    return icons[
+        dunst_status_check.paused
+        and "notifications-disabled"
+        or "notifications-enabled"
+    ]
 
 
 @on(I3Event.WINDOW_NEW, I3Event.WINDOW_CLOSE, I3Event.WINDOW_TITLE)
@@ -1005,9 +1014,9 @@ async def dunst_pause_while_sharing(i3, event):
     """Pause Dunst while a screen-sharing indicator window is visible."""
     state = dunst_pause_while_sharing
     w = event.container
-    is_sharing = event.change != "close" and "Sharing Indicator" in (
-        w.window_title or ""
-    )
+    title = w.window_title or ""
+    is_sharing = event.change != "close" and ("Sharing Indicator" in title)
+
     if not is_sharing and w.id not in state.sharing_windows:
         return
 
@@ -1017,6 +1026,9 @@ async def dunst_pause_while_sharing(i3, event):
         state.sharing_windows.discard(w.id)
 
     if state.sharing_windows and not state.paused_by_us:
+        if dunst_status_check.paused:
+            logger.info("dunst already paused")
+            return
         proc = await asyncio.create_subprocess_exec("dunstctl", "set-paused", "true")
         await proc.wait()
         state.paused_by_us = True

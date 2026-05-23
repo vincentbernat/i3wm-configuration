@@ -54,6 +54,7 @@ application_icons = {
     "darktable": icon(2, ""),
     "discord": icon(3, ""),
     "draw.io": icon(2, ""),
+    "draw-io": icon(2, ""),
     "easyeffects": icon(2, ""),
     "emacs": icon(2, ""),
     "file-roller": icon(2, ""),

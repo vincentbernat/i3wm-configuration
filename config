@@ -116,7 +116,8 @@ bindsym $mod+8 workspace number 8 ; focus tiling
 bindsym $mod+9 workspace number 9 ; focus tiling
 bindsym $mod+0 workspace number 10 ; focus tiling
 bindsym $mod+Tab nop "previous-workspace"
-bindsym $mod+Ctrl+o focus output next ; focus tiling
+bindsym $mod+Ctrl+o focus output left ; focus tiling
+bindsym $mod+Ctrl+p focus output right ; focus tiling
 bindsym $mod+n nop "new-workspace"
 focus_wrapping no
 

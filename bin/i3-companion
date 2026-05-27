@@ -57,6 +57,7 @@ application_icons = {
     "draw-io": icon(2, ""),
     "easyeffects": icon(2, ""),
     "emacs": icon(2, ""),
+    "epiphany": icon(2, ""),
     "file-roller": icon(2, ""),
     "fileroller": icon(2, ""),
     "firefox": icon(3, ""),

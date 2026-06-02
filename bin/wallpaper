@@ -22,8 +22,6 @@ import random
 import argparse
 import tempfile
 import itertools
-import functools
-import operator
 import logging
 import logging.handlers
 import inspect
@@ -223,14 +221,12 @@ def get_random_images(directory: str, number: int) -> list[Image]:
                         count = 0
                     counts.append(count)
     weights = [100 / ((count - min(counts) + 1) ** 3) for count in counts]
-    images = [
-        PIL.Image.open(image)
-        for image in functools.reduce(
-            operator.add,
-            (random.choices(image_files, weights=weights) for k in range(number)),
-            [],
-        )
-    ]
+    selected = []
+    for _ in range(min(number, len(image_files))):
+        [index] = random.choices(range(len(image_files)), weights=weights)
+        selected.append(image_files.pop(index))
+        weights.pop(index)
+    images = [PIL.Image.open(image) for image in selected]
 
     for image in images:
         directory_len = len(directory) + 1

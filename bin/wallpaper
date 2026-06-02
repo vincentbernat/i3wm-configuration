@@ -32,6 +32,7 @@ from Xlib.ext import randr
 from systemd import journal
 import PIL.Image
 from PIL.Image import Image
+from PIL.ImageFile import ImageFile
 from typing import Optional, NamedTuple
 
 # We use typing, but it seems mostly broken with PIL.
@@ -48,7 +49,7 @@ class Rectangle(NamedTuple):
 
 class WallpaperPart(NamedTuple):
     rectangle: Rectangle
-    image: Image
+    image: ImageFile
 
 
 def get_outputs() -> tuple[list[Rectangle], Image]:
@@ -202,7 +203,7 @@ def get_covering_rectangles(outputs: list[Rectangle]) -> set[tuple[Rectangle, ..
     return groups
 
 
-def get_random_images(directory: str, number: int) -> list[Image]:
+def get_random_images(directory: str, number: int) -> list[ImageFile]:
     """Get random images from a directory."""
     image_files = []
     weights = []
@@ -236,7 +237,7 @@ def get_random_images(directory: str, number: int) -> list[Image]:
 
 def get_best_parts(
     groups: set[tuple[Rectangle, ...]],
-    images: list[Image],
+    images: list[ImageFile],
     ratio_score: int = 100,
     scale_score: int = 20,
     multiple_wallpaper_score: int = -50,
@@ -326,7 +327,7 @@ def build(background: Image, wallpaper_parts: list[WallpaperPart]) -> None:
     """Stitch wallpaper into provided background."""
     for part in wallpaper_parts:
         rectangle = part.rectangle
-        image = part.image
+        image: Image = part.image
 
         imx, imy = rectangle.width, image.height * rectangle.width // image.width
         if imy < rectangle.height:
@@ -443,21 +444,20 @@ if __name__ == "__main__":
         )
         assert wallpaper_parts is not None
         for part in wallpaper_parts:
+            filename = part.image.filename
+            assert isinstance(filename, str)  # it could be bytes, but never is
             logger.info(
                 "wallpaper: {} ({}×{})".format(
-                    part.image.filename[(len(options.directory) + 1) :],
-                    *part.image.size
+                    filename[(len(options.directory) + 1) :], *part.image.size
                 )
             )
             if options.count_attribute:
                 try:
-                    count = int(
-                        xattr.getxattr(part.image.filename, options.count_attribute)
-                    )
+                    count = int(xattr.getxattr(filename, options.count_attribute))
                 except (OSError, ValueError):
                     count = 0
                 xattr.setxattr(
-                    part.image.filename,
+                    filename,
                     options.count_attribute,
                     bytes(str(count + 1), "ascii"),
                 )

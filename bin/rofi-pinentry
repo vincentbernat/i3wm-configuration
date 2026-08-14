@@ -1,0 +1,253 @@
+#!/usr/bin/python3
+
+"""Pinentry implementation using rofi as a backend.
+
+GnuPG drives us with the Assuan protocol on stdin and stdout. We only
+implement the commands needed to ask for a passphrase and to display
+questions. The other ones get the standard "unknown command" answer,
+which GnuPG knows how to cope with.
+"""
+
+import html
+import os
+import re
+import subprocess
+import sys
+
+# gpg-error codes: an error source (5 is "pinentry") and an error code.
+SOURCE = 5 << 24
+CANCELED = SOURCE + 99  # GPG_ERR_CANCELED
+NOT_CONFIRMED = SOURCE + 114  # GPG_ERR_NOT_CONFIRMED
+UNKNOWN_IPC_COMMAND = SOURCE + 275  # GPG_ERR_ASS_UNKNOWN_CMD
+
+# Longest passphrase we accept.
+MAX_LENGTH = 128
+
+# We are not displaying a menu, don't invite the user to filter it.
+THEME = 'entry { placeholder: ""; }'
+
+
+def unescape(text):
+    """Decode the percent-escaped text received from GnuPG."""
+    raw = re.sub(
+        rb"%([0-9A-Fa-f]{2})", lambda m: bytes.fromhex(m[1].decode()), text.encode()
+    )
+    return raw.decode(errors="replace")
+
+
+def escape(text):
+    """Percent-escape a text sent back to GnuPG."""
+    return re.sub(r"[%\r\n]", lambda m: f"%{ord(m[0]):02X}", text)
+
+
+def label(text):
+    """Remove the accelerators from a button label."""
+    return re.sub("_(.)", r"\1", text)
+
+
+def rofi(*args, entries="", timeout=None):
+    """Display a rofi dialog and return the selected entry, if any."""
+    query = subprocess.run(
+        ["xrdb", "-query"], stdout=subprocess.PIPE, text=True, check=False
+    )
+    dpi = re.search(r"^Xft\.dpi:\s*(\d+)", query.stdout, re.MULTILINE)
+    try:
+        # Never let rofi inherit our stdin: this is the GnuPG channel.
+        result = subprocess.run(
+            ["rofi", "-dpi", dpi[1] if dpi else "0", *args],
+            input=entries,
+            stdout=subprocess.PIPE,
+            text=True,
+            timeout=timeout,
+            check=False,
+        )
+    except subprocess.TimeoutExpired:
+        return None
+    if result.returncode != 0:
+        return None
+    return result.stdout.rstrip("\n")
+
+
+class Pinentry:
+    """Answer the Assuan commands sent by GnuPG."""
+
+    def __init__(self):
+        self.options = {}
+        self.timeout = None
+        self.done = False
+        self.reset()
+
+    def reset(self):
+        """Forget everything about the current request."""
+        self.description = ""
+        self.prompt = ""
+        self.error = ""
+        self.ok = ""
+        self.notok = ""
+        self.cancel = ""
+
+    def button(self, value, name, fallback):
+        """Return a label, using the default GnuPG gave us if needed."""
+        return label(value or self.options.get(f"default-{name}") or fallback)
+
+    def execute(self, line):
+        """Run one command and return the answer to send back."""
+        name, _, argument = line.partition(" ")
+        handler = getattr(self, f"cmd_{name.lower()}", None)
+        if handler is None:
+            return f"ERR {UNKNOWN_IPC_COMMAND} Unknown IPC command"
+        return handler(unescape(argument.strip()))
+
+    def dialog(self, *args, entries="", error=""):
+        """Display a dialog. Only a PIN request displays the error."""
+        lines = [f"<b>{html.escape(error)}</b>"] if error else []
+        if self.description:
+            lines.append(html.escape(self.description))
+        mesg = "\n".join(lines)
+        self.error = ""
+
+        # Grab the keyboard before displaying anything, otherwise the
+        # first characters may be sent to the currently focused window.
+        return rofi(
+            "-no-lazy-grab",
+            "-dmenu",
+            *args,
+            *(["-mesg", mesg] if mesg else []),
+            entries=entries,
+            timeout=self.timeout,
+        )
+
+    def cmd_option(self, argument):
+        """Remember the options."""
+        name, _, value = argument.partition("=")
+        self.options[name] = value
+        return "OK"
+
+    def cmd_getinfo(self, argument):
+        """Tell GnuPG who we are."""
+        if argument == "pid":
+            return f"D {os.getpid()}\nOK"
+        if argument == "flavor":
+            return "D rofi\nOK"
+        if argument == "version":
+            return "D 1.0\nOK"
+        if argument == "ttyinfo":
+            return "D {} {} {}\nOK".format(
+                self.options.get("ttyname") or "-",
+                self.options.get("ttytype") or "-",
+                self.options.get("display") or "-",
+            )
+        return "OK"
+
+    def cmd_setdesc(self, argument):
+        # GnuPG ends its descriptions with a newline.
+        self.description = argument.strip()
+        return "OK"
+
+    def cmd_setprompt(self, argument):
+        self.prompt = argument
+        return "OK"
+
+    def cmd_seterror(self, argument):
+        self.error = argument
+        return "OK"
+
+    def cmd_setok(self, argument):
+        self.ok = argument
+        return "OK"
+
+    def cmd_setnotok(self, argument):
+        self.notok = argument
+        return "OK"
+
+    def cmd_setcancel(self, argument):
+        self.cancel = argument
+        return "OK"
+
+    def cmd_settitle(self, argument):
+        # Our dialogs have no title bar.
+        return "OK"
+
+    def cmd_settimeout(self, argument):
+        # A zero timeout means we should wait forever.
+        self.timeout = (int(argument) if argument.isdigit() else 0) or None
+        return "OK"
+
+    def cmd_getpin(self, argument):
+        """Ask for a passphrase, until it is short enough."""
+        # The theme already displays a colon after the prompt.
+        prompt = self.button(self.prompt, "prompt", "PIN").rstrip(": ")
+        error = self.error
+        while True:
+            pin = self.dialog(
+                "-password",
+                "-p",
+                prompt,
+                "-theme-str",
+                f"{THEME} listview {{ enabled: false; }}",
+                error=error,
+            )
+            if pin is None:
+                return f"ERR {CANCELED} Operation cancelled"
+            if len(pin) <= MAX_LENGTH:
+                return f"D {escape(pin)}\nOK"
+            error = f"A passphrase is limited to {MAX_LENGTH} characters"
+
+    def cmd_confirm(self, argument):
+        """Ask a question expecting a yes/no answer."""
+        if "--one-button" in argument.split():
+            rofi("-e", self.description)
+            self.error = ""
+            return "OK"
+        ok = self.button(self.ok, "ok", "OK")
+        cancel = self.button(self.cancel, "cancel", "Cancel")
+        entries = [ok] + ([label(self.notok)] if self.notok else []) + [cancel]
+        # Preselect the last entry, the one cancelling: such a question
+        # may also pop up for something we did not ask for.
+        answer = self.dialog(
+            "-no-custom",
+            "-selected-row",
+            str(len(entries) - 1),
+            "-p",
+            "confirm",
+            "-theme-str",
+            f"{THEME} listview {{ fixed-height: false; }}",
+            entries="\n".join(entries),
+        )
+        if answer is None or answer == cancel:
+            return f"ERR {CANCELED} Operation cancelled"
+        if answer == ok:
+            return "OK"
+        return f"ERR {NOT_CONFIRMED} Not confirmed"
+
+    def cmd_message(self, argument):
+        """Display a message until the user dismisses it."""
+        rofi("-e", self.description)
+        return "OK"
+
+    def cmd_nop(self, argument):
+        return "OK"
+
+    def cmd_reset(self, argument):
+        self.reset()
+        return "OK"
+
+    def cmd_bye(self, argument):
+        self.done = True
+        return "OK closing connection"
+
+
+if __name__ == "__main__":
+    # Without a display, the curses flavor handles the whole
+    # conversation. We have not greeted the client yet.
+    if not os.environ.get("DISPLAY"):
+        os.execvp("pinentry-curses", ["pinentry-curses", *sys.argv[1:]])
+    pinentry = Pinentry()
+    print(f"OK Pleased to meet you, process {os.getpid()}", flush=True)
+    for line in sys.stdin:
+        command = line.strip()
+        if not command or command.startswith("#"):
+            continue
+        print(pinentry.execute(command), flush=True)
+        if pinentry.done:
+            break

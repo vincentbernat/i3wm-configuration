@@ -9,21 +9,24 @@ dpi=${dpi:-0}
 mesg="$(printf '%s' "$message" \
     | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e '$s/:[[:space:]]*$//')"
 
+theme='entry { placeholder: ""; }
+       error-message { expand: false; }'
+
 case ${SSH_ASKPASS_PROMPT:-} in
     none)
-        exec rofi -dpi $dpi -e "$message"
+        exec rofi -dpi $dpi -e "$message" -theme-str "$theme"
         ;;
     confirm)
         answer=$(printf 'Yes\nNo\n' \
-                     | rofi -dpi $dpi -no-lazy-grab -dmenu -no-custom \
+                     | rofi -dpi $dpi -no-lazy-grab -dmenu -no-custom -l 2 \
                             -selected-row 1 -p confirm -mesg "$mesg" \
-                            -theme-str 'entry { placeholder: ""; } listview { fixed-height: false; }')
+                            -theme-str "$theme listview { expand: false; }")
         [ "$answer" = Yes ]
         ;;
     *)
         exec rofi -dpi $dpi -no-lazy-grab -dmenu -password \
              -p passphrase -mesg "$mesg" \
-             -theme-str 'entry { placeholder: ""; } listview { enabled: false; }' \
+             -theme-str "$theme listview { enabled: false; }" \
              < /dev/null
         ;;
 esac

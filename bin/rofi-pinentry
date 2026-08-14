@@ -23,8 +23,8 @@ UNKNOWN_IPC_COMMAND = SOURCE + 275  # GPG_ERR_ASS_UNKNOWN_CMD
 # Longest passphrase we accept.
 MAX_LENGTH = 128
 
-# We are not displaying a menu, don't invite the user to filter it.
-THEME = 'entry { placeholder: ""; }'
+THEME = """entry { placeholder: ""; }
+           error-message { expand: false; }"""
 
 
 def unescape(text):
@@ -196,7 +196,7 @@ class Pinentry:
     def cmd_confirm(self, argument):
         """Ask a question expecting a yes/no answer."""
         if "--one-button" in argument.split():
-            rofi("-e", self.description)
+            rofi("-e", self.description, "-theme-str", THEME)
             self.error = ""
             return "OK"
         ok = self.button(self.ok, "ok", "OK")
@@ -206,12 +206,14 @@ class Pinentry:
         # may also pop up for something we did not ask for.
         answer = self.dialog(
             "-no-custom",
+            "-l",
+            str(len(entries)),
             "-selected-row",
             str(len(entries) - 1),
             "-p",
             "confirm",
             "-theme-str",
-            f"{THEME} listview {{ fixed-height: false; }}",
+            f"{THEME} listview {{ expand: false; }}",
             entries="\n".join(entries),
         )
         if answer is None or answer == cancel:
@@ -222,7 +224,7 @@ class Pinentry:
 
     def cmd_message(self, argument):
         """Display a message until the user dismisses it."""
-        rofi("-e", self.description)
+        rofi("-e", self.description, "-theme-str", THEME)
         return "OK"
 
     def cmd_nop(self, argument):

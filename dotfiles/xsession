@@ -36,6 +36,7 @@ export XCURSOR_PATH=/usr/share/icons
 # Environment variables
 . ~/.zshenv
 export TERMINAL=vbeterm
+export SSH_ASKPASS=$HOME/.config/i3/bin/rofi-ssh-askpass
 
 # Copy some configuration files
 while read source target; do

@@ -170,7 +170,6 @@ NM_DEVICE_TYPE_MODEM = 8
 NM_DEVICE_STATE_UNMANAGED = 10
 NM_DEVICE_STATE_ACTIVATED = 100
 
-
 # Event helpers
 
 
@@ -887,6 +886,75 @@ async def bluetooth_status(i3, event, *args):
         (" ".join(icons[oo] for oo in o) if type(o) is tuple else icons[o])
         for o in output
     )
+
+
+@on(
+    StartEvent,
+    DBusSignal(
+        path="/org/freedesktop/UPower/devices",
+        interface="org.freedesktop.DBus.Properties",
+        member="PropertiesChanged",
+        signature="sa{sv}as",
+        onlyif=lambda args: (
+            args[0] == "org.freedesktop.UPower.Device"
+            and ("Percentage" in args[1] or "BatteryLevel" in args[1])
+        ),
+    ),
+    DBusSignal(
+        path="/org/freedesktop/UPower",
+        interface="org.freedesktop.UPower",
+        member="DeviceAdded",
+        signature="o",
+    ),
+    DBusSignal(
+        path="/org/freedesktop/UPower",
+        interface="org.freedesktop.UPower",
+        member="DeviceRemoved",
+        signature="o",
+    ),
+)
+@retry(2)
+@debounce(1)
+@polybar("upower")
+async def upower_status(i3, event, *args):
+    """Update battery status of UPower devices for Polybar."""
+    ofup = "org.freedesktop.UPower"
+    conn = i3.system_bus[ofup]
+    try:
+        upower = await conn["/org/freedesktop/UPower"].get_async_interface(ofup)
+        paths = (await upower.EnumerateDevices())[0]
+    except dbussy.DBusError as e:
+        logger.info(f"cannot enumerate UPower devices: {e}")
+        return ""
+
+    # Keys are UpDeviceKind values
+    uicons = {
+        5: "mouse",
+        6: "keyboard",
+        12: "gamepad",
+    }
+    output = []
+    for path in paths:
+        properties = await conn[path].get_async_interface(
+            "org.freedesktop.DBus.Properties"
+        )
+        try:
+            device = (await properties.GetAll(f"{ofup}.Device"))[0]
+        except dbussy.DBusError:
+            logger.info(f"device {path} has vanished")
+            continue
+        device = {k: v[1] for k, v in device.items()}
+        if device["Type"] == 0 or not device["IsPresent"]:
+            continue
+        if device["PowerSupply"]:
+            # Handled by the battery module
+            continue
+        if device["NativePath"].startswith("/org/bluez/"):
+            # Handled by the bluetooth module
+            continue
+        battery = (int(device["Percentage"]) + 12) // 25 * 25
+        output.append((uicons.get(device["Type"], "unknown"), f"battery-{battery}"))
+    return "|".join(" ".join(icons[oo] for oo in o) for o in output)
 
 
 @on(StartEvent, TailEvent(command="pw-dump --monitor -N -R"))

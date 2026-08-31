@@ -34,8 +34,8 @@ from systemd import daemon, journal
 def icon(font_number, char):
     """Turn an icon into a string for Polybar."""
     # Font number is from Polybar configuration.
-    # 2: https://fontawesome.com/v6.0/icons?s=solid
-    # 3: https://fontawesome.com/v6.0/icons?s=brands
+    # 2: https://fontawesome.com/v6/search?ip=classic
+    # 3: https://fontawesome.com/v6/search?ip=brands
     return "%%{T%d}%s%%{T-}" % (font_number, char)
 
 

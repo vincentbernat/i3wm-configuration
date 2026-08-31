@@ -468,6 +468,6 @@ if __name__ == "__main__":
             with open(options.outputs, "w") as f:
                 f.write(str(len(outputs)))
     except Exception as e:
-        logger.exception("%s", e)
+        logger.exception("%s", e)  # noqa: TRY401
         sys.exit(1)
     sys.exit(0)

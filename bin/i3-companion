@@ -918,6 +918,14 @@ async def bluetooth_status(i3, event, *args):
 @polybar("upower")
 async def upower_status(i3, event, *args):
     """Update battery status of UPower devices for Polybar."""
+    # Alternatives:
+    #  06:13 ❱ grep . /sys/class/power_supply/hidpp_battery_0/*(.)
+    # .../hidpp_battery_0/capacity_level:Full
+    # .../hidpp_battery_0/manufacturer:Logitech
+    # .../hidpp_battery_0/model_name:MX Vertical Advanced Ergonomic Mouse
+    # .../hidpp_battery_0/status:Discharging
+    # .../hidpp_battery_0/type:Battery
+    # [...]
     ofup = "org.freedesktop.UPower"
     conn = i3.system_bus[ofup]
     try:

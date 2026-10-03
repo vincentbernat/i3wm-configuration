@@ -62,7 +62,8 @@ What's missing for me to migrate to Wayland:
    fade the screen before locking? This should be possible with swayidle and two
    timeouts or by wrapping swaylock into a script running the dimmer, then the
    lock. [chayang](https://gitlab.freedesktop.org/emersion/chayang) could be
-   used for that.
+   used for that. Alternative would be to combine the dimmer and the saver and
+   use the `--grace` option.
  - Something to replace `polybar`, maybe
    [Waybar](https://github.com/Alexays/Waybar), but it would be nice if there
    was something like `custom/ipc`, but this could be emulated with `exec` and a

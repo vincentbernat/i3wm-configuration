@@ -4,6 +4,7 @@
 // Theme
 user_pref("extensions.activeThemeID", "firefox-compact-dark@mozilla.org");
 user_pref("layout.css.prefers-color-scheme.content-override", 1); // light
+user_pref("browser.nova.enabled", false);
 
 // Fonts
 user_pref("font.name.monospace.x-western", "Source Code Pro");

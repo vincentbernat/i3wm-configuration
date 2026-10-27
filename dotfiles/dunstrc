@@ -5,8 +5,8 @@
 
     # Appearance
     width = 400
-    offset = (5, 17)
-    origin = top-right
+    offset = (0, 17)
+    origin = top-center
     indicate_hidden = yes
     shrink = no
     notification_limit = 6

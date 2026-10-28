@@ -17,10 +17,10 @@
     text_icon_padding = 8
     frame_width = 2
     frame_color = "#4c7899"
-    transparency = 5
+    transparency = 10
     font = Adwaita Sans 10
     line_height = 0
-    corner_radius = 5
+    corner_radius = 0
     icon_corner_radius = 5
 
     # Put urgent notifications on top

@@ -102,7 +102,10 @@ def build_tiles(width, height, rows, focus):
                 for k in range(6)
             ]
             inner = [
-                (cx + (px - cx) * (1 - BORDER_WIDTH), cy + (py - cy) * (1 - BORDER_WIDTH))
+                (
+                    cx + (px - cx) * (1 - BORDER_WIDTH),
+                    cy + (py - cy) * (1 - BORDER_WIDTH),
+                )
                 for px, py in hexagon
             ]
             tiles.append((order(cx, cy), hexagon, inner))
@@ -110,9 +113,64 @@ def build_tiles(width, height, rows, focus):
     return [t[1:] for t in tiles]
 
 
-def on_draw(widget, event, options, background, start, tiles):
+class TileMask:
+    """Placed tiles, kept between frames.
+
+    The shape surface has all placed tiles. The border surface has their
+    sides, from 0 inside to 1 at the edge.
+    """
+
+    def __init__(self, tiles):
+        self.tiles = tiles
+        self.surfaces = None
+        self.count = 0
+
+    def update(self, width, height, scale, count):
+        size = (width * scale, height * scale)
+        if self.surfaces is None:
+            self.surfaces = []
+            for _ in range(2):
+                surface = cairo.ImageSurface(cairo.FORMAT_A8, *size)
+                surface.set_device_scale(scale, scale)
+                self.surfaces.append(surface)
+            self.count = 0
+        if count == self.count:
+            return
+        shape, border = (cairo.Context(s) for s in self.surfaces)
+        # ADD avoids seams between tiles
+        shape.set_operator(cairo.OPERATOR_ADD)
+        border.set_operator(cairo.OPERATOR_ADD)
+        for outer, inner in self.tiles[self.count : count]:
+            shape.move_to(*outer[0])
+            for point in outer[1:]:
+                shape.line_to(*point)
+            shape.close_path()
+            for k in range(6):
+                o1, o2, i1, i2 = outer[k], outer[k - 1], inner[k], inner[k - 1]
+                gradient = cairo.LinearGradient(
+                    (i1[0] + i2[0]) / 2,
+                    (i1[1] + i2[1]) / 2,
+                    (o1[0] + o2[0]) / 2,
+                    (o1[1] + o2[1]) / 2,
+                )
+                gradient.add_color_stop_rgba(0, 0, 0, 0, 0)
+                gradient.add_color_stop_rgba(1, 0, 0, 0, 1)
+                border.move_to(*o1)
+                border.line_to(*o2)
+                border.line_to(*i2)
+                border.line_to(*i1)
+                border.close_path()
+                border.set_source(gradient)
+                border.fill()
+        shape.set_source_rgb(0, 0, 0)
+        shape.fill()
+        self.count = count
+
+
+def on_draw(widget, event, options, background, start, tilemask):
     x, y = widget.get_position()
     wwidth, wheight = widget.get_size()
+    scale = widget.get_scale_factor()
     delta = options.end_opacity - options.start_opacity
     elapsed = time.monotonic() - start
     progress = easing_functions[options.easing_function](
@@ -125,44 +183,22 @@ def on_draw(widget, event, options, background, start, tiles):
     cctx.set_source_rgba(0, 0, 0, 0)
     cctx.paint()
 
-    # Tiles are drawn into a mask. ADD avoids seams between tiles.
-    cctx.push_group()
-    cctx.set_operator(cairo.OPERATOR_ADD)
+    tiles = tilemask.tiles
     count = max(0, min(len(tiles), int(progress * len(tiles))))
+    tilemask.update(wwidth, wheight, scale, count)
     border = BORDER * max(0, min(1, (1 - progress) / BORDER_FADE))
     center = options.start_opacity + delta * progress
     edge = options.start_opacity + delta * min(1, progress + border)
-    # Uniform inner part of all tiles
-    for _, inner in tiles[:count]:
-        cctx.move_to(*inner[0])
-        for point in inner[1:]:
-            cctx.line_to(*point)
-        cctx.close_path()
-    cctx.set_source_rgba(0, 0, 0, center)
-    cctx.fill()
-    # Gradient on each side, between the inner part and the edge
-    for outer, inner in tiles[:count]:
-        for k in range(6):
-            o1, o2, i1, i2 = outer[k], outer[k - 1], inner[k], inner[k - 1]
-            gradient = cairo.LinearGradient(
-                (i1[0] + i2[0]) / 2,
-                (i1[1] + i2[1]) / 2,
-                (o1[0] + o2[0]) / 2,
-                (o1[1] + o2[1]) / 2,
-            )
-            gradient.add_color_stop_rgba(0, 0, 0, 0, center)
-            gradient.add_color_stop_rgba(1, 0, 0, 0, edge)
-            cctx.move_to(*o1)
-            cctx.line_to(*o2)
-            cctx.line_to(*i2)
-            cctx.line_to(*i1)
-            cctx.close_path()
-            cctx.set_source(gradient)
-            cctx.fill()
+    shape, border = tilemask.surfaces
+    cctx.push_group_with_content(cairo.CONTENT_ALPHA)
+    cctx.set_operator(cairo.OPERATOR_ADD)
+    cctx.set_source_surface(shape)
+    cctx.paint_with_alpha(center)
+    cctx.set_source_surface(border)
+    cctx.paint_with_alpha(edge - center)
     mask = cctx.pop_group()
 
     # Background
-    scale = widget.get_scale_factor()
     bg = None
     if background:
         bg = background.new_subpixbuf(
@@ -321,7 +357,7 @@ if __name__ == "__main__":
 
         focus = (random.uniform(0.1, 0.9), random.uniform(0.1, 0.9))
         tiles = build_tiles(width, height, options.tile_rows, focus)
-        window.connect("draw", on_draw, options, background, now, tiles)
+        window.connect("draw", on_draw, options, background, now, TileMask(tiles))
         window.connect("delete-event", Gtk.main_quit)
         window.connect("realize", on_realize)
 

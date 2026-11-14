@@ -122,13 +122,19 @@ easing_functions = {
     "out-expo": lambda x: 1 - pow(2, -10 * x),
     "out-quad": lambda x: 1 - (1 - x) * (1 - x),
     "out-bounce": (
-        lambda n1, d1: lambda x: n1 * x * x
-        if x < 1 / d1
-        else n1 * pow(x - 1.5 / d1, 2) + 0.75
-        if x < 2 / d1
-        else n1 * pow(x - 2.25 / d1, 2) + 0.9375
-        if (x < 2.5 / d1)
-        else n1 * pow(x - 2.625 / d1, 2) + 0.984375
+        lambda n1, d1: lambda x: (
+            n1 * x * x
+            if x < 1 / d1
+            else (
+                n1 * pow(x - 1.5 / d1, 2) + 0.75
+                if x < 2 / d1
+                else (
+                    n1 * pow(x - 2.25 / d1, 2) + 0.9375
+                    if (x < 2.5 / d1)
+                    else n1 * pow(x - 2.625 / d1, 2) + 0.984375
+                )
+            )
+        )
     )(7.5625, 2.75),
     "out-elastic": (
         lambda x: pow(2, -10 * x) * math.sin((x * 10 - 0.75) * (2 * math.pi) / 3) + 1
@@ -141,9 +147,11 @@ easing_functions = {
         lambda x: pow(2, 20 * x - 10) / 2 if x < 0.5 else (2 - pow(2, -20 * x + 10)) / 2
     ),
     "inout-bounce": (
-        lambda x: (1 - easing_functions["out-bounce"](1 - 2 * x)) / 2
-        if x < 0.5
-        else (1 + easing_functions["out-bounce"](2 * x - 1)) / 2
+        lambda x: (
+            (1 - easing_functions["out-bounce"](1 - 2 * x)) / 2
+            if x < 0.5
+            else (1 + easing_functions["out-bounce"](2 * x - 1)) / 2
+        )
     ),
 }
 
